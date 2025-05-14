@@ -3,85 +3,126 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ферма: Расширенная версия</title>
+    <title>Мега Ферма</title>
     <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+        }
         body {
             font-family: 'Arial', sans-serif;
             margin: 0;
             padding: 0;
             background-color: #e0f7fa;
             color: #333;
+            touch-action: manipulation;
+            overflow-x: hidden;
         }
         #menu, #game {
-            max-width: 600px;
+            max-width: 800px;
             margin: 20px auto;
             padding: 20px;
             background-color: white;
-            border-radius: 10px;
-            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.15);
             text-align: center;
         }
         button {
             background-color: #4CAF50;
             color: white;
             border: none;
-            padding: 10px 15px;
-            margin: 5px;
-            border-radius: 5px;
+            padding: 12px 18px;
+            margin: 8px;
+            border-radius: 8px;
             cursor: pointer;
             font-size: 16px;
             transition: all 0.3s;
+            min-width: 120px;
         }
         button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 3px 5px rgba(0,0,0,0.2);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 10px rgba(0,0,0,0.2);
         }
         button:disabled {
             background-color: #cccccc;
             cursor: not-allowed;
             transform: none;
             box-shadow: none;
+            opacity: 0.7;
+        }
+        #farm-container {
+            position: relative;
+            width: 100%;
+            margin: 20px 0;
         }
         #farm {
-            min-height: 300px;
-            margin: 20px 0;
-            padding: 15px;
+            min-height: 400px;
             background-color: #81C784;
-            border-radius: 8px;
+            border-radius: 12px;
             position: relative;
             overflow: hidden;
+            border: 5px solid #5a8c5e;
+            background-image: 
+                linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px);
+            background-size: 40px 40px;
         }
         .farm-object {
             position: absolute;
             cursor: pointer;
             transition: all 0.3s;
-            user-select: none;
+            z-index: 10;
+            text-align: center;
+            pointer-events: auto;
         }
         .plant {
+            width: 50px;
+            height: 50px;
             border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
         }
         .animal {
-            font-size: 24px;
-        }
-        .stats {
-            background-color: #f5f5f5;
-            padding: 10px;
-            border-radius: 5px;
-            margin: 10px 0;
+            width: 60px;
+            height: 60px;
             display: flex;
-            flex-wrap: wrap;
-            justify-content: space-around;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+        }
+        .building {
+            width: 80px;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            background-color: rgba(255,255,255,0.2);
+            border-radius: 10px;
+        }
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 10px;
+            margin: 15px 0;
         }
         .stat-item {
-            margin: 5px 10px;
+            background-color: #f5f5f5;
+            padding: 10px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-        .tab {
+        .tab-container {
             display: none;
         }
-        .active-tab {
+        .tab-container.active {
             display: block;
         }
-        #tabs {
+        .tabs {
             display: flex;
             justify-content: center;
             margin-bottom: 15px;
@@ -90,205 +131,336 @@
         .tab-btn {
             background-color: #ddd;
             color: #333;
-            margin: 3px;
+            margin: 5px;
+            padding: 10px 15px;
+            border-radius: 8px;
+            transition: all 0.3s;
         }
         .tab-btn.active {
             background-color: #4CAF50;
             color: white;
         }
-        .level-locked {
-            filter: grayscale(100%);
-            opacity: 0.7;
-        }
-        .quest {
+        .quest-item {
             background-color: #e3f2fd;
-            padding: 8px;
-            margin: 5px 0;
-            border-radius: 5px;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 8px;
             text-align: left;
+            position: relative;
         }
-        .quest.completed {
+        .quest-item.completed {
             background-color: #c8e6c9;
         }
+        .progress-container {
+            margin-top: 8px;
+        }
         .progress-bar {
-            height: 5px;
+            height: 8px;
             background-color: #ddd;
-            margin-top: 5px;
-            border-radius: 3px;
+            border-radius: 4px;
             overflow: hidden;
         }
-        .progress {
+        .progress-fill {
             height: 100%;
             background-color: #4CAF50;
             width: 0%;
+            transition: width 0.3s;
         }
-        #shop-items {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
+        .shop-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
         }
         .shop-item {
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            padding: 10px;
-            margin: 5px;
-            width: 120px;
+            background-color: #f9f9f9;
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 3px 5px rgba(0,0,0,0.1);
         }
         .notification {
             position: fixed;
-            top: 20px;
+            top: 30px;
             left: 50%;
             transform: translateX(-50%);
             background-color: #4CAF50;
             color: white;
-            padding: 10px 20px;
-            border-radius: 5px;
-            box-shadow: 0 3px 5px rgba(0,0,0,0.2);
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
             z-index: 1000;
             opacity: 0;
             transition: opacity 0.3s;
+            max-width: 80%;
+            text-align: center;
+        }
+        .xp-container {
+            margin: 15px 0;
         }
         .xp-bar {
-            height: 10px;
+            height: 12px;
             background-color: #e0e0e0;
-            border-radius: 5px;
-            margin: 10px 0;
+            border-radius: 6px;
             overflow: hidden;
+            margin-top: 5px;
         }
         .xp-progress {
             height: 100%;
             background: linear-gradient(90deg, #00c6ff, #0072ff);
             width: 0%;
+            transition: width 0.5s;
+        }
+        .time-info {
+            margin: 10px 0;
+            font-size: 14px;
+            color: #666;
+        }
+        .object-menu {
+            position: absolute;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            z-index: 100;
+            padding: 10px;
+            display: none;
+        }
+        .upgrade-btn {
+            background-color: #2196F3;
+        }
+        .animate-pop {
+            animation: pop 0.3s;
+        }
+        @keyframes pop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+        .weather-effect {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 5;
+        }
+        .coin-animation {
+            position: absolute;
+            font-size: 20px;
+            animation: coinFly 1s forwards;
+            z-index: 20;
+        }
+        @keyframes coinFly {
+            0% { transform: translate(0, 0); opacity: 1; }
+            100% { transform: translate(0, -100px); opacity: 0; }
         }
     </style>
 </head>
 <body>
     <!-- Главное меню -->
     <div id="menu">
-        <h1>Ферма: Расширенная версия</h1>
-        <div class="stats">
-            <div class="stat-item">Уровень: <span id="player-level">1</span></div>
-            <div class="stat-item">Опыт: <span id="player-xp">0</span>/<span id="player-max-xp">100</span></div>
-            <div class="stat-item">Монеты: <span id="total-coins">0</span> 🪙</div>
+        <h1>🌾 Мега Ферма 🐄</h1>
+        <div class="stats-container">
+            <div class="stat-item">Уровень: <span id="menu-level">1</span></div>
+            <div class="stat-item">Опыт: <span id="menu-xp">0</span>/<span id="menu-max-xp">100</span></div>
+            <div class="stat-item">Монеты: <span id="menu-coins">0</span> 🪙</div>
+            <div class="stat-item">Игровое время: <span id="menu-time">0</span>ч</div>
         </div>
-        <div class="xp-bar">
-            <div class="xp-progress" id="xp-bar"></div>
+        <div class="xp-container">
+            <div>Прогресс уровня</div>
+            <div class="xp-bar">
+                <div class="xp-progress" id="menu-xp-bar"></div>
+            </div>
         </div>
-        <button id="start-game">Продолжить игру</button>
-        <button id="reset-game">Новая игра</button>
+        <button id="new-game-btn">Новая игра</button>
+        <button id="continue-btn">Продолжить</button>
+        <button id="credits-btn">Об игре</button>
     </div>
 
     <!-- Игровой экран -->
-    <div id="game" class="tab">
-        <div id="tabs">
+    <div id="game" style="display:none;">
+        <div class="tabs">
             <button class="tab-btn active" data-tab="farm-tab">Ферма</button>
             <button class="tab-btn" data-tab="shop-tab">Магазин</button>
             <button class="tab-btn" data-tab="quests-tab">Задания</button>
+            <button class="tab-btn" data-tab="upgrades-tab">Улучшения</button>
             <button class="tab-btn" data-tab="stats-tab">Статистика</button>
         </div>
 
-        <div id="farm-tab" class="active-tab tab">
-            <h2>Ферма (<span id="current-level">1</span> уровень)</h2>
-            <div id="farm"></div>
+        <div class="time-info">День <span id="game-day">1</span> • <span id="game-time">Утро</span> • <span id="game-weather">Ясно</span></div>
+
+        <div id="farm-tab" class="tab-container active">
+            <h2>Ваша ферма <span id="farm-level">1</span> уровня</h2>
             
-            <div class="stats">
-                <div class="stat-item">🪙: <span id="coins">50</span></div>
-                <div class="stat-item">🌾: <span id="wheat">0</span></div>
-                <div class="stat-item">🥚: <span id="eggs">0</span></div>
-                <div class="stat-item">🥛: <span id="milk">0</span></div>
+            <div id="farm-container">
+                <div id="farm"></div>
+                <div id="weather-effect" class="weather-effect"></div>
+            </div>
+            
+            <div class="stats-container">
+                <div class="stat-item">🪙: <span id="coins-display">0</span></div>
+                <div class="stat-item">🌾: <span id="wheat-display">0</span></div>
+                <div class="stat-item">🥕: <span id="carrots-display">0</span></div>
+                <div class="stat-item">🥚: <span id="eggs-display">0</span></div>
+                <div class="stat-item">🥛: <span id="milk-display">0</span></div>
+                <div class="stat-item">🥓: <span id="bacon-display">0</span></div>
+            </div>
+            
+            <div class="xp-container">
+                <div>Прогресс уровня: <span id="current-xp">0</span>/<span id="max-xp">100</span></div>
+                <div class="xp-bar">
+                    <div class="xp-progress" id="xp-progress"></div>
+                </div>
             </div>
             
             <div id="action-buttons">
-                <button id="carrot-btn" data-cost="10">🥕 Морковь (10🪙)</button>
-                <button id="wheat-btn" data-cost="15">🌾 Пшеница (15🪙)</button>
-                <button id="chicken-btn" data-cost="30" data-limit="3">🐔 Курица (30🪙)</button>
+                <button id="carrot-btn" data-cost="10">🥕 Посадить морковь (10🪙)</button>
+                <button id="wheat-btn" data-cost="15">🌾 Посадить пшеницу (15🪙)</button>
+                <button id="chicken-btn" data-cost="30">🐔 Купить курицу (30🪙)</button>
+                <button id="sell-btn" class="upgrade-btn">💰 Продать урожай</button>
+                <button id="menu-btn">🔙 В меню</button>
             </div>
-            <button id="sell-btn">💰 Продать урожай</button>
-            <button id="menu-btn">В меню</button>
         </div>
 
-        <div id="shop-tab" class="tab">
+        <div id="shop-tab" class="tab-container">
             <h2>Магазин</h2>
-            <div class="stats">
-                <div class="stat-item">🪙: <span id="shop-coins">50</span></div>
+            <div class="stats-container">
+                <div class="stat-item">🪙: <span id="shop-coins">0</span></div>
                 <div class="stat-item">Уровень: <span id="shop-level">1</span></div>
             </div>
             
-            <div id="shop-items">
+            <div class="shop-grid">
                 <div class="shop-item">
+                    <div style="font-size: 40px;">🐄</div>
                     <h3>Корова</h3>
-                    <p>Даёт молоко</p>
+                    <p>Производит молоко</p>
                     <p>Цена: 100🪙</p>
                     <p>Требуется: 2 уровень</p>
+                    <p>Лимит: <span id="cow-limit">2</span></p>
                     <button class="buy-btn" data-item="cow" data-cost="100" data-level="2">Купить</button>
                 </div>
                 <div class="shop-item">
+                    <div style="font-size: 40px;">🐖</div>
                     <h3>Свинья</h3>
-                    <p>Даёт бекон</p>
+                    <p>Производит бекон</p>
                     <p>Цена: 150🪙</p>
                     <p>Требуется: 3 уровень</p>
+                    <p>Лимит: <span id="pig-limit">2</span></p>
                     <button class="buy-btn" data-item="pig" data-cost="150" data-level="3">Купить</button>
                 </div>
                 <div class="shop-item">
+                    <div style="font-size: 40px;">🌳</div>
                     <h3>Фруктовое дерево</h3>
-                    <p>Даёт фрукты</p>
+                    <p>Производит фрукты</p>
                     <p>Цена: 200🪙</p>
                     <p>Требуется: 4 уровень</p>
+                    <p>Лимит: <span id="tree-limit">1</span></p>
                     <button class="buy-btn" data-item="tree" data-cost="200" data-level="4">Купить</button>
                 </div>
+                <div class="shop-item">
+                    <div style="font-size: 40px;">🏠</div>
+                    <h3>Амбар</h3>
+                    <p>Увеличивает лимиты</p>
+                    <p>Цена: 500🪙</p>
+                    <p>Требуется: 5 уровень</p>
+                    <button class="buy-btn" data-item="barn" data-cost="500" data-level="5">Купить</button>
+                </div>
             </div>
         </div>
 
-        <div id="quests-tab" class="tab">
+        <div id="quests-tab" class="tab-container">
             <h2>Задания</h2>
             <div id="quests-list">
-                <div class="quest" data-quest="harvest-carrots" data-target="10" data-reward="50">
-                    <h3>Соберите 10 морковок</h3>
-                    <p>Прогресс: <span class="progress-text">0/10</span></p>
-                    <p>Награда: 50🪙 + 20XP</p>
-                    <div class="progress-bar">
-                        <div class="progress" style="width: 0%"></div>
+                <div class="quest-item" data-quest="harvest-carrots" data-target="10" data-reward="50">
+                    <h3>🥕 Соберите 10 морковок</h3>
+                    <p>Награда: 50🪙 + 20 опыта</p>
+                    <div class="progress-container">
+                        <div class="progress-text">Прогресс: 0/10</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 0%"></div>
+                        </div>
                     </div>
                 </div>
-                <div class="quest" data-quest="harvest-wheat" data-target="5" data-reward="40">
-                    <h3>Соберите 5 пшеницы</h3>
-                    <p>Прогресс: <span class="progress-text">0/5</span></p>
-                    <p>Награда: 40🪙 + 15XP</p>
-                    <div class="progress-bar">
-                        <div class="progress" style="width: 0%"></div>
+                <div class="quest-item" data-quest="harvest-wheat" data-target="5" data-reward="40">
+                    <h3>🌾 Соберите 5 пшеницы</h3>
+                    <p>Награда: 40🪙 + 15 опыта</p>
+                    <div class="progress-container">
+                        <div class="progress-text">Прогресс: 0/5</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 0%"></div>
+                        </div>
                     </div>
                 </div>
-                <div class="quest" data-quest="collect-eggs" data-target="20" data-reward="100">
-                    <h3>Соберите 20 яиц</h3>
-                    <p>Прогресс: <span class="progress-text">0/20</span></p>
-                    <p>Награда: 100🪙 + 30XP</p>
-                    <div class="progress-bar">
-                        <div class="progress" style="width: 0%"></div>
+                <div class="quest-item" data-quest="collect-eggs" data-target="20" data-reward="100">
+                    <h3>🥚 Соберите 20 яиц</h3>
+                    <p>Награда: 100🪙 + 30 опыта</p>
+                    <div class="progress-container">
+                        <div class="progress-text">Прогресс: 0/20</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 0%"></div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div id="stats-tab" class="tab">
+        <div id="upgrades-tab" class="tab-container">
+            <h2>Улучшения</h2>
+            <div class="shop-grid">
+                <div class="shop-item">
+                    <h3>Улучшение инструментов</h3>
+                    <p>Уменьшает время роста растений на 20%</p>
+                    <p>Цена: 200🪙</p>
+                    <button class="upgrade-btn" data-upgrade="tools">Купить</button>
+                </div>
+                <div class="shop-item">
+                    <h3>Улучшение кормов</h3>
+                    <p>Увеличивает производство животных на 25%</p>
+                    <p>Цена: 300🪙</p>
+                    <button class="upgrade-btn" data-upgrade="feed">Купить</button>
+                </div>
+                <div class="shop-item">
+                    <h3>Система орошения</h3>
+                    <p>Растения растут в 2 раза быстрее</p>
+                    <p>Цена: 500🪙</p>
+                    <p>Требуется: 3 уровень</p>
+                    <button class="upgrade-btn" data-upgrade="irrigation" data-level="3">Купить</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="stats-tab" class="tab-container">
             <h2>Статистика</h2>
-            <div class="stats">
-                <div class="stat-item">Всего заработано: <span id="stat-earned">0</span> 🪙</div>
-                <div class="stat-item">Собрано моркови: <span id="stat-carrots">0</span> 🥕</div>
-                <div class="stat-item">Собрано пшеницы: <span id="stat-wheat">0</span> 🌾</div>
-                <div class="stat-item">Собрано яиц: <span id="stat-eggs">0</span> 🥚</div>
-                <div class="stat-item">Собрано молока: <span id="stat-milk">0</span> 🥛</div>
-                <div class="stat-item">Выполнено заданий: <span id="stat-quests">0</span></div>
-                <div class="stat-item">Время игры: <span id="stat-time">0</span> мин</div>
+            <div class="stats-container">
+                <div class="stat-item">Всего заработано: <span id="total-earned">0</span> 🪙</div>
+                <div class="stat-item">Собрано моркови: <span id="total-carrots">0</span> 🥕</div>
+                <div class="stat-item">Собрано пшеницы: <span id="total-wheat">0</span> 🌾</div>
+                <div class="stat-item">Собрано яиц: <span id="total-eggs">0</span> 🥚</div>
+                <div class="stat-item">Собрано молока: <span id="total-milk">0</span> 🥛</div>
+                <div class="stat-item">Выполнено заданий: <span id="total-quests">0</span></div>
+                <div class="stat-item">Куплено улучшений: <span id="total-upgrades">0</span></div>
+                <div class="stat-item">Время игры: <span id="total-time">0</span> ч</div>
             </div>
         </div>
     </div>
 
     <div class="notification" id="notification"></div>
+    <div id="object-menu" class="object-menu"></div>
 
     <script>
-        // Состояние игры
-        const gameState = {
+        // ========== ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ==========
+        const game = {
+            // Основные ресурсы
             coins: 50,
+            level: 1,
+            xp: 0,
+            maxXp: 100,
+            playTime: 0,
+            gameDay: 1,
+            dayTime: 'morning',
+            weather: 'sunny',
+            
+            // Инвентарь
             inventory: {
                 wheat: 0,
                 carrots: 0,
@@ -297,419 +469,377 @@
                 bacon: 0,
                 fruits: 0
             },
-            objects: {
+            
+            // Объекты на ферме
+            farmObjects: {
                 carrots: [],
                 wheat: [],
                 chickens: [],
                 cows: [],
                 pigs: [],
-                trees: []
+                trees: [],
+                buildings: []
             },
+            
+            // Лимиты объектов
+            limits: {
+                chickens: 3,
+                cows: 2,
+                pigs: 2,
+                trees: 1,
+                barns: 0
+            },
+            
+            // Статистика
             stats: {
                 totalEarned: 0,
                 harvestedCarrots: 0,
                 harvestedWheat: 0,
                 collectedEggs: 0,
                 collectedMilk: 0,
+                collectedBacon: 0,
+                collectedFruits: 0,
                 completedQuests: 0,
-                playTime: 0
+                boughtUpgrades: 0
             },
-            player: {
-                level: 1,
-                xp: 0,
-                maxXp: 100
-            },
+            
+            // Задания
             quests: {
                 'harvest-carrots': { progress: 0, completed: false },
                 'harvest-wheat': { progress: 0, completed: false },
                 'collect-eggs': { progress: 0, completed: false }
             },
-            limits: {
-                chickens: 3,
-                cows: 2,
-                pigs: 2,
-                trees: 1
+            
+            // Улучшения
+            upgrades: {
+                tools: false,
+                feed: false,
+                irrigation: false
             },
+            
+            // Цены
             prices: {
                 carrot: 10,
                 wheat: 15,
                 chicken: 30,
                 cow: 100,
                 pig: 150,
-                tree: 200
+                tree: 200,
+                barn: 500
             },
-            lastUpdate: Date.now()
+            
+            // Время производства
+            productionTime: {
+                carrot: 20000,
+                wheat: 30000,
+                egg: 15000,
+                milk: 30000,
+                bacon: 45000,
+                fruit: 60000
+            },
+            
+            // Внутренние состояния
+            lastUpdate: Date.now(),
+            selectedObject: null
         };
 
         // DOM элементы
-        const menuScreen = document.getElementById('menu');
-        const gameScreen = document.getElementById('game');
-        const farmArea = document.getElementById('farm');
-        const notification = document.getElementById('notification');
-        let gameInterval;
+        const elements = {
+            menu: document.getElementById('menu'),
+            game: document.getElementById('game'),
+            farm: document.getElementById('farm'),
+            notification: document.getElementById('notification'),
+            objectMenu: document.getElementById('object-menu'),
+            weatherEffect: document.getElementById('weather-effect')
+        };
 
-        // Инициализация игры
+        // ========== ИНИЦИАЛИЗАЦИЯ ИГРЫ ==========
         function initGame() {
             loadGame();
             setupEventListeners();
+            renderFarm();
             updateUI();
-            
-            // Запускаем игровой цикл
-            gameInterval = setInterval(gameLoop, 1000);
+            startGameLoop();
+            showNotification('Добро пожаловать на ферму!');
         }
 
-        // Игровой цикл
-        function gameLoop() {
-            const now = Date.now();
-            const deltaTime = (now - gameState.lastUpdate) / 1000; // в секундах
-            gameState.lastUpdate = now;
+        // ========== ИГРОВОЙ ЦИКЛ ==========
+        function startGameLoop() {
+            setInterval(() => {
+                const now = Date.now();
+                const deltaTime = (now - game.lastUpdate) / 1000; // в секундах
+                game.lastUpdate = now;
+                
+                // Обновление времени игры
+                updateGameTime(deltaTime);
+                
+                // Обновление производства животных
+                updateAnimalProduction(deltaTime);
+                
+                // Автосохранение каждые 30 секунд
+                if (game.playTime % 30 < deltaTime / 3600) {
+                    saveGame();
+                }
+            }, 1000);
+        }
+
+        function updateGameTime(deltaTime) {
+            // Обновляем общее время игры (в часах)
+            game.playTime += deltaTime / 3600;
             
-            // Обновляем время игры (в минутах)
-            gameState.stats.playTime += deltaTime / 60;
+            // Обновляем игровое время (день/ночь)
+            const previousDayTime = game.dayTime;
             
+            // Цикл дня: 4 минуты реального времени = 1 игровой день
+            const dayProgress = (game.playTime * 60 * 15) % 4; // 15 минут на день
+            
+            if (dayProgress < 1) game.dayTime = 'morning';
+            else if (dayProgress < 2) game.dayTime = 'day';
+            else if (dayProgress < 3) game.dayTime = 'evening';
+            else game.dayTime = 'night';
+            
+            // Обновляем день, если сменились сутки
+            if (previousDayTime === 'night' && game.dayTime === 'morning') {
+                game.gameDay++;
+                startNewDay();
+            }
+            
+            // Обновляем погоду (меняется каждые 2 игровых дня)
+            if (game.gameDay % 2 === 0 && dayProgress < 0.1) {
+                changeWeather();
+            }
+            
+            updateTimeAndWeatherUI();
+        }
+
+        function updateAnimalProduction(deltaTime) {
             // Курицы несут яйца
-            gameState.objects.chickens.forEach(chicken => {
-                chicken.timeSinceLastEgg += deltaTime;
-                if (chicken.timeSinceLastEgg >= 15) { // Каждые 15 секунд
-                    gameState.inventory.eggs++;
-                    gameState.stats.collectedEggs++;
-                    chicken.timeSinceLastEgg = 0;
+            game.farmObjects.chickens.forEach(chicken => {
+                chicken.productionTimer += deltaTime;
+                const productionTime = game.upgrades.feed ? game.productionTime.egg * 0.75 : game.productionTime.egg;
+                
+                if (chicken.productionTimer >= productionTime / 1000) {
+                    chicken.productionTimer = 0;
+                    game.inventory.eggs++;
+                    game.stats.collectedEggs++;
                     updateQuestProgress('collect-eggs', 1);
+                    createCoinAnimation(chicken.element, 2);
                     updateUI();
                 }
             });
             
             // Коровы дают молоко
-            gameState.objects.cows.forEach(cow => {
-                cow.timeSinceLastMilk += deltaTime;
-                if (cow.timeSinceLastMilk >= 30) { // Каждые 30 секунд
-                    gameState.inventory.milk++;
-                    gameState.stats.collectedMilk++;
-                    cow.timeSinceLastMilk = 0;
+            game.farmObjects.cows.forEach(cow => {
+                cow.productionTimer += deltaTime;
+                const productionTime = game.upgrades.feed ? game.productionTime.milk * 0.75 : game.productionTime.milk;
+                
+                if (cow.productionTimer >= productionTime / 1000) {
+                    cow.productionTimer = 0;
+                    game.inventory.milk++;
+                    game.stats.collectedMilk++;
+                    createCoinAnimation(cow.element, 3);
                     updateUI();
                 }
             });
             
-            // Автосохранение каждые 30 секунд
-            if (gameState.stats.playTime % 0.5 < deltaTime / 60) {
-                saveGame();
-            }
-        }
-
-        // Загрузка игры
-        function loadGame() {
-            const savedGame = localStorage.getItem('farmGameSave');
-            if (savedGame) {
-                const parsed = JSON.parse(savedGame);
-                Object.assign(gameState, parsed);
+            // Свиньи дают бекон
+            game.farmObjects.pigs.forEach(pig => {
+                pig.productionTimer += deltaTime;
+                const productionTime = game.upgrades.feed ? game.productionTime.bacon * 0.75 : game.productionTime.bacon;
                 
-                // Восстанавливаем объекты на ферме
-                restoreFarmObjects();
-                
-                updateUI();
-                showNotification('Игра загружена!');
-            }
-        }
-
-        // Сохранение игры
-        function saveGame() {
-            // Подготавливаем данные для сохранения
-            const saveData = {
-                coins: gameState.coins,
-                inventory: gameState.inventory,
-                stats: gameState.stats,
-                player: gameState.player,
-                quests: gameState.quests,
-                objects: {
-                    // Сохраняем только данные, необходимые для восстановления
-                    carrots: gameState.objects.carrots.map(c => ({ x: c.x, y: c.y, isReady: c.isReady })),
-                    wheat: gameState.objects.wheat.map(w => ({ x: w.x, y: w.y, isReady: w.isReady })),
-                    chickens: gameState.objects.chickens.map(ch => ({ x: ch.x, y: ch.y, timeSinceLastEgg: ch.timeSinceLastEgg })),
-                    cows: gameState.objects.cows.map(cow => ({ x: cow.x, y: cow.y, timeSinceLastMilk: cow.timeSinceLastMilk })),
-                    pigs: gameState.objects.pigs.map(pig => ({ x: pig.x, y: pig.y })),
-                    trees: gameState.objects.trees.map(tree => ({ x: tree.x, y: tree.y }))
+                if (pig.productionTimer >= productionTime / 1000) {
+                    pig.productionTimer = 0;
+                    game.inventory.bacon++;
+                    createCoinAnimation(pig.element, 4);
+                    updateUI();
                 }
-            };
-            
-            localStorage.setItem('farmGameSave', JSON.stringify(saveData));
-        }
-
-        // Восстановление объектов на ферме
-        function restoreFarmObjects() {
-            // Очищаем ферму
-            farmArea.innerHTML = '';
-            
-            // Восстанавливаем морковь
-            gameState.objects.carrots.forEach(carrot => {
-                createPlant('carrot', carrot.x, carrot.y, carrot.isReady);
             });
             
-            // Восстанавливаем пшеницу
-            gameState.objects.wheat.forEach(wheat => {
-                createPlant('wheat', wheat.x, wheat.y, wheat.isReady);
-            });
-            
-            // Восстанавливаем куриц
-            gameState.objects.chickens.forEach(chicken => {
-                createAnimal('chicken', chicken.x, chicken.y);
-            });
-            
-            // Восстанавливаем коров
-            gameState.objects.cows.forEach(cow => {
-                createAnimal('cow', cow.x, cow.y);
-            });
-            
-            // Восстанавливаем свиней
-            gameState.objects.pigs.forEach(pig => {
-                createAnimal('pig', pig.x, pig.y);
-            });
-            
-            // Восстанавливаем деревья
-            gameState.objects.trees.forEach(tree => {
-                createPlant('tree', tree.x, tree.y, true);
+            // Деревья дают фрукты
+            game.farmObjects.trees.forEach(tree => {
+                tree.productionTimer += deltaTime;
+                const productionTime = game.productionTime.fruit;
+                
+                if (tree.productionTimer >= productionTime / 1000) {
+                    tree.productionTimer = 0;
+                    game.inventory.fruits++;
+                    createCoinAnimation(tree.element, 5);
+                    updateUI();
+                }
             });
         }
 
-        // Создание растения
+        // ========== ФУНКЦИИ ФЕРМЫ ==========
         function addPlant(type) {
-            const cost = gameState.prices[type];
+            const cost = game.prices[type];
             
-            if (gameState.coins < cost) {
+            if (game.coins < cost) {
                 showNotification(`Не хватает монет! Нужно ${cost}🪙`);
                 return;
             }
             
-            gameState.coins -= cost;
-            const x = Math.random() * 80 + 10;
-            const y = Math.random() * 60 + 20;
+            game.coins -= cost;
             
+            // Создаем объект растения
             const plant = {
+                id: Date.now() + Math.random(),
                 type: type,
-                x: x,
-                y: y,
+                x: Math.random() * 80 + 10,
+                y: Math.random() * 60 + 20,
                 isReady: false,
-                element: null
+                element: null,
+                growthTime: 0,
+                maxGrowthTime: type === 'carrot' ? 
+                    (game.upgrades.irrigation ? game.productionTime.carrot / 2 : 
+                     game.upgrades.tools ? game.productionTime.carrot * 0.8 : 
+                     game.productionTime.carrot) :
+                    (game.upgrades.irrigation ? game.productionTime.wheat / 2 : 
+                     game.upgrades.tools ? game.productionTime.wheat * 0.8 : 
+                     game.productionTime.wheat)
             };
             
-            gameState.objects[type + 's'].push(plant);
-            createPlant(type, x, y, false);
+            game.farmObjects[type + 's'].push(plant);
+            renderPlant(plant);
             
-            // Время роста в зависимости от типа растения
-            let growTime;
-            switch(type) {
-                case 'carrot': growTime = 20; break;
-                case 'wheat': growTime = 30; break;
-                case 'tree': growTime = 60; break;
-                default: growTime = 20;
-            }
-            
-            // Растение будет готово через определенное время
-            setTimeout(() => {
-                plant.isReady = true;
-                if (plant.element) {
-                    plant.element.style.transform = 'scale(1.1)';
-                    plant.element.style.filter = 'brightness(1.1)';
+            // Запускаем таймер роста
+            const growthInterval = setInterval(() => {
+                plant.growthTime += 1000;
+                
+                if (plant.growthTime >= plant.maxGrowthTime) {
+                    plant.isReady = true;
+                    plant.element.classList.add('animate-pop');
+                    plant.element.style.filter = 'brightness(1.2)';
+                    clearInterval(growthInterval);
                 }
-            }, growTime * 1000);
+            }, 1000);
             
             updateUI();
+            showNotification(`Вы посадили ${type === 'carrot' ? 'морковь' : 'пшеницу'}!`);
         }
 
-        function createPlant(type, x, y, isReady) {
-            const plantEl = document.createElement('div');
-            plantEl.className = `farm-object plant ${type}`;
-            plantEl.style.left = `${x}%`;
-            plantEl.style.top = `${y}%`;
-            
-            // Установка эмодзи в зависимости от типа растения
-            let emoji, color;
-            switch(type) {
-                case 'carrot':
-                    emoji = '🥕';
-                    color = '#FF8C00';
-                    break;
-                case 'wheat':
-                    emoji = '🌾';
-                    color = '#DAA520';
-                    break;
-                case 'tree':
-                    emoji = '🌳';
-                    color = '#228B22';
-                    break;
-                default:
-                    emoji = '🌱';
-                    color = '#4CAF50';
-            }
-            
-            plantEl.textContent = emoji;
-            plantEl.style.color = color;
-            plantEl.style.fontSize = type === 'tree' ? '30px' : '24px';
-            plantEl.style.transform = isReady ? 'scale(1.1)' : 'scale(0.7)';
-            plantEl.style.filter = isReady ? 'brightness(1.1)' : 'brightness(0.7)';
-            
-            plantEl.addEventListener('click', () => {
-                if (isReady) {
-                    harvestPlant(plantEl, type);
-                } else {
-                    showNotification(`Ещё не созрело!`);
-                }
-            });
-            
-            farmArea.appendChild(plantEl);
-            return plantEl;
-        }
-
-        // Создание животного
         function addAnimal(type) {
-            const cost = gameState.prices[type];
-            const limit = gameState.limits[type + 's'];
+            const cost = game.prices[type];
+            const limit = game.limits[type + 's'];
+            const requiredLevel = getRequiredLevel(type);
             
-            if (gameState.coins < cost) {
+            // Проверки
+            if (game.coins < cost) {
                 showNotification(`Не хватает монет! Нужно ${cost}🪙`);
                 return;
             }
             
-            if (gameState.objects[type + 's'].length >= limit) {
+            if (game.farmObjects[type + 's'].length >= limit) {
                 showNotification(`Достигнут лимит для ${getAnimalName(type)} (${limit})`);
                 return;
             }
             
-            if (gameState.player.level < getRequiredLevel(type)) {
-                showNotification(`Требуется ${getRequiredLevel(type)} уровень`);
+            if (game.level < requiredLevel) {
+                showNotification(`Требуется ${requiredLevel} уровень`);
                 return;
             }
             
-            gameState.coins -= cost;
-            const x = Math.random() * 80 + 10;
-            const y = Math.random() * 60 + 20;
+            game.coins -= cost;
             
+            // Создаем объект животного
             const animal = {
+                id: Date.now() + Math.random(),
                 type: type,
-                x: x,
-                y: y,
-                timeSinceLastEgg: 0,
-                timeSinceLastMilk: 0,
+                x: Math.random() * 80 + 10,
+                y: Math.random() * 60 + 20,
+                element: null,
+                productionTimer: 0,
+                directionX: Math.random() > 0.5 ? 1 : -1,
+                directionY: Math.random() > 0.5 ? 1 : -1
+            };
+            
+            game.farmObjects[type + 's'].push(animal);
+            renderAnimal(animal);
+            
+            updateUI();
+            showNotification(`Вы купили ${getAnimalName(type)}!`);
+        }
+
+        function addBuilding(type) {
+            const cost = game.prices[type];
+            const requiredLevel = getRequiredLevel(type);
+            
+            // Проверки
+            if (game.coins < cost) {
+                showNotification(`Не хватает монет! Нужно ${cost}🪙`);
+                return;
+            }
+            
+            if (game.level < requiredLevel) {
+                showNotification(`Требуется ${requiredLevel} уровень`);
+                return;
+            }
+            
+            game.coins -= cost;
+            
+            // Создаем объект здания
+            const building = {
+                id: Date.now() + Math.random(),
+                type: type,
+                x: 50,
+                y: 50,
                 element: null
             };
             
-            gameState.objects[type + 's'].push(animal);
-            createAnimal(type, x, y);
+            game.farmObjects.buildings.push(building);
+            renderBuilding(building);
             
-            updateUI();
-        }
-
-        function getAnimalName(type) {
-            const names = {
-                'chicken': 'куриц',
-                'cow': 'коров',
-                'pig': 'свиней',
-                'tree': 'деревьев'
-            };
-            return names[type] || type;
-        }
-
-        function getRequiredLevel(type) {
-            const levels = {
-                'chicken': 1,
-                'cow': 2,
-                'pig': 3,
-                'tree': 4
-            };
-            return levels[type] || 1;
-        }
-
-        function createAnimal(type, x, y) {
-            const animalEl = document.createElement('div');
-            animalEl.className = `farm-object animal ${type}`;
-            animalEl.style.left = `${x}%`;
-            animalEl.style.top = `${y}%`;
-            
-            // Установка эмодзи в зависимости от типа животного
-            let emoji;
-            switch(type) {
-                case 'chicken': emoji = '🐔'; break;
-                case 'cow': emoji = '🐄'; break;
-                case 'pig': emoji = '🐖'; break;
-                default: emoji = '🐾';
+            // Применяем эффекты здания
+            if (type === 'barn') {
+                game.limits.chickens += 2;
+                game.limits.cows += 1;
+                game.limits.pigs += 1;
+                game.limits.trees += 1;
+                game.limits.barns++;
+                showNotification('Лимиты животных увеличены!');
             }
             
-            animalEl.textContent = emoji;
-            animalEl.style.fontSize = '24px';
-            
-            // Анимация движения
-            let directionX = Math.random() > 0.5 ? 1 : -1;
-            let directionY = Math.random() > 0.5 ? 1 : -1;
-            const speed = 0.2;
-            
-            const moveInterval = setInterval(() => {
-                const currentX = parseFloat(animalEl.style.left);
-                const currentY = parseFloat(animalEl.style.top);
-                
-                let newX = currentX + directionX * speed;
-                let newY = currentY + directionY * speed * 0.5;
-                
-                if (newX < 5 || newX > 95) directionX *= -1;
-                if (newY < 10 || newY > 80) directionY *= -1;
-                
-                animalEl.style.left = `${newX}%`;
-                animalEl.style.top = `${newY}%`;
-                
-                // Обновляем позицию в состоянии игры
-                const animal = gameState.objects[type + 's'].find(a => a.element === animalEl);
-                if (animal) {
-                    animal.x = newX;
-                    animal.y = newY;
-                }
-            }, 100);
-            
-            farmArea.appendChild(animalEl);
-            return animalEl;
+            updateUI();
+            showNotification(`Вы построили ${type === 'barn' ? 'амбар' : type}!`);
         }
 
-        // Сбор урожая
-        function harvestPlant(plantEl, type) {
+        function harvestPlant(plant) {
             let reward = 0;
             
-            switch(type) {
+            // Определяем награду в зависимости от типа растения
+            switch(plant.type) {
                 case 'carrot':
-                    gameState.inventory.carrots++;
-                    gameState.stats.harvestedCarrots++;
+                    game.inventory.carrots++;
+                    game.stats.harvestedCarrots++;
                     reward = 5;
                     updateQuestProgress('harvest-carrots', 1);
                     break;
                 case 'wheat':
-                    gameState.inventory.wheat++;
-                    gameState.stats.harvestedWheat++;
+                    game.inventory.wheat++;
+                    game.stats.harvestedWheat++;
                     reward = 7;
                     updateQuestProgress('harvest-wheat', 1);
-                    break;
-                case 'tree':
-                    gameState.inventory.fruits++;
-                    reward = 15;
                     break;
             }
             
             // Удаляем растение из массива
-            gameState.objects[type + 's'] = gameState.objects[type + 's'].filter(p => p.element !== plantEl);
+            game.farmObjects[plant.type + 's'] = game.farmObjects[plant.type + 's'].filter(p => p.id !== plant.id);
             
             // Анимация сбора
-            plantEl.style.transform = 'scale(1.5)';
-            plantEl.style.opacity = '0';
+            plant.element.classList.add('animate-pop');
             setTimeout(() => {
-                plantEl.remove();
+                plant.element.remove();
             }, 300);
             
             // Награда
-            gameState.coins += reward;
-            gameState.stats.totalEarned += reward;
+            game.coins += reward;
+            game.stats.totalEarned += reward;
             addXP(10);
             
-            showNotification(`+${reward}🪙`);
+            createCoinAnimation(plant.element, reward);
             updateUI();
         }
 
-        // Продажа урожая
-        function sellHarvest() {
+        function sellProducts() {
             let total = 0;
             
             // Цены за единицу
@@ -723,10 +853,10 @@
             };
             
             // Продаем все ресурсы
-            for (const [item, amount] of Object.entries(gameState.inventory)) {
+            for (const [item, amount] of Object.entries(game.inventory)) {
                 if (amount > 0 && prices[item]) {
                     total += amount * prices[item];
-                    gameState.inventory[item] = 0;
+                    game.inventory[item] = 0;
                 }
             }
             
@@ -735,182 +865,764 @@
                 return;
             }
             
-            gameState.coins += total;
-            gameState.stats.totalEarned += total;
+            game.coins += total;
+            game.stats.totalEarned += total;
             addXP(15);
             
-            showNotification(`Продано на ${total}🪙`);
+            showNotification(`Вы продали урожай за ${total}🪙!`);
             updateUI();
         }
 
-        // Добавление опыта
-        function addXP(amount) {
-            gameState.player.xp += amount;
+        function buyUpgrade(type) {
+            const prices = {
+                tools: 200,
+                feed: 300,
+                irrigation: 500
+            };
             
-            // Проверка уровня
-            if (gameState.player.xp >= gameState.player.maxXp) {
-                gameState.player.xp -= gameState.player.maxXp;
-                gameState.player.level++;
-                gameState.player.maxXp = Math.floor(gameState.player.maxXp * 1.5);
+            const cost = prices[type];
+            const requiredLevel = type === 'irrigation' ? 3 : 1;
+            
+            // Проверки
+            if (game.coins < cost) {
+                showNotification(`Не хватает монет! Нужно ${cost}🪙`);
+                return;
+            }
+            
+            if (game.level < requiredLevel) {
+                showNotification(`Требуется ${requiredLevel} уровень`);
+                return;
+            }
+            
+            if (game.upgrades[type]) {
+                showNotification('У вас уже есть это улучшение!');
+                return;
+            }
+            
+            game.coins -= cost;
+            game.upgrades[type] = true;
+            game.stats.boughtUpgrades++;
+            
+            // Применяем эффекты улучшения
+            let effect = '';
+            switch(type) {
+                case 'tools':
+                    effect = 'Растения растут на 20% быстрее';
+                    break;
+                case 'feed':
+                    effect = 'Животные производят на 25% быстрее';
+                    break;
+                case 'irrigation':
+                    effect = 'Растения растут в 2 раза быстрее';
+                    break;
+            }
+            
+            showNotification(`Улучшение куплено! ${effect}`);
+            updateUI();
+        }
+
+        // ========== СИСТЕМА УРОВНЕЙ И ОПЫТА ==========
+        function addXP(amount) {
+            game.xp += amount;
+            
+            // Проверка повышения уровня
+            if (game.xp >= game.maxXp) {
+                game.level++;
+                game.xp -= game.maxXp;
+                game.maxXp = Math.floor(game.maxXp * 1.5);
                 
                 // Увеличиваем лимиты с уровнем
-                gameState.limits.chickens = 3 + Math.floor(gameState.player.level / 2);
-                gameState.limits.cows = 2 + Math.floor(gameState.player.level / 3);
+                game.limits.chickens = 3 + Math.floor(game.level / 2);
+                game.limits.cows = 2 + Math.floor(game.level / 3);
+                game.limits.pigs = 2 + Math.floor(game.level / 4);
                 
-                showNotification(`Уровень ${gameState.player.level}!`, 3000);
+                showNotification(`Поздравляем! Вы достигли ${game.level} уровня!`, 3000);
             }
             
             updateUI();
         }
 
-        // Обновление прогресса задания
+        // ========== СИСТЕМА ЗАДАНИЙ ==========
         function updateQuestProgress(questId, amount) {
-            if (gameState.quests[questId].completed) return;
+            if (game.quests[questId].completed) return;
             
-            gameState.quests[questId].progress += amount;
-            const questData = document.querySelector(`.quest[data-quest="${questId}"]`);
-            const target = parseInt(questData.getAttribute('data-target'));
+            game.quests[questId].progress += amount;
+            const questElement = document.querySelector(`.quest-item[data-quest="${questId}"]`);
+            const target = parseInt(questElement.getAttribute('data-target'));
             
             // Обновляем отображение прогресса
-            const progressText = questData.querySelector('.progress-text');
-            const progressBar = questData.querySelector('.progress');
+            const progressText = questElement.querySelector('.progress-text');
+            const progressFill = questElement.querySelector('.progress-fill');
             
-            progressText.textContent = `${gameState.quests[questId].progress}/${target}`;
-            progressBar.style.width = `${Math.min(100, gameState.quests[questId].progress / target * 100)}%`;
+            progressText.textContent = `Прогресс: ${game.quests[questId].progress}/${target}`;
+            progressFill.style.width = `${Math.min(100, game.quests[questId].progress / target * 100)}%`;
             
             // Проверка завершения задания
-            if (gameState.quests[questId].progress >= target) {
-                gameState.quests[questId].completed = true;
-                questData.classList.add('completed');
+            if (game.quests[questId].progress >= target) {
+                game.quests[questId].completed = true;
+                questElement.classList.add('completed');
                 
-                const reward = parseInt(questData.getAttribute('data-reward'));
-                gameState.coins += reward;
-                gameState.stats.totalEarned += reward;
+                const reward = parseInt(questElement.getAttribute('data-reward'));
+                game.coins += reward;
+                game.stats.totalEarned += reward;
                 addXP(20);
-                gameState.stats.completedQuests++;
+                game.stats.completedQuests++;
                 
                 showNotification(`Задание выполнено! +${reward}🪙 +20XP`, 3000);
                 updateUI();
             }
         }
 
-        // Обновление интерфейса
-        function updateUI() {
-            // Меню
-            document.getElementById('player-level').textContent = gameState.player.level;
-            document.getElementById('player-xp').textContent = gameState.player.xp;
-            document.getElementById('player-max-xp').textContent = gameState.player.maxXp;
-            document.getElementById('total-coins').textContent = gameState.stats.totalEarned;
-            document.getElementById('xp-bar').style.width = `${gameState.player.xp / gameState.player.maxXp * 100}%`;
+        // ========== ВИЗУАЛЬНЫЕ ФУНКЦИИ ==========
+        function renderFarm() {
+            // Очищаем ферму
+            elements.farm.innerHTML = '';
             
-            // Игра
-            document.getElementById('coins').textContent = gameState.coins;
-            document.getElementById('wheat').textContent = gameState.inventory.wheat;
-            document.getElementById('carrots').textContent = gameState.inventory.carrots;
-            document.getElementById('eggs').textContent = gameState.inventory.eggs;
-            document.getElementById('milk').textContent = gameState.inventory.milk;
-            document.getElementById('current-level').textContent = gameState.player.level;
-            
-            // Магазин
-            document.getElementById('shop-coins').textContent = gameState.coins;
-            document.getElementById('shop-level').textContent = gameState.player.level;
-            
-            // Статистика
-            document.getElementById('stat-earned').textContent = gameState.stats.totalEarned;
-            document.getElementById('stat-carrots').textContent = gameState.stats.harvestedCarrots;
-            document.getElementById('stat-wheat').textContent = gameState.stats.harvestedWheat;
-            document.getElementById('stat-eggs').textContent = gameState.stats.collectedEggs;
-            document.getElementById('stat-milk').textContent = gameState.stats.collectedMilk;
-            document.getElementById('stat-quests').textContent = gameState.stats.completedQuests;
-            document.getElementById('stat-time').textContent = Math.floor(gameState.stats.playTime);
-            
-            // Обновляем доступность кнопок
-            updateButtonsAvailability();
+            // Рендерим все объекты
+            Object.values(game.farmObjects).flat().forEach(obj => {
+                if (obj.type === 'carrot' || obj.type === 'wheat') {
+                    renderPlant(obj);
+                } else if (['chicken', 'cow', 'pig'].includes(obj.type)) {
+                    renderAnimal(obj);
+                } else if (['tree', 'barn'].includes(obj.type)) {
+                    renderBuilding(obj);
+                }
+            });
         }
 
-        // Обновление доступности кнопок
-        function updateButtonsAvailability() {
-            // Кнопки растений
-            document.getElementById('carrot-btn').disabled = gameState.coins < gameState.prices.carrot;
-            document.getElementById('wheat-btn').disabled = gameState.coins < gameState.prices.wheat;
+        function renderPlant(plant) {
+            const plantElement = document.createElement('div');
+            plantElement.className = `farm-object plant ${plant.type}`;
+            plantElement.style.left = `${plant.x}%`;
+            plantElement.style.top = `${plant.y}%`;
+            plantElement.textContent = plant.type === 'carrot' ? '🥕' : '🌾';
+            plantElement.dataset.id = plant.id;
             
-            // Кнопки животных
+            if (plant.isReady) {
+                plantElement.style.filter = 'brightness(1.2)';
+            } else {
+                plantElement.style.opacity = '0.7';
+            }
+            
+            plantElement.addEventListener('click', () => {
+                if (plant.isReady) {
+                    harvestPlant(plant);
+                } else {
+                    showNotification('Ещё не созрело!');
+                }
+            });
+            
+            elements.farm.appendChild(plantElement);
+            plant.element = plantElement;
+        }
+
+        function renderAnimal(animal) {
+            const animalElement = document.createElement('div');
+            animalElement.className = `farm-object animal ${animal.type}`;
+            animalElement.style.left = `${animal.x}%`;
+            animalElement.style.top = `${animal.y}%`;
+            animalElement.dataset.id = animal.id;
+            
+            // Установка эмодзи в зависимости от типа животного
+            switch(animal.type) {
+                case 'chicken': animalElement.textContent = '🐔'; break;
+                case 'cow': animalElement.textContent = '🐄'; break;
+                case 'pig': animalElement.textContent = '🐖'; break;
+            }
+            
+            // Анимация движения
+            const moveInterval = setInterval(() => {
+                animal.x += animal.directionX * 0.1;
+                animal.y += animal.directionY * 0.05;
+                
+                if (animal.x < 5 || animal.x > 95) animal.directionX *= -1;
+                if (animal.y < 10 || animal.y > 80) animal.directionY *= -1;
+                
+                animalElement.style.left = `${animal.x}%`;
+                animalElement.style.top = `${animal.y}%`;
+            }, 100);
+            
+            animalElement.addEventListener('click', (e) => {
+                e.stopPropagation();
+                showObjectMenu(animal, animalElement);
+            });
+            
+            elements.farm.appendChild(animalElement);
+            animal.element = animalElement;
+        }
+
+        function renderBuilding(building) {
+            const buildingElement = document.createElement('div');
+            buildingElement.className = `farm-object building ${building.type}`;
+            buildingElement.style.left = `${building.x}%`;
+            buildingElement.style.top = `${building.y}%`;
+            buildingElement.dataset.id = building.id;
+            
+            // Установка эмодзи в зависимости от типа здания
+            switch(building.type) {
+                case 'barn': buildingElement.textContent = '🏠'; break;
+                case 'tree': buildingElement.textContent = '🌳'; break;
+            }
+            
+            buildingElement.addEventListener('click', (e) => {
+                e.stopPropagation();
+                showObjectMenu(building, buildingElement);
+            });
+            
+            elements.farm.appendChild(buildingElement);
+            building.element = buildingElement;
+        }
+
+        function showObjectMenu(obj, element) {
+            // Позиционируем меню
+            elements.objectMenu.style.display = 'block';
+            elements.objectMenu.style.left = `${element.offsetLeft + element.offsetWidth / 2}px`;
+            elements.objectMenu.style.top = `${element.offsetTop + element.offsetHeight}px`;
+            
+            // Заполняем меню
+            elements.objectMenu.innerHTML = '';
+            
+            const title = document.createElement('h3');
+            title.textContent = getObjectName(obj.type);
+            elements.objectMenu.appendChild(title);
+            
+            if (['chicken', 'cow', 'pig'].includes(obj.type)) {
+                const info = document.createElement('p');
+                const productionTime = obj.type === 'chicken' ? game.productionTime.egg :
+                                      obj.type === 'cow' ? game.productionTime.milk :
+                                      game.productionTime.bacon;
+                const progress = Math.min(100, (obj.productionTimer * 1000 / productionTime) * 100);
+                
+                info.textContent = `Прогресс: ${Math.floor(progress)}%`;
+                elements.objectMenu.appendChild(info);
+                
+                const progressBar = document.createElement('div');
+                progressBar.className = 'progress-bar';
+                const progressFill = document.createElement('div');
+                progressFill.className = 'progress-fill';
+                progressFill.style.width = `${progress}%`;
+                progressBar.appendChild(progressFill);
+                elements.objectMenu.appendChild(progressBar);
+            }
+            
+            const sellBtn = document.createElement('button');
+            sellBtn.textContent = `Продать (${getSellPrice(obj.type)}🪙)`;
+            sellBtn.addEventListener('click', () => {
+                sellObject(obj);
+                elements.objectMenu.style.display = 'none';
+            });
+            elements.objectMenu.appendChild(sellBtn);
+            
+            // Закрываем меню при клике вне его
+            setTimeout(() => {
+                document.addEventListener('click', closeObjectMenu);
+            }, 10);
+        }
+
+        function closeObjectMenu(e) {
+            if (!elements.objectMenu.contains(e.target)) {
+                elements.objectMenu.style.display = 'none';
+                document.removeEventListener('click', closeObjectMenu);
+            }
+        }
+
+        function sellObject(obj) {
+            let price = getSellPrice(obj.type);
+            
+            // Удаляем объект из массива
+            game.farmObjects[obj.type + 's'] = game.farmObjects[obj.type + 's'].filter(o => o.id !== obj.id);
+            
+            // Анимация продажи
+            obj.element.classList.add('animate-pop');
+            setTimeout(() => {
+                obj.element.remove();
+            }, 300);
+            
+            // Награда
+            game.coins += price;
+            game.stats.totalEarned += price;
+            addXP(5);
+            
+            createCoinAnimation(obj.element, price);
+            updateUI();
+            showNotification(`Вы продали ${getObjectName(obj.type)} за ${price}🪙`);
+        }
+
+        function createCoinAnimation(element, amount) {
+            const coin = document.createElement('div');
+            coin.className = 'coin-animation';
+            coin.textContent = `+${amount}🪙`;
+            coin.style.left = `${element.offsetLeft + element.offsetWidth / 2}px`;
+            coin.style.top = `${element.offsetTop}px`;
+            
+            document.getElementById('farm-container').appendChild(coin);
+            
+            setTimeout(() => {
+                coin.remove();
+            }, 1000);
+        }
+
+        function updateTimeAndWeatherUI() {
+            const timeTexts = {
+                'morning': 'Утро',
+                'day': 'День',
+                'evening': 'Вечер',
+                'night': 'Ночь'
+            };
+            
+            const weatherTexts = {
+                'sunny': 'Ясно ☀️',
+                'rainy': 'Дождь 🌧️',
+                'cloudy': 'Облачно ☁️'
+            };
+            
+            document.getElementById('game-day').textContent = game.gameDay;
+            document.getElementById('game-time').textContent = timeTexts[game.dayTime];
+            document.getElementById('game-weather').textContent = weatherTexts[game.weather];
+            
+            // Обновляем визуальные эффекты погоды
+            updateWeatherEffects();
+        }
+
+        function updateWeatherEffects() {
+            elements.weatherEffect.innerHTML = '';
+            
+            if (game.weather === 'rainy') {
+                for (let i = 0; i < 50; i++) {
+                    const drop = document.createElement('div');
+                    drop.style.position = 'absolute';
+                    drop.style.width = '1px';
+                    drop.style.height = '15px';
+                    drop.style.backgroundColor = 'rgba(174, 194, 224, 0.5)';
+                    drop.style.left = `${Math.random() * 100}%`;
+                    drop.style.top = `${Math.random() * 100}%`;
+                    drop.style.animation = `rain ${0.5 + Math.random()}s linear infinite`;
+                    elements.weatherEffect.appendChild(drop);
+                }
+                
+                // Добавляем CSS анимацию дождя
+                const style = document.createElement('style');
+                style.textContent = `
+                    @keyframes rain {
+                        to { transform: translateY(100vh); }
+                    }
+                `;
+                elements.weatherEffect.appendChild(style);
+            }
+        }
+
+        function changeWeather() {
+            const weatherTypes = ['sunny', 'rainy', 'cloudy'];
+            let newWeather;
+            
+            do {
+                newWeather = weatherTypes[Math.floor(Math.random() * weatherTypes.length)];
+            } while (newWeather === game.weather);
+            
+            game.weather = newWeather;
+            showNotification(`Погода изменилась: ${newWeather === 'sunny' ? 'Ясно ☀️' : newWeather === 'rainy' ? 'Дождь 🌧️' : 'Облачно ☁️'}`);
+            updateTimeAndWeatherUI();
+        }
+
+        function startNewDay() {
+            showNotification(`Наступил новый день! День ${game.gameDay}`);
+            
+            // Увеличиваем скорость роста растений ночью (есть улучшение)
+            if (game.dayTime === 'night' && game.upgrades.irrigation) {
+                game.farmObjects.carrots.forEach(plant => {
+                    plant.growthTime += 2000; // Ускоренный рост ночью
+                });
+                game.farmObjects.wheat.forEach(plant => {
+                    plant.growthTime += 2000; // Ускоренный рост ночью
+                });
+            }
+        }
+
+        // ========== ОБНОВЛЕНИЕ ИНТЕРФЕЙСА ==========
+        function updateUI() {
+            // Меню
+            document.getElementById('menu-level').textContent = game.level;
+            document.getElementById('menu-xp').textContent = game.xp;
+            document.getElementById('menu-max-xp').textContent = game.maxXp;
+            document.getElementById('menu-coins').textContent = game.stats.totalEarned;
+            document.getElementById('menu-time').textContent = Math.floor(game.playTime);
+            document.getElementById('menu-xp-bar').style.width = `${game.xp / game.maxXp * 100}%`;
+            
+            // Игровой экран
+            document.getElementById('coins-display').textContent = game.coins;
+            document.getElementById('wheat-display').textContent = game.inventory.wheat;
+            document.getElementById('carrots-display').textContent = game.inventory.carrots;
+            document.getElementById('eggs-display').textContent = game.inventory.eggs;
+            document.getElementById('milk-display').textContent = game.inventory.milk;
+            document.getElementById('bacon-display').textContent = game.inventory.bacon;
+            document.getElementById('farm-level').textContent = game.level;
+            document.getElementById('current-xp').textContent = game.xp;
+            document.getElementById('max-xp').textContent = game.maxXp;
+            document.getElementById('xp-progress').style.width = `${game.xp / game.maxXp * 100}%`;
+            
+            // Магазин
+            document.getElementById('shop-coins').textContent = game.coins;
+            document.getElementById('shop-level').textContent = game.level;
+            document.getElementById('cow-limit').textContent = `${game.farmObjects.cows.length}/${game.limits.cows}`;
+            document.getElementById('pig-limit').textContent = `${game.farmObjects.pigs.length}/${game.limits.pigs}`;
+            document.getElementById('tree-limit').textContent = `${game.farmObjects.trees.length}/${game.limits.trees}`;
+            
+            // Статистика
+            document.getElementById('total-earned').textContent = game.stats.totalEarned;
+            document.getElementById('total-carrots').textContent = game.stats.harvestedCarrots;
+            document.getElementById('total-wheat').textContent = game.stats.harvestedWheat;
+            document.getElementById('total-eggs').textContent = game.stats.collectedEggs;
+            document.getElementById('total-milk').textContent = game.stats.collectedMilk;
+            document.getElementById('total-quests').textContent = game.stats.completedQuests;
+            document.getElementById('total-upgrades').textContent = game.stats.boughtUpgrades;
+            document.getElementById('total-time').textContent = Math.floor(game.playTime);
+            
+            // Обновляем доступность кнопок
+            updateButtonsState();
+        }
+
+        function updateButtonsState() {
+            // Кнопки растений и животных
+            document.getElementById('carrot-btn').disabled = game.coins < game.prices.carrot;
+            document.getElementById('wheat-btn').disabled = game.coins < game.prices.wheat;
             document.getElementById('chicken-btn').disabled = 
-                gameState.coins < gameState.prices.chicken || 
-                gameState.objects.chickens.length >= gameState.limits.chickens;
+                game.coins < game.prices.chicken || 
+                game.farmObjects.chickens.length >= game.limits.chickens;
             
             // Кнопки в магазине
             document.querySelectorAll('.buy-btn').forEach(btn => {
                 const item = btn.getAttribute('data-item');
                 const cost = parseInt(btn.getAttribute('data-cost'));
-                const requiredLevel = parseInt(btn.getAttribute('data-level'));
+                const requiredLevel = parseInt(btn.getAttribute('data-level') || 1;
+                const limit = game.limits[item + 's'] || 0;
+                const current = game.farmObjects[item + 's'] ? game.farmObjects[item + 's'].length : 0;
                 
                 btn.disabled = 
-                    gameState.coins < cost || 
-                    gameState.player.level < requiredLevel ||
-                    (gameState.objects[item + 's'] && 
-                     gameState.objects[item + 's'].length >= gameState.limits[item + 's']);
+                    game.coins < cost || 
+                    game.level < requiredLevel ||
+                    current >= limit;
+            });
+            
+            // Кнопки улучшений
+            document.querySelectorAll('.upgrade-btn').forEach(btn => {
+                const upgrade = btn.getAttribute('data-upgrade');
+                const requiredLevel = parseInt(btn.getAttribute('data-level')) || 1;
+                
+                if (upgrade) {
+                    btn.disabled = 
+                        game.coins < getUpgradePrice(upgrade) || 
+                        game.level < requiredLevel ||
+                        game.upgrades[upgrade];
+                }
             });
         }
 
-        // Показать уведомление
+        // ========== СИСТЕМА СОХРАНЕНИЯ ==========
+        function saveGame() {
+            const saveData = {
+                coins: game.coins,
+                level: game.level,
+                xp: game.xp,
+                maxXp: game.maxXp,
+                playTime: game.playTime,
+                gameDay: game.gameDay,
+                dayTime: game.dayTime,
+                weather: game.weather,
+                inventory: game.inventory,
+                stats: game.stats,
+                quests: game.quests,
+                upgrades: game.upgrades,
+                limits: game.limits,
+                farmObjects: {
+                    carrots: game.farmObjects.carrots.map(p => ({
+                        id: p.id,
+                        type: p.type,
+                        x: p.x,
+                        y: p.y,
+                        isReady: p.isReady,
+                        growthTime: p.growthTime,
+                        maxGrowthTime: p.maxGrowthTime
+                    })),
+                    wheat: game.farmObjects.wheat.map(p => ({
+                        id: p.id,
+                        type: p.type,
+                        x: p.x,
+                        y: p.y,
+                        isReady: p.isReady,
+                        growthTime: p.growthTime,
+                        maxGrowthTime: p.maxGrowthTime
+                    })),
+                    chickens: game.farmObjects.chickens.map(a => ({
+                        id: a.id,
+                        type: a.type,
+                        x: a.x,
+                        y: a.y,
+                        productionTimer: a.productionTimer
+                    })),
+                    cows: game.farmObjects.cows.map(a => ({
+                        id: a.id,
+                        type: a.type,
+                        x: a.x,
+                        y: a.y,
+                        productionTimer: a.productionTimer
+                    })),
+                    pigs: game.farmObjects.pigs.map(a => ({
+                        id: a.id,
+                        type: a.type,
+                        x: a.x,
+                        y: a.y,
+                        productionTimer: a.productionTimer
+                    })),
+                    trees: game.farmObjects.trees.map(b => ({
+                        id: b.id,
+                        type: b.type,
+                        x: b.x,
+                        y: b.y
+                    })),
+                    buildings: game.farmObjects.buildings.map(b => ({
+                        id: b.id,
+                        type: b.type,
+                        x: b.x,
+                        y: b.y
+                    }))
+                }
+            };
+            
+            localStorage.setItem('megaFarmSave', JSON.stringify(saveData));
+            console.log('Игра сохранена');
+        }
+
+        function loadGame() {
+            const savedData = localStorage.getItem('megaFarmSave');
+            if (savedData) {
+                const data = JSON.parse(savedData);
+                
+                // Восстанавливаем основные данные
+                game.coins = data.coins || 50;
+                game.level = data.level || 1;
+                game.xp = data.xp || 0;
+                game.maxXp = data.maxXp || 100;
+                game.playTime = data.playTime || 0;
+                game.gameDay = data.gameDay || 1;
+                game.dayTime = data.dayTime || 'morning';
+                game.weather = data.weather || 'sunny';
+                
+                // Восстанавливаем инвентарь
+                game.inventory = data.inventory || {
+                    wheat: 0,
+                    carrots: 0,
+                    eggs: 0,
+                    milk: 0,
+                    bacon: 0,
+                    fruits: 0
+                };
+                
+                // Восстанавливаем статистику
+                game.stats = data.stats || {
+                    totalEarned: 0,
+                    harvestedCarrots: 0,
+                    harvestedWheat: 0,
+                    collectedEggs: 0,
+                    collectedMilk: 0,
+                    collectedBacon: 0,
+                    collectedFruits: 0,
+                    completedQuests: 0,
+                    boughtUpgrades: 0
+                };
+                
+                // Восстанавливаем задания
+                game.quests = data.quests || {
+                    'harvest-carrots': { progress: 0, completed: false },
+                    'harvest-wheat': { progress: 0, completed: false },
+                    'collect-eggs': { progress: 0, completed: false }
+                };
+                
+                // Восстанавливаем улучшения
+                game.upgrades = data.upgrades || {
+                    tools: false,
+                    feed: false,
+                    irrigation: false
+                };
+                
+                // Восстанавливаем лимиты
+                game.limits = data.limits || {
+                    chickens: 3,
+                    cows: 2,
+                    pigs: 2,
+                    trees: 1,
+                    barns: 0
+                };
+                
+                // Восстанавливаем объекты фермы
+                if (data.farmObjects) {
+                    game.farmObjects = {
+                        carrots: data.farmObjects.carrots || [],
+                        wheat: data.farmObjects.wheat || [],
+                        chickens: data.farmObjects.chickens || [],
+                        cows: data.farmObjects.cows || [],
+                        pigs: data.farmObjects.pigs || [],
+                        trees: data.farmObjects.trees || [],
+                        buildings: data.farmObjects.buildings || []
+                    };
+                }
+                
+                console.log('Игра загружена');
+                return true;
+            }
+            return false;
+        }
+
+        function resetGame() {
+            if (confirm('Вы уверены? Все ваши данные будут удалены!')) {
+                localStorage.removeItem('megaFarmSave');
+                location.reload();
+            }
+        }
+
+        // ========== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ==========
+        function getAnimalName(type) {
+            const names = {
+                'chicken': 'курица',
+                'cow': 'корова',
+                'pig': 'свинья',
+                'tree': 'дерево',
+                'barn': 'амбар'
+            };
+            return names[type] || type;
+        }
+
+        function getObjectName(type) {
+            const names = {
+                'carrot': 'Морковь',
+                'wheat': 'Пшеница',
+                'chicken': 'Курица',
+                'cow': 'Корова',
+                'pig': 'Свинья',
+                'tree': 'Фруктовое дерево',
+                'barn': 'Амбар'
+            };
+            return names[type] || type;
+        }
+
+        function getRequiredLevel(type) {
+            const levels = {
+                'chicken': 1,
+                'cow': 2,
+                'pig': 3,
+                'tree': 4,
+                'barn': 5,
+                'irrigation': 3
+            };
+            return levels[type] || 1;
+        }
+
+        function getSellPrice(type) {
+            const prices = {
+                'chicken': 15,
+                'cow': 50,
+                'pig': 75,
+                'tree': 100,
+                'barn': 250
+            };
+            return prices[type] || 0;
+        }
+
+        function getUpgradePrice(type) {
+            const prices = {
+                'tools': 200,
+                'feed': 300,
+                'irrigation': 500
+            };
+            return prices[type] || 0;
+        }
+
         function showNotification(message, duration = 2000) {
-            notification.textContent = message;
-            notification.style.opacity = '1';
+            elements.notification.textContent = message;
+            elements.notification.style.opacity = '1';
             
             setTimeout(() => {
-                notification.style.opacity = '0';
+                elements.notification.style.opacity = '0';
             }, duration);
         }
 
-        // Настройка обработчиков событий
+        // ========== ОБРАБОТЧИКИ СОБЫТИЙ ==========
         function setupEventListeners() {
             // Кнопки меню
-            document.getElementById('start-game').addEventListener('click', () => {
-                menuScreen.style.display = 'none';
-                gameScreen.style.display = 'block';
+            document.getElementById('new-game-btn').addEventListener('click', () => {
+                resetGame();
             });
             
-            document.getElementById('reset-game').addEventListener('click', () => {
-                if (confirm('Вы уверены? Весь прогресс будет удален!')) {
-                    localStorage.removeItem('farmGameSave');
-                    location.reload();
-                }
+            document.getElementById('continue-btn').addEventListener('click', () => {
+                elements.menu.style.display = 'none';
+                elements.game.style.display = 'block';
+                showNotification('Игра загружена!');
             });
             
-            // Кнопки игры
+            document.getElementById('credits-btn').addEventListener('click', () => {
+                showNotification('Мега Ферма v1.0\nРазработано специально для вас!', 3000);
+            });
+            
+            // Кнопки фермы
             document.getElementById('carrot-btn').addEventListener('click', () => addPlant('carrot'));
             document.getElementById('wheat-btn').addEventListener('click', () => addPlant('wheat'));
             document.getElementById('chicken-btn').addEventListener('click', () => addAnimal('chicken'));
-            document.getElementById('sell-btn').addEventListener('click', sellHarvest);
+            document.getElementById('sell-btn').addEventListener('click', sellProducts);
             document.getElementById('menu-btn').addEventListener('click', () => {
                 saveGame();
-                menuScreen.style.display = 'block';
-                gameScreen.style.display = 'none';
+                elements.menu.style.display = 'block';
+                elements.game.style.display = 'none';
             });
             
             // Вкладки
             document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
+                btn.addEventListener('click', function() {
                     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active-tab'));
+                    document.querySelectorAll('.tab-container').forEach(t => t.classList.remove('active'));
                     
-                    btn.classList.add('active');
-                    const tabId = btn.getAttribute('data-tab');
-                    document.getElementById(tabId).classList.add('active-tab');
+                    this.classList.add('active');
+                    const tabId = this.getAttribute('data-tab');
+                    document.getElementById(tabId).classList.add('active');
                 });
             });
             
-            // Кнопки покупки в магазине
+            // Магазин
             document.querySelectorAll('.buy-btn').forEach(btn => {
                 btn.addEventListener('click', function() {
                     const item = this.getAttribute('data-item');
-                    addAnimal(item);
+                    
+                    if (item === 'barn') {
+                        addBuilding('barn');
+                    } else {
+                        addAnimal(item);
+                    }
                 });
+            });
+            
+            // Улучшения
+            document.querySelectorAll('.upgrade-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const upgrade = this.getAttribute('data-upgrade');
+                    if (upgrade) buyUpgrade(upgrade);
+                });
+            });
+            
+            // Клик по ферме (закрытие меню)
+            elements.farm.addEventListener('click', () => {
+                elements.objectMenu.style.display = 'none';
             });
         }
 
-        // Запуск игры
+        // ========== ЗАПУСК ИГРЫ ==========
+        // Проверяем, есть ли сохранение
+        const hasSave = loadGame();
+        
+        if (hasSave) {
+            document.getElementById('continue-btn').style.display = 'inline-block';
+        } else {
+            document.getElementById('continue-btn').style.display = 'none';
+        }
+        
+        // Инициализируем игру
         initGame();
     </script>
 </body>
