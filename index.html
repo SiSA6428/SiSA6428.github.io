@@ -9,25 +9,17 @@
             margin: 0;
             padding: 0;
             background-color: #87CEEB;
-            font-family: 'Arial', sans-serif;
-            overflow: hidden;
+            font-family: Arial, sans-serif;
             touch-action: manipulation;
-            user-select: none;
         }
         #game {
-            display: block;
+            width: 100%;
+            max-width: 400px;
             margin: 0 auto;
-            background-color: #6B8E23;
             position: relative;
-            border: 5px solid #5A6E1E;
-        }
-        .animal {
-            position: absolute;
-            image-rendering: pixelated;
-        }
-        .plant {
-            position: absolute;
-            image-rendering: pixelated;
+            height: 500px;
+            background-color: #6B8E23;
+            overflow: hidden;
         }
         #ui {
             position: fixed;
@@ -43,281 +35,239 @@
         button {
             background-color: #FFA500;
             border: none;
-            padding: 10px 15px;
-            border-radius: 10px;
-            font-weight: bold;
-            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 14px;
         }
         #inventory {
-            position: fixed;
+            position: absolute;
             top: 10px;
             right: 10px;
-            background-color: rgba(0, 0, 0, 0.5);
+            background: rgba(0, 0, 0, 0.5);
             color: white;
-            padding: 10px;
-            border-radius: 10px;
+            padding: 8px;
+            border-radius: 8px;
+            z-index: 100;
+        }
+        .plant {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background-color: #228B22;
+            border-radius: 50%;
+            transform-origin: bottom center;
+        }
+        .chicken {
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            background-color: white;
+            border-radius: 50%;
+        }
+        .egg {
+            position: absolute;
+            width: 10px;
+            height: 14px;
+            background-color: #F5F5DC;
+            border-radius: 50%;
         }
     </style>
 </head>
 <body>
-    <canvas id="game" width="300" height="500"></canvas>
     <div id="inventory">
         🪙: <span id="coins">50</span> | 🌾: <span id="wheat">0</span> | 🥚: <span id="eggs">0</span>
     </div>
+    <div id="game"></div>
     <div id="ui">
         <button id="plant">🌱 Посадить (10🪙)</button>
-        <button id="chicken">🐔 Купить курицу (30🪙)</button>
-        <button id="sell">💰 Продать урожай</button>
+        <button id="chicken">🐔 Курица (30🪙)</button>
+        <button id="sell">💰 Продать</button>
     </div>
 
     <script>
-        // Игровые переменные
-        const gameState = {
+        // Состояние игры
+        const game = {
             coins: 50,
             wheat: 0,
             eggs: 0,
             plants: [],
-            animals: [],
-            lastSave: Date.now()
+            chickens: []
         };
 
         // Загрузка сохранения
         function loadGame() {
             const saved = localStorage.getItem('farmGame');
             if (saved) {
-                Object.assign(gameState, JSON.parse(saved));
+                const data = JSON.parse(saved);
+                game.coins = data.coins || 50;
+                game.wheat = data.wheat || 0;
+                game.eggs = data.eggs || 0;
                 updateUI();
             }
         }
 
         // Сохранение игры
         function saveGame() {
-            localStorage.setItem('farmGame', JSON.stringify(gameState));
-            gameState.lastSave = Date.now();
+            localStorage.setItem('farmGame', JSON.stringify({
+                coins: game.coins,
+                wheat: game.wheat,
+                eggs: game.eggs
+            }));
         }
 
         // Обновление интерфейса
         function updateUI() {
-            document.getElementById('coins').textContent = gameState.coins;
-            document.getElementById('wheat').textContent = gameState.wheat;
-            document.getElementById('eggs').textContent = gameState.eggs;
+            document.getElementById('coins').textContent = game.coins;
+            document.getElementById('wheat').textContent = game.wheat;
+            document.getElementById('eggs').textContent = game.eggs;
         }
 
-        // Инициализация игры
-        const canvas = document.getElementById('game');
-        const ctx = canvas.getContext('2d');
-        
-        // Загрузка изображений
-        const sprites = {
-            ground: createGroundTexture(),
-            plant: createPlantSprite(),
-            chicken: createChickenSprite()
-        };
-
-        function createGroundTexture() {
-            const tempCanvas = document.createElement('canvas');
-            const tempCtx = tempCanvas.getContext('2d');
-            tempCanvas.width = 32;
-            tempCanvas.height = 32;
-            tempCtx.fillStyle = '#6B8E23';
-            tempCtx.fillRect(0, 0, 32, 32);
-            tempCtx.fillStyle = '#5A6E1E';
-            for (let i = 0; i < 32; i += 4) {
-                tempCtx.fillRect(i, 0, 2, 32);
-                tempCtx.fillRect(0, i, 32, 2);
-            }
-            return tempCanvas;
-        }
-
-        function createPlantSprite() {
-            const tempCanvas = document.createElement('canvas');
-            const tempCtx = tempCanvas.getContext('2d');
-            tempCanvas.width = 16;
-            tempCanvas.height = 16;
-            tempCtx.fillStyle = '#228B22';
-            tempCtx.beginPath();
-            tempCtx.moveTo(8, 0);
-            tempCtx.lineTo(12, 16);
-            tempCtx.lineTo(4, 16);
-            tempCtx.closePath();
-            tempCtx.fill();
-            return tempCanvas;
-        }
-
-        function createChickenSprite() {
-            const tempCanvas = document.createElement('canvas');
-            const tempCtx = tempCanvas.getContext('2d');
-            tempCanvas.width = 24;
-            tempCanvas.height = 24;
-            tempCtx.fillStyle = '#FFFFFF';
-            tempCtx.beginPath();
-            tempCtx.ellipse(12, 12, 10, 8, 0, 0, Math.PI * 2);
-            tempCtx.fill();
-            tempCtx.fillStyle = '#FF6347';
-            tempCtx.beginPath();
-            tempCtx.ellipse(18, 8, 3, 2, 0, 0, Math.PI * 2);
-            tempCtx.fill();
-            return tempCanvas;
-        }
-
-        // Игровой цикл
-        function gameLoop() {
-            // Очистка экрана
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            // Рисование земли
-            for (let x = 0; x < canvas.width; x += 32) {
-                for (let y = 0; y < canvas.height; y += 32) {
-                    ctx.drawImage(sprites.ground, x, y);
-                }
+        // Создание растения
+        function createPlant() {
+            if (game.coins < 10) {
+                alert('Не хватает монет!');
+                return;
             }
             
-            // Обновление растений
-            gameState.plants.forEach((plant, index) => {
-                plant.growth += 0.01;
-                if (plant.growth >= 1 && !plant.ready) {
-                    plant.ready = true;
-                    plant.sprite = createWheatSprite();
-                }
-                
-                const size = 10 + plant.growth * 10;
-                ctx.save();
-                ctx.translate(plant.x, plant.y);
-                ctx.scale(1, 1 - plant.growth * 0.3);
-                ctx.drawImage(plant.sprite, -size/2, -size, size, size*2);
-                ctx.restore();
-                
-                // Удаление собранных растений
-                if (plant.harvested) {
-                    gameState.plants.splice(index, 1);
-                }
-            });
+            game.coins -= 10;
+            const plant = document.createElement('div');
+            plant.className = 'plant';
+            plant.style.left = Math.random() * 80 + 10 + '%';
+            plant.style.bottom = '100px';
+            plant.style.transform = 'scale(0.3)';
+            plant.dataset.growth = 0;
+            plant.dataset.ready = 'false';
             
-            // Обновление животных
-            gameState.animals.forEach((animal, index) => {
-                animal.x += Math.sin(Date.now()/1000 + index) * 0.5;
-                animal.y += Math.cos(Date.now()/1000 + index) * 0.3;
-                
-                // Курица несёт яйца
-                if (Date.now() - animal.lastEgg > 10000) {
-                    gameState.eggs++;
-                    animal.lastEgg = Date.now();
-                    updateUI();
-                    createEgg(animal.x, animal.y - 20);
-                }
-                
-                ctx.drawImage(sprites.chicken, animal.x - 12, animal.y - 12);
-            });
+            document.getElementById('game').appendChild(plant);
+            game.plants.push(plant);
             
-            // Автосохранение каждые 30 секунд
-            if (Date.now() - gameState.lastSave > 30000) {
-                saveGame();
+            // Рост растения
+            const growInterval = setInterval(() => {
+                const growth = parseFloat(plant.dataset.growth) + 0.01;
+                plant.dataset.growth = growth;
+                plant.style.transform = `scale(${0.3 + growth * 0.7})`;
+                
+                if (growth >= 1) {
+                    plant.dataset.ready = 'true';
+                    plant.style.backgroundColor = '#DAA520';
+                    clearInterval(growInterval);
+                }
+            }, 1000);
+            
+            updateUI();
+            saveGame();
+        }
+
+        // Создание курицы
+        function createChicken() {
+            if (game.coins < 30) {
+                alert('Не хватает монет!');
+                return;
             }
             
-            requestAnimationFrame(gameLoop);
+            game.coins -= 30;
+            const chicken = document.createElement('div');
+            chicken.className = 'chicken';
+            chicken.style.left = Math.random() * 80 + 10 + '%';
+            chicken.style.bottom = '100px';
+            chicken.dataset.lastEgg = Date.now();
+            
+            // Гребень курицы
+            const comb = document.createElement('div');
+            comb.style.position = 'absolute';
+            comb.style.right = '-5px';
+            comb.style.top = '5px';
+            comb.style.width = '8px';
+            comb.style.height = '5px';
+            comb.style.backgroundColor = 'red';
+            comb.style.borderRadius = '50%';
+            chicken.appendChild(comb);
+            
+            document.getElementById('game').appendChild(chicken);
+            game.chickens.push(chicken);
+            
+            // Движение курицы
+            let direction = Math.random() > 0.5 ? 1 : -1;
+            setInterval(() => {
+                const left = parseFloat(chicken.style.left);
+                if (left < 10 || left > 90) direction *= -1;
+                chicken.style.left = (left + direction * 0.3) + '%';
+            }, 100);
+            
+            updateUI();
+            saveGame();
         }
 
-        function createWheatSprite() {
-            const tempCanvas = document.createElement('canvas');
-            const tempCtx = tempCanvas.getContext('2d');
-            tempCanvas.width = 16;
-            tempCanvas.height = 24;
-            tempCtx.fillStyle = '#DAA520';
-            tempCtx.beginPath();
-            tempCtx.moveTo(8, 0);
-            tempCtx.lineTo(12, 24);
-            tempCtx.lineTo(4, 24);
-            tempCtx.closePath();
-            tempCtx.fill();
-            return tempCanvas;
-        }
-
-        function createEgg(x, y) {
+        // Создание яйца
+        function createEgg(chicken) {
             const egg = document.createElement('div');
-            egg.style.position = 'absolute';
-            egg.style.left = x + 'px';
-            egg.style.top = y + 'px';
-            egg.style.width = '10px';
-            egg.style.height = '14px';
-            egg.style.backgroundColor = '#F5F5DC';
-            egg.style.borderRadius = '50%';
-            egg.style.zIndex = '100';
-            document.body.appendChild(egg);
+            egg.className = 'egg';
+            egg.style.left = chicken.style.left;
+            egg.style.bottom = '90px';
+            document.getElementById('game').appendChild(egg);
+            
+            game.eggs++;
+            updateUI();
+            saveGame();
             
             setTimeout(() => {
                 egg.remove();
             }, 3000);
         }
 
-        // Обработчики событий
-        document.getElementById('plant').addEventListener('click', () => {
-            if (gameState.coins >= 10) {
-                gameState.coins -= 10;
-                gameState.plants.push({
-                    x: Math.random() * (canvas.width - 40) + 20,
-                    y: Math.random() * (canvas.height - 100) + 50,
-                    growth: 0,
-                    ready: false,
-                    harvested: false,
-                    sprite: sprites.plant
-                });
-                updateUI();
-                saveGame();
-            } else {
-                alert('Не хватает монет!');
-            }
-        });
-
-        document.getElementById('chicken').addEventListener('click', () => {
-            if (gameState.coins >= 30) {
-                gameState.coins -= 30;
-                gameState.animals.push({
-                    x: Math.random() * (canvas.width - 40) + 20,
-                    y: Math.random() * (canvas.height - 100) + 50,
-                    lastEgg: Date.now()
-                });
-                updateUI();
-                saveGame();
-            } else {
-                alert('Не хватает монет!');
-            }
-        });
-
-        document.getElementById('sell').addEventListener('click', () => {
+        // Продажа урожая
+        function sellProducts() {
             let harvested = 0;
-            gameState.plants = gameState.plants.filter(plant => {
-                if (plant.ready && !plant.harvested) {
+            
+            // Сбор растений
+            game.plants = game.plants.filter(plant => {
+                if (plant.dataset.ready === 'true') {
                     harvested++;
+                    plant.remove();
                     return false;
                 }
                 return true;
             });
             
-            gameState.coins += harvested * 5;
-            gameState.coins += gameState.eggs * 3;
-            gameState.wheat += harvested;
-            gameState.eggs = 0;
+            // Продажа
+            game.coins += harvested * 5;
+            game.coins += game.eggs * 3;
+            game.wheat += harvested;
+            game.eggs = 0;
             
             updateUI();
             saveGame();
+        }
+
+        // Обработчики событий
+        document.getElementById('plant').addEventListener('click', createPlant);
+        document.getElementById('chicken').addEventListener('click', createChicken);
+        document.getElementById('sell').addEventListener('click', sellProducts);
+
+        // Клик по растениям для сбора
+        document.getElementById('game').addEventListener('click', (e) => {
+            if (e.target.classList.contains('plant') && e.target.dataset.ready === 'true') {
+                e.target.remove();
+                game.plants = game.plants.filter(p => p !== e.target);
+                game.wheat++;
+                updateUI();
+                saveGame();
+            }
         });
 
-        canvas.addEventListener('click', (e) => {
-            const rect = canvas.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-            
-            // Проверка клика по растению
-            gameState.plants.forEach(plant => {
-                if (plant.ready && !plant.harvested && 
-                    Math.abs(x - plant.x) < 15 && 
-                    Math.abs(y - plant.y) < 20) {
-                    plant.harvested = true;
-                    gameState.wheat++;
-                    updateUI();
+        // Яйца от кур
+        setInterval(() => {
+            game.chickens.forEach(chicken => {
+                if (Date.now() - chicken.dataset.lastEgg > 15000) {
+                    chicken.dataset.lastEgg = Date.now();
+                    createEgg(chicken);
                 }
             });
-        });
+        }, 1000);
 
         // Запуск игры
         loadGame();
+        updateUI();
+    </script>
+</body>
+</html>
