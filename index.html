@@ -3,160 +3,321 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Числовая магия</title>
+    <title>Мини-Ферма</title>
     <style>
         body {
-            font-family: 'Arial', sans-serif;
-            background: linear-gradient(135deg, #6e8efb, #a777e3);
-            height: 100vh;
             margin: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            text-align: center;
+            padding: 0;
+            background-color: #87CEEB;
+            font-family: 'Arial', sans-serif;
             overflow: hidden;
+            touch-action: manipulation;
+            user-select: none;
         }
-        
-        .container {
-            background-color: rgba(0, 0, 0, 0.3);
-            border-radius: 20px;
-            padding: 30px;
-            width: 80%;
-            max-width: 400px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-            backdrop-filter: blur(5px);
+        #game {
+            display: block;
+            margin: 0 auto;
+            background-color: #6B8E23;
+            position: relative;
+            border: 5px solid #5A6E1E;
         }
-        
-        h1 {
-            font-size: 2rem;
-            margin-bottom: 30px;
-            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
-        }
-        
-        .number-display {
-            font-size: 5rem;
-            font-weight: bold;
-            margin: 20px 0;
-            text-shadow: 0 0 15px rgba(255, 255, 255, 0.7);
-            height: 100px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s;
-        }
-        
-        button {
-            background-color: #ff6b6b;
-            color: white;
-            border: none;
-            padding: 15px 30px;
-            font-size: 1.2rem;
-            border-radius: 50px;
-            cursor: pointer;
-            margin-top: 20px;
-            transition: all 0.3s;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-        }
-        
-        button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
-        }
-        
-        button:active {
-            transform: translateY(1px);
-        }
-        
-        .message {
-            margin-top: 20px;
-            font-style: italic;
-            min-height: 30px;
-        }
-        
-        .confetti {
+        .animal {
             position: absolute;
-            width: 10px;
-            height: 10px;
-            background-color: #f00;
-            opacity: 0;
+            image-rendering: pixelated;
+        }
+        .plant {
+            position: absolute;
+            image-rendering: pixelated;
+        }
+        #ui {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 10px;
+            display: flex;
+            justify-content: space-around;
+        }
+        button {
+            background-color: #FFA500;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        #inventory {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            padding: 10px;
+            border-radius: 10px;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>🔮 Числовая магия 🔮</h1>
-        <div class="number-display" id="number">?</div>
-        <button id="generate">Сгенерировать число</button>
-        <div class="message" id="message"></div>
+    <canvas id="game" width="300" height="500"></canvas>
+    <div id="inventory">
+        🪙: <span id="coins">50</span> | 🌾: <span id="wheat">0</span> | 🥚: <span id="eggs">0</span>
+    </div>
+    <div id="ui">
+        <button id="plant">🌱 Посадить (10🪙)</button>
+        <button id="chicken">🐔 Купить курицу (30🪙)</button>
+        <button id="sell">💰 Продать урожай</button>
     </div>
 
     <script>
-        const messages = [
-            "Это твое счастливое число!",
-            "Вселенная говорит: да!",
-            "Запомни это число!",
-            "Очень необычный результат!",
-            "Такое число выпадает редко!",
-            "Магия чисел на твоей стороне!",
-            "Сегодня твой день!"
-        ];
-        
-        const generateBtn = document.getElementById('generate');
-        const numberDisplay = document.getElementById('number');
-        const messageDisplay = document.getElementById('message');
-        
-        generateBtn.addEventListener('click', () => {
-            // Анимация перед генерацией
-            numberDisplay.textContent = '...';
-            numberDisplay.style.transform = 'scale(1.2)';
-            numberDisplay.style.opacity = '0.5';
-            
-            setTimeout(() => {
-                // Генерация случайного числа от 1 до 9999
-                const randomNumber = Math.floor(Math.random() * 9999) + 1;
-                numberDisplay.textContent = randomNumber;
-                numberDisplay.style.transform = 'scale(1)';
-                numberDisplay.style.opacity = '1';
-                
-                // Случайное сообщение
-                const randomMessage = messages[Math.floor(Math.random() * messages.length)];
-                messageDisplay.textContent = randomMessage;
-                
-                // Создаем конфетти
-                createConfetti();
-            }, 500);
-        });
-        
-        function createConfetti() {
-            const colors = ['#ff6b6b', '#ffa502', '#2ed573', '#1e90ff', '#ff4757'];
-            
-            for (let i = 0; i < 50; i++) {
-                const confetti = document.createElement('div');
-                confetti.className = 'confetti';
-                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-                confetti.style.left = Math.random() * 100 + 'vw';
-                confetti.style.top = -10 + 'px';
-                confetti.style.transform = `rotate(${Math.random() * 360}deg)`;
-                document.body.appendChild(confetti);
-                
-                const animationDuration = Math.random() * 3 + 2;
-                
-                confetti.animate([
-                    { top: '-10px', opacity: 1 },
-                    { top: '100vh', opacity: 0 }
-                ], {
-                    duration: animationDuration * 1000,
-                    easing: 'cubic-bezier(0.1, 0.8, 0.3, 1)',
-                    fill: 'forwards'
-                });
-                
-                setTimeout(() => {
-                    confetti.remove();
-                }, animationDuration * 1000);
+        // Игровые переменные
+        const gameState = {
+            coins: 50,
+            wheat: 0,
+            eggs: 0,
+            plants: [],
+            animals: [],
+            lastSave: Date.now()
+        };
+
+        // Загрузка сохранения
+        function loadGame() {
+            const saved = localStorage.getItem('farmGame');
+            if (saved) {
+                Object.assign(gameState, JSON.parse(saved));
+                updateUI();
             }
         }
-    </script>
-</body>
-</html>
+
+        // Сохранение игры
+        function saveGame() {
+            localStorage.setItem('farmGame', JSON.stringify(gameState));
+            gameState.lastSave = Date.now();
+        }
+
+        // Обновление интерфейса
+        function updateUI() {
+            document.getElementById('coins').textContent = gameState.coins;
+            document.getElementById('wheat').textContent = gameState.wheat;
+            document.getElementById('eggs').textContent = gameState.eggs;
+        }
+
+        // Инициализация игры
+        const canvas = document.getElementById('game');
+        const ctx = canvas.getContext('2d');
+        
+        // Загрузка изображений
+        const sprites = {
+            ground: createGroundTexture(),
+            plant: createPlantSprite(),
+            chicken: createChickenSprite()
+        };
+
+        function createGroundTexture() {
+            const tempCanvas = document.createElement('canvas');
+            const tempCtx = tempCanvas.getContext('2d');
+            tempCanvas.width = 32;
+            tempCanvas.height = 32;
+            tempCtx.fillStyle = '#6B8E23';
+            tempCtx.fillRect(0, 0, 32, 32);
+            tempCtx.fillStyle = '#5A6E1E';
+            for (let i = 0; i < 32; i += 4) {
+                tempCtx.fillRect(i, 0, 2, 32);
+                tempCtx.fillRect(0, i, 32, 2);
+            }
+            return tempCanvas;
+        }
+
+        function createPlantSprite() {
+            const tempCanvas = document.createElement('canvas');
+            const tempCtx = tempCanvas.getContext('2d');
+            tempCanvas.width = 16;
+            tempCanvas.height = 16;
+            tempCtx.fillStyle = '#228B22';
+            tempCtx.beginPath();
+            tempCtx.moveTo(8, 0);
+            tempCtx.lineTo(12, 16);
+            tempCtx.lineTo(4, 16);
+            tempCtx.closePath();
+            tempCtx.fill();
+            return tempCanvas;
+        }
+
+        function createChickenSprite() {
+            const tempCanvas = document.createElement('canvas');
+            const tempCtx = tempCanvas.getContext('2d');
+            tempCanvas.width = 24;
+            tempCanvas.height = 24;
+            tempCtx.fillStyle = '#FFFFFF';
+            tempCtx.beginPath();
+            tempCtx.ellipse(12, 12, 10, 8, 0, 0, Math.PI * 2);
+            tempCtx.fill();
+            tempCtx.fillStyle = '#FF6347';
+            tempCtx.beginPath();
+            tempCtx.ellipse(18, 8, 3, 2, 0, 0, Math.PI * 2);
+            tempCtx.fill();
+            return tempCanvas;
+        }
+
+        // Игровой цикл
+        function gameLoop() {
+            // Очистка экрана
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Рисование земли
+            for (let x = 0; x < canvas.width; x += 32) {
+                for (let y = 0; y < canvas.height; y += 32) {
+                    ctx.drawImage(sprites.ground, x, y);
+                }
+            }
+            
+            // Обновление растений
+            gameState.plants.forEach((plant, index) => {
+                plant.growth += 0.01;
+                if (plant.growth >= 1 && !plant.ready) {
+                    plant.ready = true;
+                    plant.sprite = createWheatSprite();
+                }
+                
+                const size = 10 + plant.growth * 10;
+                ctx.save();
+                ctx.translate(plant.x, plant.y);
+                ctx.scale(1, 1 - plant.growth * 0.3);
+                ctx.drawImage(plant.sprite, -size/2, -size, size, size*2);
+                ctx.restore();
+                
+                // Удаление собранных растений
+                if (plant.harvested) {
+                    gameState.plants.splice(index, 1);
+                }
+            });
+            
+            // Обновление животных
+            gameState.animals.forEach((animal, index) => {
+                animal.x += Math.sin(Date.now()/1000 + index) * 0.5;
+                animal.y += Math.cos(Date.now()/1000 + index) * 0.3;
+                
+                // Курица несёт яйца
+                if (Date.now() - animal.lastEgg > 10000) {
+                    gameState.eggs++;
+                    animal.lastEgg = Date.now();
+                    updateUI();
+                    createEgg(animal.x, animal.y - 20);
+                }
+                
+                ctx.drawImage(sprites.chicken, animal.x - 12, animal.y - 12);
+            });
+            
+            // Автосохранение каждые 30 секунд
+            if (Date.now() - gameState.lastSave > 30000) {
+                saveGame();
+            }
+            
+            requestAnimationFrame(gameLoop);
+        }
+
+        function createWheatSprite() {
+            const tempCanvas = document.createElement('canvas');
+            const tempCtx = tempCanvas.getContext('2d');
+            tempCanvas.width = 16;
+            tempCanvas.height = 24;
+            tempCtx.fillStyle = '#DAA520';
+            tempCtx.beginPath();
+            tempCtx.moveTo(8, 0);
+            tempCtx.lineTo(12, 24);
+            tempCtx.lineTo(4, 24);
+            tempCtx.closePath();
+            tempCtx.fill();
+            return tempCanvas;
+        }
+
+        function createEgg(x, y) {
+            const egg = document.createElement('div');
+            egg.style.position = 'absolute';
+            egg.style.left = x + 'px';
+            egg.style.top = y + 'px';
+            egg.style.width = '10px';
+            egg.style.height = '14px';
+            egg.style.backgroundColor = '#F5F5DC';
+            egg.style.borderRadius = '50%';
+            egg.style.zIndex = '100';
+            document.body.appendChild(egg);
+            
+            setTimeout(() => {
+                egg.remove();
+            }, 3000);
+        }
+
+        // Обработчики событий
+        document.getElementById('plant').addEventListener('click', () => {
+            if (gameState.coins >= 10) {
+                gameState.coins -= 10;
+                gameState.plants.push({
+                    x: Math.random() * (canvas.width - 40) + 20,
+                    y: Math.random() * (canvas.height - 100) + 50,
+                    growth: 0,
+                    ready: false,
+                    harvested: false,
+                    sprite: sprites.plant
+                });
+                updateUI();
+                saveGame();
+            } else {
+                alert('Не хватает монет!');
+            }
+        });
+
+        document.getElementById('chicken').addEventListener('click', () => {
+            if (gameState.coins >= 30) {
+                gameState.coins -= 30;
+                gameState.animals.push({
+                    x: Math.random() * (canvas.width - 40) + 20,
+                    y: Math.random() * (canvas.height - 100) + 50,
+                    lastEgg: Date.now()
+                });
+                updateUI();
+                saveGame();
+            } else {
+                alert('Не хватает монет!');
+            }
+        });
+
+        document.getElementById('sell').addEventListener('click', () => {
+            let harvested = 0;
+            gameState.plants = gameState.plants.filter(plant => {
+                if (plant.ready && !plant.harvested) {
+                    harvested++;
+                    return false;
+                }
+                return true;
+            });
+            
+            gameState.coins += harvested * 5;
+            gameState.coins += gameState.eggs * 3;
+            gameState.wheat += harvested;
+            gameState.eggs = 0;
+            
+            updateUI();
+            saveGame();
+        });
+
+        canvas.addEventListener('click', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            // Проверка клика по растению
+            gameState.plants.forEach(plant => {
+                if (plant.ready && !plant.harvested && 
+                    Math.abs(x - plant.x) < 15 && 
+                    Math.abs(y - plant.y) < 20) {
+                    plant.harvested = true;
+                    gameState.wheat++;
+                    updateUI();
+                }
+            });
+        });
+
+        // Запуск игры
+        loadGame();
