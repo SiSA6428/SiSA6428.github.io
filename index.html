@@ -2,663 +2,441 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>🎡 NFT Roulette</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Анонимный Мессенджер</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            -webkit-user-select: none;
-            user-select: none;
-            -webkit-tap-highlight-color: transparent;
         }
 
         body {
-            background: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 50%, #16213e 100%);
-            color: white;
-            font-family: 'Arial', sans-serif;
-            height: 100vh;
-            overflow: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
         }
 
         .container {
-            max-width: 400px;
+            max-width: 800px;
             margin: 0 auto;
-            padding: 20px;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .header {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        .header h1 {
-            font-size: 28px;
-            margin-bottom: 10px;
-            background: linear-gradient(45deg, #ff6b35, #f7931e);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-shadow: 0 0 30px rgba(255, 107, 53, 0.5);
-        }
-
-        .balance {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: rgba(255, 255, 255, 0.1);
-            padding: 15px;
+            background: white;
             border-radius: 15px;
-            backdrop-filter: blur(10px);
-            margin-bottom: 20px;
-        }
-
-        .stars {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 18px;
-            font-weight: bold;
-        }
-
-        .stars span {
-            color: gold;
-            font-size: 24px;
-        }
-
-        /* РУЛЕТКА */
-        .roulette-container {
-            position: relative;
-            margin: 20px 0;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .wheel {
-            width: 300px;
-            height: 300px;
-            position: relative;
-            border-radius: 50%;
-            background: conic-gradient(
-                from 0deg,
-                #ff6b6b 0deg 60deg,
-                #4ecdc4 60deg 120deg,
-                #45b7d1 120deg 180deg,
-                #96ceb4 180deg 240deg,
-                #feca57 240deg 300deg,
-                #ff9ff3 300deg 360deg
-            );
-            box-shadow: 0 0 50px rgba(255, 107, 107, 0.3);
-            transition: transform 4s cubic-bezier(0.2, 0.8, 0.2, 1);
-            border: 8px solid #2c2c54;
-        }
-
-        .wheel-spinning {
-            animation: wheelSpin 4s cubic-bezier(0.2, 0.8, 0.2, 1);
-        }
-
-        @keyframes wheelSpin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(1080deg); }
-        }
-
-        .pointer {
-            position: absolute;
-            top: -20px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 40px;
-            height: 40px;
-            background: gold;
-            clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
-            z-index: 10;
-            filter: drop-shadow(0 0 10px gold);
-        }
-
-        .wheel-item {
-            position: absolute;
-            width: 50px;
-            height: 50px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            transform-origin: center;
-            left: 125px;
-            top: 125px;
-        }
-
-        /* КЕЙСЫ */
-        .cases {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-            margin: 20px 0;
-        }
-
-        .case {
-            background: linear-gradient(135deg, #2c2c54, #40407a);
-            border-radius: 15px;
-            padding: 20px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border: 2px solid transparent;
-            position: relative;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
             overflow: hidden;
         }
 
-        .case::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-            transform: rotate(45deg);
-            transition: all 0.6s ease;
-        }
-
-        .case:hover::before {
-            animation: shine 1.5s ease-in-out;
-        }
-
-        @keyframes shine {
-            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
-            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
-        }
-
-        .case:hover {
-            transform: translateY(-5px);
-            border-color: gold;
-            box-shadow: 0 10px 30px rgba(255, 215, 0, 0.3);
-        }
-
-        .case-icon {
-            font-size: 40px;
-            margin-bottom: 10px;
-            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.5));
-        }
-
-        .case-name {
-            font-size: 14px;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-
-        .case-price {
-            color: gold;
-            font-size: 12px;
-        }
-
-        /* КНОПКА СТАРТА */
-        .spin-btn {
-            background: linear-gradient(45deg, #ff6b35, #f7931e);
-            border: none;
+        .header {
+            background: #2c3e50;
             color: white;
-            padding: 20px 40px;
-            border-radius: 25px;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin: 20px 0;
-            box-shadow: 0 5px 20px rgba(255, 107, 53, 0.4);
-        }
-
-        .spin-btn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 8px 30px rgba(255, 107, 53, 0.6);
-        }
-
-        .spin-btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        /* ИНВЕНТАРЬ */
-        .inventory {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 15px;
-            padding: 15px;
-            margin-top: 20px;
-            backdrop-filter: blur(10px);
-        }
-
-        .inventory-title {
-            font-size: 16px;
-            font-weight: bold;
-            margin-bottom: 10px;
+            padding: 20px;
             text-align: center;
         }
 
-        .inventory-items {
+        .header h1 {
+            margin-bottom: 10px;
+        }
+
+        .status {
+            padding: 10px;
+            text-align: center;
+            background: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .connected {
+            color: #28a745;
+        }
+
+        .disconnected {
+            color: #dc3545;
+        }
+
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            height: 70vh;
+        }
+
+        .welcome-screen, .chat-screen {
+            padding: 30px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .welcome-screen {
+            text-align: center;
+            justify-content: center;
+            gap: 30px;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 10px;
+        }
+
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2980b9;
+        }
+
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #219a52;
+        }
+
+        .input-group {
             display: flex;
             gap: 10px;
-            overflow-x: auto;
-            padding: 10px 0;
+            margin: 20px 0;
         }
 
-        .inventory-item {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 10px;
-            border-radius: 10px;
-            min-width: 80px;
-            text-align: center;
-            font-size: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+        input {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
         }
 
-        /* АНИМАЦИЯ ВЫИГРЫША */
-        .reward-animation {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.9);
-            display: none;
+        input:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        .chat-header {
+            background: #34495e;
+            color: white;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
             align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            animation: fadeIn 0.5s ease;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+        .chat-code {
+            background: rgba(255,255,255,0.2);
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-family: monospace;
         }
 
-        .reward-card {
-            background: linear-gradient(135deg, #ff6b35, #f7931e);
-            padding: 40px;
-            border-radius: 20px;
-            text-align: center;
-            animation: pulse 2s infinite;
-            border: 5px solid gold;
-            box-shadow: 0 0 50px rgba(255, 215, 0, 0.5);
+        .messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
         }
 
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
+        .message {
+            margin-bottom: 15px;
+            padding: 12px;
+            border-radius: 10px;
+            background: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
 
-        .reward-icon {
-            font-size: 60px;
-            margin-bottom: 20px;
-            filter: drop-shadow(0 0 20px gold);
+        .message-header {
+            display: flex;
+            justify-content: between;
+            margin-bottom: 5px;
+            font-size: 12px;
+            color: #666;
         }
 
-        .reward-name {
+        .message-username {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .message-time {
+            margin-left: auto;
+        }
+
+        .message-text {
+            word-wrap: break-word;
+        }
+
+        .my-message {
+            background: #e3f2fd;
+            margin-left: 20px;
+        }
+
+        .input-area {
+            display: flex;
+            padding: 15px;
+            gap: 10px;
+            background: white;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .code-display {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-family: monospace;
             font-size: 24px;
-            font-weight: bold;
-            margin-bottom: 10px;
+            text-align: center;
+            letter-spacing: 3px;
         }
 
-        .reward-rarity {
-            background: gold;
-            color: black;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-weight: bold;
-            display: inline-block;
-        }
-
-        /* АДАПТИВНОСТЬ */
-        @media (max-width: 480px) {
-            .wheel {
-                width: 250px;
-                height: 250px;
-            }
-            
-            .wheel-item {
-                left: 100px;
-                top: 100px;
-            }
-            
-            .case {
-                padding: 15px;
-            }
-            
-            .case-icon {
-                font-size: 30px;
-            }
+        .copy-btn {
+            background: #95a5a6;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-left: 10px;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- ШАПКА -->
         <div class="header">
-            <h1>🎡 NFT Roulette</h1>
-            <p>Крути рулетку - выигрывай уникальные NFT!</p>
+            <h1>🔒 Анонимный Мессенджер</h1>
+            <p>Общайтесь безопасно с одноразовыми кодами</p>
         </div>
 
-        <!-- БАЛАНС -->
-        <div class="balance">
-            <div class="stars">
-                <span>⭐</span>
-                <span id="starsCount">1000</span>
-            </div>
-            <div class="level">Уровень: <span id="level">1</span></div>
+        <div class="status">
+            <span id="status">Подключение...</span>
         </div>
 
-        <!-- РУЛЕТКА -->
-        <div class="roulette-container">
-            <div class="pointer"></div>
-            <div class="wheel" id="wheel">
-                <!-- Секторы рулетки будут созданы через JS -->
-            </div>
-        </div>
+        <div class="main-content">
+            <!-- Экран приветствия -->
+            <div id="welcomeScreen" class="welcome-screen">
+                <h2>Добро пожаловать!</h2>
+                <p>Создайте новый чат или присоединитесь к существующему</p>
+                
+                <div>
+                    <button id="createChatBtn" class="btn btn-primary">
+                        🆕 Создать новый чат
+                    </button>
+                </div>
 
-        <!-- ВЫБОР КЕЙСА -->
-        <div class="cases">
-            <div class="case" onclick="selectCase('bronze')">
-                <div class="case-icon">🥉</div>
-                <div class="case-name">Бронзовый кейс</div>
-                <div class="case-price">50 ⭐</div>
-            </div>
-            <div class="case" onclick="selectCase('silver')">
-                <div class="case-icon">🥈</div>
-                <div class="case-name">Серебряный кейс</div>
-                <div class="case-price">100 ⭐</div>
-            </div>
-            <div class="case" onclick="selectCase('gold')">
-                <div class="case-icon">🥇</div>
-                <div class="case-name">Золотой кейс</div>
-                <div class="case-price">200 ⭐</div>
-            </div>
-            <div class="case" onclick="selectCase('platinum')">
-                <div class="case-icon">💎</div>
-                <div class="case-name">Платиновый кейс</div>
-                <div class="case-price">500 ⭐</div>
-            </div>
-        </div>
+                <div class="input-group">
+                    <input type="text" id="joinCodeInput" placeholder="Введите код чата" maxlength="6">
+                    <button id="joinChatBtn" class="btn btn-success">
+                        ➕ Присоединиться
+                    </button>
+                </div>
 
-        <!-- КНОПКА СТАРТА -->
-        <button class="spin-btn" id="spinBtn" onclick="spinRoulette()">
-            🎡 Крутить рулетку
-        </button>
-
-        <!-- ИНВЕНТАРЬ -->
-        <div class="inventory">
-            <div class="inventory-title">🎒 Ваши NFT предметы</div>
-            <div class="inventory-items" id="inventory">
-                <!-- Предметы будут добавляться здесь -->
+                <div id="createdChat" class="hidden">
+                    <p>Ваш код чата:</p>
+                    <div class="code-display">
+                        <span id="chatCode"></span>
+                        <button class="copy-btn" onclick="copyCode()">📋 Копировать</button>
+                    </div>
+                    <p>Поделитесь этим кодом с друзьями</p>
+                    <button id="enterChatBtn" class="btn btn-success">
+                        🚀 Войти в чат
+                    </button>
+                </div>
             </div>
-        </div>
-    </div>
 
-    <!-- АНИМАЦИЯ ВЫИГРЫША -->
-    <div class="reward-animation" id="rewardAnimation">
-        <div class="reward-card">
-            <div class="reward-icon" id="rewardIcon">🎁</div>
-            <div class="reward-name" id="rewardName">Загрузка...</div>
-            <div class="reward-rarity" id="rewardRarity">Обычный</div>
-            <button onclick="closeReward()" style="
-                background: white; 
-                color: black; 
-                border: none; 
-                padding: 12px 24px; 
-                border-radius: 10px; 
-                cursor: pointer;
-                margin-top: 20px;
-                font-weight: bold;
-            ">Получить награду</button>
+            <!-- Экран чата -->
+            <div id="chatScreen" class="chat-screen hidden">
+                <div class="chat-header">
+                    <span>Чат: <span id="currentChatCode" class="chat-code"></span></span>
+                    <span id="onlineCount">Участников: 1</span>
+                </div>
+
+                <div id="messages" class="messages"></div>
+
+                <div class="input-area">
+                    <input type="text" id="usernameInput" placeholder="Ваше имя (необязательно)" style="flex: 0.3;">
+                    <input type="text" id="messageInput" placeholder="Введите сообщение...">
+                    <button id="sendMessageBtn" class="btn btn-primary">Отправить</button>
+                </div>
+            </div>
         </div>
     </div>
 
+    <script src="/socket.io/socket.io.js"></script>
     <script>
-        // ИГРОВЫЕ ДАННЫЕ
-        let stars = 1000;
-        let level = 1;
-        let inventory = [];
-        let selectedCase = 'bronze';
-        let isSpinning = false;
-
-        // ПРЕДМЕТЫ ДЛЯ РУЛЕТКИ
-        const wheelItems = [
-            { icon: '🖼️', name: 'Обычный стикерпак', rarity: 'common', color: '#ff6b6b' },
-            { icon: '🌟', name: 'Редкий NFT', rarity: 'rare', color: '#4ecdc4' },
-            { icon: '💎', name: 'Эпический арт', rarity: 'epic', color: '#45b7d1' },
-            { icon: '👑', name: 'Легендарный предмет', rarity: 'legendary', color: '#96ceb4' },
-            { icon: '🚀', name: 'УЛЬТРА РЕДКИЙ', rarity: 'mythical', color: '#feca57' },
-            { icon: '⚡', name: 'Эксклюзивный бейдж', rarity: 'epic', color: '#ff9ff3' }
-        ];
-
-        // КЕЙСЫ И ИХ ШАНСЫ
-        const cases = {
-            bronze: {
-                price: 50,
-                chances: { common: 60, rare: 25, epic: 10, legendary: 4, mythical: 1 }
-            },
-            silver: {
-                price: 100, 
-                chances: { common: 45, rare: 30, epic: 15, legendary: 7, mythical: 3 }
-            },
-            gold: {
-                price: 200,
-                chances: { common: 30, rare: 35, epic: 20, legendary: 10, mythical: 5 }
-            },
-            platinum: {
-                price: 500,
-                chances: { common: 15, rare: 25, epic: 30, legendary: 20, mythical: 10 }
-            }
-        };
-
-        // ИНИЦИАЛИЗАЦИЯ ИГРЫ
-        function initGame() {
-            createWheel();
-            updateUI();
-            loadGame();
-        }
-
-        // СОЗДАНИЕ РУЛЕТКИ
-        function createWheel() {
-            const wheel = document.getElementById('wheel');
-            wheel.innerHTML = '';
-            
-            wheelItems.forEach((item, index) => {
-                const angle = (360 / wheelItems.length) * index;
-                const itemElement = document.createElement('div');
-                itemElement.className = 'wheel-item';
-                itemElement.style.transform = `rotate(${angle}deg) translate(100px) rotate(-${angle}deg)`;
-                itemElement.innerHTML = item.icon;
-                itemElement.title = item.name;
-                wheel.appendChild(itemElement);
-            });
-        }
-
-        // ВЫБОР КЕЙСА
-        function selectCase(caseType) {
-            selectedCase = caseType;
-            
-            // Подсветка выбранного кейса
-            document.querySelectorAll('.case').forEach(caseEl => {
-                caseEl.style.borderColor = 'transparent';
-                caseEl.style.transform = 'translateY(0)';
-            });
-            
-            event.currentTarget.style.borderColor = 'gold';
-            event.currentTarget.style.transform = 'translateY(-5px)';
-            
-            updateSpinButton();
-        }
-
-        // ОБНОВЛЕНИЕ КНОПКИ СТАРТА
-        function updateSpinButton() {
-            const spinBtn = document.getElementById('spinBtn');
-            const caseData = cases[selectedCase];
-            
-            if (stars < caseData.price) {
-                spinBtn.disabled = true;
-                spinBtn.innerHTML = `❌ Недостаточно звезд`;
-            } else if (isSpinning) {
-                spinBtn.disabled = true;
-                spinBtn.innerHTML = `🎡 Крутится...`;
-            } else {
-                spinBtn.disabled = false;
-                spinBtn.innerHTML = `🎡 Крутить за ${caseData.price}⭐`;
-            }
-        }
-
-        // КРУТЕНИЕ РУЛЕТКИ
-        function spinRoulette() {
-            if (isSpinning) return;
-            
-            const caseData = cases[selectedCase];
-            if (stars < caseData.price) {
-                alert('Недостаточно звезд!');
-                return;
+        class AnonymousChat {
+            constructor() {
+                this.socket = io();
+                this.currentChatCode = null;
+                this.setupEventListeners();
+                this.setupSocketEvents();
             }
 
-            isSpinning = true;
-            stars -= caseData.price;
-            updateUI();
+            setupEventListeners() {
+                // Создание чата
+                document.getElementById('createChatBtn').addEventListener('click', () => {
+                    this.socket.emit('create_chat');
+                });
 
-            // Анимация кручения
-            const wheel = document.getElementById('wheel');
-            wheel.style.animation = 'none';
-            setTimeout(() => {
-                wheel.style.animation = 'wheelSpin 4s cubic-bezier(0.2, 0.8, 0.2, 1)';
-            }, 10);
+                // Присоединение к чату
+                document.getElementById('joinChatBtn').addEventListener('click', () => {
+                    this.joinChat();
+                });
 
-            // Определение выигрыша
-            setTimeout(() => {
-                const reward = getRandomReward(caseData.chances);
-                showReward(reward);
-                isSpinning = false;
-                updateSpinButton();
-            }, 4000);
-        }
+                document.getElementById('joinCodeInput').addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') this.joinChat();
+                });
 
-        // ПОЛУЧЕНИЕ СЛУЧАЙНОЙ НАГРАДЫ
-        function getRandomReward(chances) {
-            const roll = Math.random() * 100;
-            let currentChance = 0;
+                // Вход в созданный чат
+                document.getElementById('enterChatBtn').addEventListener('click', () => {
+                    this.showChatScreen();
+                });
 
-            for (const [rarity, chance] of Object.entries(chances)) {
-                currentChance += chance;
-                if (roll <= currentChance) {
-                    const availableItems = wheelItems.filter(item => item.rarity === rarity);
-                    return availableItems[Math.floor(Math.random() * availableItems.length)];
+                // Отправка сообщения
+                document.getElementById('sendMessageBtn').addEventListener('click', () => {
+                    this.sendMessage();
+                });
+
+                document.getElementById('messageInput').addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') this.sendMessage();
+                });
+            }
+
+            setupSocketEvents() {
+                this.socket.on('connect', () => {
+                    this.updateStatus('connected', '✅ Подключено');
+                });
+
+                this.socket.on('disconnect', () => {
+                    this.updateStatus('disconnected', '❌ Отключено');
+                });
+
+                this.socket.on('chat_created', (code) => {
+                    this.currentChatCode = code;
+                    document.getElementById('chatCode').textContent = code;
+                    document.getElementById('createdChat').classList.remove('hidden');
+                });
+
+                this.socket.on('join_success', (data) => {
+                    this.currentChatCode = data.code;
+                    this.showChatScreen();
+                    // Загружаем предыдущие сообщения
+                    data.messages.forEach(msg => this.displayMessage(msg));
+                });
+
+                this.socket.on('new_message', (message) => {
+                    this.displayMessage(message);
+                });
+
+                this.socket.on('user_joined', (text) => {
+                    this.displaySystemMessage(text);
+                });
+
+                this.socket.on('error', (error) => {
+                    alert('Ошибка: ' + error);
+                });
+            }
+
+            joinChat() {
+                const code = document.getElementById('joinCodeInput').value.trim().toUpperCase();
+                if (code.length === 6) {
+                    this.socket.emit('join_chat', code);
+                } else {
+                    alert('Код должен содержать 6 символов');
                 }
             }
-            
-            return wheelItems[0];
-        }
 
-        // ПОКАЗАТЬ ВЫИГРЫШ
-        function showReward(reward) {
-            inventory.push(reward);
-            
-            document.getElementById('rewardIcon').textContent = reward.icon;
-            document.getElementById('rewardName').textContent = reward.name;
-            document.getElementById('rewardRarity').textContent = getRarityText(reward.rarity);
-            document.getElementById('rewardRarity').style.background = getRarityColor(reward.rarity);
-            
-            document.getElementById('rewardAnimation').style.display = 'flex';
-            updateInventory();
-            saveGame();
-        }
-
-        // ЗАКРЫТЬ АНИМАЦИЮ ВЫИГРЫША
-        function closeReward() {
-            document.getElementById('rewardAnimation').style.display = 'none';
-        }
-
-        // ОБНОВИТЬ ИНТЕРФЕЙС
-        function updateUI() {
-            document.getElementById('starsCount').textContent = stars;
-            document.getElementById('level').textContent = level;
-            updateSpinButton();
-        }
-
-        // ОБНОВИТЬ ИНВЕНТАРЬ
-        function updateInventory() {
-            const inventoryEl = document.getElementById('inventory');
-            inventoryEl.innerHTML = '';
-            
-            if (inventory.length === 0) {
-                inventoryEl.innerHTML = '<div class="inventory-item">Пусто</div>';
-                return;
+            showChatScreen() {
+                document.getElementById('welcomeScreen').classList.add('hidden');
+                document.getElementById('chatScreen').classList.remove('hidden');
+                document.getElementById('currentChatCode').textContent = this.currentChatCode;
+                document.getElementById('messageInput').focus();
             }
-            
-            inventory.forEach(item => {
-                const itemEl = document.createElement('div');
-                itemEl.className = 'inventory-item';
-                itemEl.innerHTML = `
-                    <div style="font-size: 20px;">${item.icon}</div>
-                    <div>${item.name}</div>
-                    <div style="font-size: 10px; color: ${getRarityColor(item.rarity)}">
-                        ${getRarityText(item.rarity)}
+
+            sendMessage() {
+                const messageInput = document.getElementById('messageInput');
+                const usernameInput = document.getElementById('usernameInput');
+                const message = messageInput.value.trim();
+                const username = usernameInput.value.trim() || 'Аноним';
+
+                if (message && this.currentChatCode) {
+                    this.socket.emit('send_message', {
+                        code: this.currentChatCode,
+                        message: message,
+                        username: username
+                    });
+                    messageInput.value = '';
+                }
+            }
+
+            displayMessage(message) {
+                const messagesDiv = document.getElementById('messages');
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'message';
+                
+                // Помечаем свои сообщения
+                if (message.socketId === this.socket.id) {
+                    messageDiv.classList.add('my-message');
+                }
+
+                messageDiv.innerHTML = `
+                    <div class="message-header">
+                        <span class="message-username">${this.escapeHtml(message.username)}</span>
+                        <span class="message-time">${message.timestamp}</span>
                     </div>
+                    <div class="message-text">${this.escapeHtml(message.text)}</div>
                 `;
-                inventoryEl.appendChild(itemEl);
+
+                messagesDiv.appendChild(messageDiv);
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            }
+
+            displaySystemMessage(text) {
+                const messagesDiv = document.getElementById('messages');
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'message';
+                messageDiv.style.textAlign = 'center';
+                messageDiv.style.fontStyle = 'italic';
+                messageDiv.style.color = '#666';
+                messageDiv.textContent = text;
+                messagesDiv.appendChild(messageDiv);
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            }
+
+            updateStatus(type, text) {
+                const statusEl = document.getElementById('status');
+                statusEl.textContent = text;
+                statusEl.className = type;
+            }
+
+            escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+        }
+
+        // Вспомогательные функции
+        function copyCode() {
+            const code = document.getElementById('chatCode').textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                alert('Код скопирован в буфер обмена!');
             });
         }
 
-        // ПОЛУЧИТЬ ЦВЕТ РЕДКОСТИ
-        function getRarityColor(rarity) {
-            const colors = {
-                common: '#b0b0b0',
-                rare: '#007bff', 
-                epic: '#9c27b0',
-                legendary: '#ff9800',
-                mythical: '#f44336'
-            };
-            return colors[rarity] || '#b0b0b0';
-        }
-
-        // ПОЛУЧИТЬ ТЕКСТ РЕДКОСТИ
-        function getRarityText(rarity) {
-            const texts = {
-                common: 'Обычный',
-                rare: 'Редкий',
-                epic: 'Эпический', 
-                legendary: 'Легендарный',
-                mythical: 'УЛЬТРА РЕДКИЙ'
-            };
-            return texts[rarity] || 'Обычный';
-        }
-
-        // СОХРАНЕНИЕ ИГРЫ
-        function saveGame() {
-            const data = {
-                stars: stars,
-                level: level,
-                inventory: inventory
-            };
-            localStorage.setItem('nftRoulette', JSON.stringify(data));
-        }
-
-        // ЗАГРУЗКА ИГРЫ
-        function loadGame() {
-            const saved = localStorage.getItem('nftRoulette');
-            if (saved) {
-                const data = JSON.parse(saved);
-                stars = data.stars || 1000;
-                level = data.level || 1;
-                inventory = data.inventory || [];
-            }
-            updateUI();
-            updateInventory();
-        }
-
-        // АВТОСОХРАНЕНИЕ КАЖДЫЕ 30 СЕКУНД
-        setInterval(saveGame, 30000);
-
-        // ЗАПУСК ИГРЫ ПРИ ЗАГРУЗКЕ
-        document.addEventListener('DOMContentLoaded', initGame);
+        // Инициализация приложения
+        document.addEventListener('DOMContentLoaded', () => {
+            new AnonymousChat();
+        });
     </script>
 </body>
 </html>
