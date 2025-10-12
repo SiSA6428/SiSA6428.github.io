@@ -4,9 +4,9 @@ import json
 from datetime import datetime
 
 # Конфигурация
-BOT_TOKEN = "YOUR_BOT_TOKEN_HERE"
+BOT_TOKEN = "7846522503:AAHTFBxR55dxNJA9omFZtqv9UXLFvTHcvE4"
 ADMIN_PASSWORD = "bdadmin2024"
-GITHUB_DATA_URL = "https://raw.githubusercontent.com/ТВОЙ_USERNAME/ТВОЙ_РЕПОЗИТОРИЙ/main/data.json"
+GITHUB_DATA_URL = "https://raw.githubusercontent.com/SISA6428/SISA6428.github.io/main/data.json"
 
 bot = telebot.TeleBot(BOT_TOKEN)
 admin_sessions = {}
