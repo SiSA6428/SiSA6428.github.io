@@ -5,7 +5,7 @@ import time
 from datetime import datetime
 
 # КОНФИГУРАЦИЯ
-BOT_TOKEN = "ТВОЙ_ТОКЕН_ОТ_BOTFATHER"
+BOT_TOKEN = "7846522503:AAHTFBxR55dxNJA9omFZtqv9UXLFvTHcvE4"
 GITHUB_DATA_URL = "https://raw.githubusercontent.com/SISA6428/SISA6428.github.io/main/data.json"
 
 bot = telebot.TeleBot(BOT_TOKEN)
