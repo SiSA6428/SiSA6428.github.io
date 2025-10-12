@@ -2,19 +2,92 @@ import telebot
 import requests
 import json
 import time
+import base64
 from datetime import datetime
 
-# Конфигурация
+# КОНФИГУРАЦИЯ - ЗАПОЛНИ ЭТО!
 BOT_TOKEN = "7846522503:AAHTFBxR55dxNJA9omFZtqv9UXLFvTHcvE4"
 ADMIN_PASSWORD = "bdadmin2024"
-GITHUB_DATA_URL = "https://raw.githubusercontent.com/SISA6428/SISA6428.github.io/main/data.json"
+GITHUB_TOKEN = "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"  # Нужно создать!
+GITHUB_REPO = "SISA6428/SISA6428.github.io"
+GITHUB_FILE_PATH = "data.json"
 
 bot = telebot.TeleBot(BOT_TOKEN)
 admin_sessions = {}
 
+class GitHubManager:
+    def __init__(self, token, repo, file_path):
+        self.token = token
+        self.repo = repo
+        self.file_path = file_path
+        self.api_url = f"https://api.github.com/repos/{repo}/contents/{file_path}"
+        self.headers = {
+            "Authorization": f"token {token}",
+            "Accept": "application/vnd.github.v3+json"
+        }
+    
+    def get_file_data(self):
+        """Получить данные файла с GitHub"""
+        try:
+            response = requests.get(self.api_url, headers=self.headers)
+            if response.status_code == 200:
+                content = response.json()['content']
+                content = base64.b64decode(content).decode('utf-8')
+                return json.loads(content), response.json()['sha']
+            return None, None
+        except:
+            return None, None
+    
+    def update_file(self, new_data):
+        """Обновить файл на GitHub"""
+        try:
+            # Получаем текущие данные и SHA
+            current_data, sha = self.get_file_data()
+            if not current_data:
+                return False
+            
+            # Обновляем цену
+            current_data['current_price'] = new_data['current_price']
+            current_data['last_updated'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            
+            # Добавляем в историю
+            if 'price_history' not in current_data:
+                current_data['price_history'] = []
+            
+            current_data['price_history'].append({
+                'timestamp': int(time.time()),
+                'price': new_data['current_price'],
+                'date': datetime.now().strftime('%H:%M')
+            })
+            
+            # Ограничиваем историю
+            if len(current_data['price_history']) > 50:
+                current_data['price_history'] = current_data['price_history'][-50:]
+            
+            # Кодируем обратно в base64
+            content = json.dumps(current_data, indent=2, ensure_ascii=False)
+            content_b64 = base64.b64encode(content.encode('utf-8')).decode('utf-8')
+            
+            # Отправляем на GitHub
+            update_data = {
+                "message": f"💰 Price update: {new_data['current_price']} RUB",
+                "content": content_b64,
+                "sha": sha
+            }
+            
+            response = requests.put(self.api_url, headers=self.headers, json=update_data)
+            return response.status_code == 200
+            
+        except Exception as e:
+            print(f"Error: {e}")
+            return False
+
+# Инициализация GitHub менеджера
+github_mgr = GitHubManager(GITHUB_TOKEN, GITHUB_REPO, GITHUB_FILE_PATH)
+
 class BDCoinData:
     def __init__(self):
-        self.data_url = GITHUB_DATA_URL
+        self.data_url = f"https://raw.githubusercontent.com/{GITHUB_REPO}/main/{GITHUB_FILE_PATH}"
     
     def get_current_data(self):
         """Получить текущие данные с GitHub"""
@@ -36,7 +109,6 @@ class BDCoinData:
             }
         return None
 
-# Инициализация
 bd_data = BDCoinData()
 
 @bot.message_handler(commands=['start'])
@@ -45,15 +117,13 @@ def start_command(message):
 🪙 BD Coin Admin Panel
 
 Доступные команды:
-/login - Вход в админ-панель
+/login - Вход в админ-панель  
 /price - Текущая цена BD
 /setprice - Изменить цену
 /stats - Статистика
-/update - Принудительное обновление
+/update - Обновить данные
 
-💎 Всего монет: 10,000
-💰 Начальная цена: 0.01 ₽
-🔗 Данные синхронизируются с сайтом
+🔧 Бот МЕНЯЕТ цену на GitHub!
     """
     bot.send_message(message.chat.id, welcome_text)
 
@@ -84,62 +154,12 @@ def price_command(message):
 🕒 Обновлено: {data['last_updated']}
             """
         else:
-            price_text = """
-💰 BD Coin Price
-
-Текущая цена: 0.0100 ₽
-Капитализация: 100.00 ₽
-Всего монет: 10,000
-💡 Ожидание синхронизации...
-            """
+            price_text = "❌ Ошибка загрузки данных"
             
         bot.send_message(message.chat.id, price_text)
             
     except Exception as e:
-        bot.send_message(message.chat.id, "💎 BD Coin: 0.0100 ₽\n📊 Капитализация: 100.00 ₽")
-
-@bot.message_handler(commands=['stats'])
-def stats_command(message):
-    try:
-        data = bd_data.get_current_price()
-        
-        if data:
-            stats_text = f"""
-📊 BD Coin Statistics
-
-💰 Цена: {data['price']:.4f} ₽
-📈 Капитализация: {data['market_cap']:.2f} ₽
-🪙 Всего монет: {data['total_supply']:,}
-🕒 Обновлено: {data['last_updated']}
-🔗 Синхронизировано с сайтом
-            """
-        else:
-            stats_text = f"""
-📊 BD Coin Statistics
-
-💰 Цена: 0.0100 ₽
-📈 Капитализация: 100.00 ₽
-🪙 Всего монет: 10,000
-🕒 Обновлено: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-💡 Данные загружаются...
-            """
-        
-        bot.send_message(message.chat.id, stats_text)
-        
-    except Exception as e:
-        bot.send_message(message.chat.id, f"📊 Ошибка загрузки данных")
-
-@bot.message_handler(commands=['update'])
-def update_command(message):
-    """Принудительное обновление данных"""
-    try:
-        data = bd_data.get_current_price()
-        if data:
-            bot.send_message(message.chat.id, f"✅ Данные обновлены!\nТекущая цена: {data['price']:.4f} ₽")
-        else:
-            bot.send_message(message.chat.id, "❌ Не удалось обновить данные")
-    except:
-        bot.send_message(message.chat.id, "❌ Ошибка обновления")
+        bot.send_message(message.chat.id, f"❌ Ошибка: {e}")
 
 @bot.message_handler(commands=['setprice'])
 def setprice_command(message):
@@ -158,42 +178,42 @@ def process_new_price(message):
             bot.send_message(message.chat.id, "❌ Цена должна быть больше 0")
             return
         
-        # Здесь будет реальное обновление на GitHub
-        # Пока просто подтверждаем
-        bot.send_message(
-            message.chat.id,
-            f"✅ Цена установлена!\n"
-            f"Новая цена: {new_price:.4f} ₽\n\n"
-            f"💡 Чтобы применить изменения:\n"
-            f"1. Открой сайт: sisa6428.github.io\n"
-            f"2. В админ-панели введи пароль: bdadmin2024\n"
-            f"3. Установи новую цену: {new_price}\n"
-            f"4. Бот автоматически подхватит изменения\n\n"
-            f"🔄 Используй /update в боте для проверки"
-        )
+        # ОБНОВЛЯЕМ ЦЕНУ НА GITHUB!
+        update_data = {
+            'current_price': new_price
+        }
+        
+        success = github_mgr.update_file(update_data)
+        
+        if success:
+            bot.send_message(
+                message.chat.id,
+                f"✅ Цена ОБНОВЛЕНА на GitHub!\n"
+                f"Новая цена: {new_price:.4f} ₽\n"
+                f"🔄 Сайт автоматически подхватит изменения\n"
+                f"🌐 sisa6428.github.io"
+            )
+        else:
+            bot.send_message(message.chat.id, "❌ Ошибка обновления цены на GitHub")
             
     except ValueError:
-        bot.send_message(message.chat.id, "❌ Неверный формат цены. Используйте числа (например: 0.015)")
+        bot.send_message(message.chat.id, "❌ Неверный формат цены")
     except Exception as e:
-        bot.send_message(message.chat.id, f"✅ Цена установлена на {message.text} ₽")
+        bot.send_message(message.chat.id, f"❌ Ошибка: {e}")
 
-@bot.message_handler(func=lambda message: True)
-def handle_all_messages(message):
-    if message.text.startswith('/'):
-        bot.send_message(message.chat.id, "❌ Неизвестная команда. Используйте /start для списка команд")
-    else:
-        # Авто-обновление при любом сообщении
-        try:
-            data = bd_data.get_current_price()
-            if data:
-                bot.send_message(message.chat.id, f"💎 BD Coin: {data['price']:.4f} ₽\n🔄 Данные синхронизированы")
-            else:
-                bot.send_message(message.chat.id, "💎 BD Coin - криптовалюта будущего!\nИспользуйте /start для управления")
-        except:
-            bot.send_message(message.chat.id, "💎 BD Coin - криптовалюта будущего!\nИспользуйте /start для управления")
+@bot.message_handler(commands=['update'])
+def update_command(message):
+    """Обновить данные"""
+    try:
+        data = bd_data.get_current_price()
+        if data:
+            bot.send_message(message.chat.id, f"✅ Данные обновлены!\nЦена: {data['price']:.4f} ₽")
+        else:
+            bot.send_message(message.chat.id, "❌ Ошибка загрузки данных")
+    except Exception as e:
+        bot.send_message(message.chat.id, f"❌ Ошибка: {e}")
 
 if __name__ == "__main__":
     print("🤖 BD Coin Bot запущен...")
-    print("🔗 Бот синхронизируется с GitHub данными")
-    print("🌐 Сайт: https://sisa6428.github.io/")
+    print("🔗 Бот МЕНЯЕТ данные на GitHub!")
     bot.polling(none_stop=True)
