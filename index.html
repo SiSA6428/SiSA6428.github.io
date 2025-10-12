@@ -6,7 +6,7 @@
     <title>BD Coin - Dark Green Crypto</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        /* ТВОИ СТИЛИ ОСТАЮТСЯ ТАКИМИ ЖЕ */
+        /* ТВОИ СТИЛИ ОСТАЮТСЯ ПРЕЖНИМИ */
         * {
             margin: 0;
             padding: 0;
@@ -175,22 +175,6 @@
             font-weight: bold;
             box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
         }
-
-        /* Анимации */
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
-        }
-
-        .pulse {
-            animation: pulse 2s infinite;
-        }
-
-        /* Скрыть scrollbar */
-        .container::-webkit-scrollbar {
-            display: none;
-        }
     </style>
 </head>
 <body>
@@ -246,21 +230,40 @@
     </div>
 
     <script>
+        // ========== НАСТРОЙКИ ==========
+        const GITHUB_DATA_URL = 'https://raw.githubusercontent.com/ТВОЙ_USERNAME/ТВОЙ_РЕПОЗИТОРИЙ/main/data.json';
+        const ADMIN_PASSWORD = "bdadmin2024";
+        
         // ========== СЕРВЕР НА JAVASCRIPT ==========
         class BDCoinServer {
             constructor() {
                 this.totalSupply = 10000;
                 this.currentPrice = 0.01;
                 this.priceHistory = [];
-                this.adminPassword = "bdadmin2024";
-                this.initializeHistory();
-                
-                // Создаем простой HTTP сервер для бота
-                this.setupBotAPI();
+                this.isAdminLoggedIn = false;
             }
 
-            initializeHistory() {
+            // Загрузка данных с GitHub
+            async loadDataFromGitHub() {
+                try {
+                    const response = await fetch(GITHUB_DATA_URL + '?t=' + Date.now());
+                    const data = await response.json();
+                    
+                    this.currentPrice = data.current_price;
+                    this.priceHistory = data.price_history || [];
+                    
+                    return true;
+                } catch (error) {
+                    console.log('Используются локальные данные');
+                    this.initializeDefaultData();
+                    return false;
+                }
+            }
+
+            initializeDefaultData() {
                 const now = Date.now();
+                this.priceHistory = [];
+                
                 for (let i = 50; i >= 0; i--) {
                     this.priceHistory.push({
                         timestamp: now - (i * 3600000),
@@ -273,80 +276,73 @@
                 }
             }
 
-            // API для Telegram бота
-            setupBotAPI() {
-                // Эндпоинт для получения текущей цены
-                window.getCurrentPriceAPI = () => {
-                    return {
-                        price: this.currentPrice,
-                        market_cap: this.currentPrice * this.totalSupply,
-                        total_supply: this.totalSupply
-                    };
-                };
-
-                // Эндпоинт для обновления цены
-                window.updatePriceAPI = (newPrice, password) => {
-                    if (password !== this.adminPassword) {
-                        return { error: "Неверный пароль" };
-                    }
-
-                    const oldPrice = this.currentPrice;
-                    this.currentPrice = parseFloat(newPrice);
-                    
-                    this.priceHistory.push({
-                        timestamp: Date.now(),
-                        price: this.currentPrice,
-                        date: new Date().toLocaleTimeString('ru-RU', { 
-                            hour: '2-digit', 
-                            minute: '2-digit' 
-                        })
-                    });
-
-                    if (this.priceHistory.length > 100) {
-                        this.priceHistory = this.priceHistory.slice(-100);
-                    }
-
-                    return { 
-                        success: true, 
-                        new_price: this.currentPrice,
-                        old_price: oldPrice
-                    };
-                };
-
-                // Эндпоинт для получения истории
-                window.getPriceHistoryAPI = (limit = 24) => {
-                    return this.priceHistory.slice(-limit);
-                };
-            }
-
             getCurrentPrice() {
-                return window.getCurrentPriceAPI();
+                return {
+                    price: this.currentPrice,
+                    market_cap: this.currentPrice * this.totalSupply,
+                    total_supply: this.totalSupply
+                };
             }
 
             getPriceHistory(limit = 24) {
-                return window.getPriceHistoryAPI(limit);
+                return this.priceHistory.slice(-limit);
             }
 
-            updatePrice(newPrice, password) {
-                return window.updatePriceAPI(newPrice, password);
+            async updatePrice(newPrice) {
+                const oldPrice = this.currentPrice;
+                this.currentPrice = parseFloat(newPrice);
+                
+                // Добавляем в историю
+                this.priceHistory.push({
+                    timestamp: Date.now(),
+                    price: this.currentPrice,
+                    date: new Date().toLocaleTimeString('ru-RU', { 
+                        hour: '2-digit', 
+                        minute: '2-digit' 
+                    })
+                });
+
+                // Ограничиваем историю
+                if (this.priceHistory.length > 100) {
+                    this.priceHistory = this.priceHistory.slice(-100);
+                }
+
+                // Сохраняем в GitHub (если настроено)
+                await this.saveDataToGitHub();
+
+                return { 
+                    success: true, 
+                    new_price: this.currentPrice,
+                    old_price: oldPrice
+                };
             }
 
-            addRandomPriceChange() {
-                const change = (Math.random() - 0.5) * 0.2;
-                const newPrice = Math.max(0.0001, this.currentPrice * (1 + change));
-                this.updatePrice(newPrice, this.adminPassword);
+            async saveDataToGitHub() {
+                // Здесь будет код для сохранения в GitHub через API
+                // Пока просто сохраняем локально
+                localStorage.setItem('bdcoin_data', JSON.stringify({
+                    current_price: this.currentPrice,
+                    price_history: this.priceHistory
+                }));
+                
+                return true;
+            }
+
+            loadLocalData() {
+                const saved = localStorage.getItem('bdcoin_data');
+                if (saved) {
+                    const data = JSON.parse(saved);
+                    this.currentPrice = data.current_price || 0.01;
+                    this.priceHistory = data.price_history || [];
+                }
             }
         }
 
-        // Инициализация сервера
-        const bdCoinServer = new BDCoinServer();
-
         // ========== КЛИЕНТСКАЯ ЧАСТЬ ==========
         let priceChart;
-        let currentPrice = 0.01;
-        let isAdminLoggedIn = false;
+        const bdCoinServer = new BDCoinServer();
 
-        function initChart() {
+        async function initChart() {
             const ctx = document.getElementById('priceChart').getContext('2d');
             priceChart = new Chart(ctx, {
                 type: 'line',
@@ -398,26 +394,32 @@
                     }
                 }
             });
+
+            // Загружаем данные при инициализации
+            await bdCoinServer.loadDataFromGitHub();
+            bdCoinServer.loadLocalData();
+            updateData();
         }
 
         function updateData() {
             const data = bdCoinServer.getCurrentPrice();
             const history = bdCoinServer.getPriceHistory(24);
             
-            currentPrice = data.price;
-            
-            document.getElementById('currentPrice').textContent = currentPrice.toFixed(4) + ' ₽';
-            document.getElementById('buyPrice').textContent = currentPrice.toFixed(4);
+            // Обновляем интерфейс
+            document.getElementById('currentPrice').textContent = data.price.toFixed(4) + ' ₽';
+            document.getElementById('buyPrice').textContent = data.price.toFixed(4);
             document.getElementById('marketCap').textContent = data.market_cap.toFixed(2) + ' ₽';
             document.getElementById('totalSupply').textContent = data.total_supply.toLocaleString();
             
+            // Обновляем изменение цены
             if (history.length > 1) {
-                const change = ((currentPrice - history[0].price) / history[0].price) * 100;
+                const change = ((data.price - history[0].price) / history[0].price) * 100;
                 const changeElement = document.getElementById('priceChange');
                 changeElement.textContent = (change >= 0 ? '+' : '') + change.toFixed(2) + '%';
                 changeElement.style.color = change >= 0 ? '#90ee90' : '#ff6b6b';
             }
             
+            // Обновляем график
             updateChart(history);
         }
 
@@ -432,6 +434,8 @@
 
         function simulateBuy() {
             const notification = document.getElementById('notification');
+            const currentPrice = bdCoinServer.getCurrentPrice().price;
+            
             notification.style.display = 'block';
             notification.textContent = `Покупка BD Coin по цене ${currentPrice.toFixed(4)} ₽ выполнена!`;
             
@@ -442,16 +446,16 @@
 
         function loginAdmin() {
             const password = document.getElementById('adminPassword').value;
-            if (password === bdCoinServer.adminPassword) {
-                isAdminLoggedIn = true;
+            if (password === ADMIN_PASSWORD) {
+                bdCoinServer.isAdminLoggedIn = true;
                 showAdminMessage('✅ Успешный вход в админ-панель!', '#90ee90');
             } else {
                 showAdminMessage('❌ Неверный пароль!', '#ff6b6b');
             }
         }
 
-        function updatePrice() {
-            if (!isAdminLoggedIn) {
+        async function updatePrice() {
+            if (!bdCoinServer.isAdminLoggedIn) {
                 showAdminMessage('❌ Сначала войдите в систему!', '#ff6b6b');
                 return;
             }
@@ -462,7 +466,7 @@
                 return;
             }
 
-            const result = bdCoinServer.updatePrice(newPrice, bdCoinServer.adminPassword);
+            const result = await bdCoinServer.updatePrice(newPrice);
             if (result.success) {
                 showAdminMessage(`✅ Цена обновлена: ${result.old_price.toFixed(4)} → ${result.new_price.toFixed(4)} ₽`, '#90ee90');
                 document.getElementById('newPrice').value = '';
@@ -472,10 +476,20 @@
             }
         }
 
-        function addRandomData() {
-            bdCoinServer.addRandomPriceChange();
-            showAdminMessage('🎲 Добавлено случайное изменение цены', '#ffd700');
-            updateData();
+        async function addRandomData() {
+            if (!bdCoinServer.isAdminLoggedIn) {
+                showAdminMessage('❌ Сначала войдите в систему!', '#ff6b6b');
+                return;
+            }
+
+            const change = (Math.random() - 0.5) * 0.2;
+            const newPrice = Math.max(0.0001, bdCoinServer.currentPrice * (1 + change));
+            
+            const result = await bdCoinServer.updatePrice(newPrice);
+            if (result.success) {
+                showAdminMessage(`🎲 Цена изменена: ${result.new_price.toFixed(4)} ₽`, '#ffd700');
+                updateData();
+            }
         }
 
         function showAdminMessage(message, color) {
@@ -487,12 +501,12 @@
             }, 5000);
         }
 
-        // Запуск обновления
-        setInterval(updateData, 3000);
+        // Запуск обновления каждые 5 секунд
+        setInterval(updateData, 5000);
 
+        // Инициализация при загрузке
         document.addEventListener('DOMContentLoaded', function() {
             initChart();
-            updateData();
             
             // Блокировка масштабирования
             document.addEventListener('touchmove', function(e) {
