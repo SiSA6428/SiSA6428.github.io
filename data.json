@@ -1,6 +1,7 @@
 {
   "current_price": 0.01,
   "total_supply": 10000,
+  "last_updated": "2024-01-01 12:00:00",
   "price_history": [
     {"timestamp": 1700000000, "price": 0.01, "date": "12:00"}
   ]
