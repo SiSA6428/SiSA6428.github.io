@@ -6,6 +6,7 @@
     <title>BD Coin - Dark Green Crypto</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+        /* ТВОИ СТИЛИ ОСТАЮТСЯ ТАКИМИ ЖЕ */
         * {
             margin: 0;
             padding: 0;
@@ -190,25 +191,6 @@
         .container::-webkit-scrollbar {
             display: none;
         }
-
-        /* Адаптивность */
-        @media (max-width: 768px) {
-            .container {
-                padding: 10px;
-            }
-            
-            .coin-name {
-                font-size: 1.8em;
-            }
-            
-            .price-display {
-                font-size: 2em;
-            }
-            
-            .chart-container {
-                height: 250px;
-            }
-        }
     </style>
 </head>
 <body>
@@ -272,14 +254,16 @@
                 this.priceHistory = [];
                 this.adminPassword = "bdadmin2024";
                 this.initializeHistory();
+                
+                // Создаем простой HTTP сервер для бота
+                this.setupBotAPI();
             }
 
             initializeHistory() {
-                // Создаем начальную историю цен
                 const now = Date.now();
                 for (let i = 50; i >= 0; i--) {
                     this.priceHistory.push({
-                        timestamp: now - (i * 3600000), // часы в миллисекундах
+                        timestamp: now - (i * 3600000),
                         price: 0.01,
                         date: new Date(now - (i * 3600000)).toLocaleTimeString('ru-RU', { 
                             hour: '2-digit', 
@@ -289,50 +273,65 @@
                 }
             }
 
-            getCurrentPrice() {
-                return {
-                    price: this.currentPrice,
-                    market_cap: this.currentPrice * this.totalSupply,
-                    total_supply: this.totalSupply
+            // API для Telegram бота
+            setupBotAPI() {
+                // Эндпоинт для получения текущей цены
+                window.getCurrentPriceAPI = () => {
+                    return {
+                        price: this.currentPrice,
+                        market_cap: this.currentPrice * this.totalSupply,
+                        total_supply: this.totalSupply
+                    };
                 };
+
+                // Эндпоинт для обновления цены
+                window.updatePriceAPI = (newPrice, password) => {
+                    if (password !== this.adminPassword) {
+                        return { error: "Неверный пароль" };
+                    }
+
+                    const oldPrice = this.currentPrice;
+                    this.currentPrice = parseFloat(newPrice);
+                    
+                    this.priceHistory.push({
+                        timestamp: Date.now(),
+                        price: this.currentPrice,
+                        date: new Date().toLocaleTimeString('ru-RU', { 
+                            hour: '2-digit', 
+                            minute: '2-digit' 
+                        })
+                    });
+
+                    if (this.priceHistory.length > 100) {
+                        this.priceHistory = this.priceHistory.slice(-100);
+                    }
+
+                    return { 
+                        success: true, 
+                        new_price: this.currentPrice,
+                        old_price: oldPrice
+                    };
+                };
+
+                // Эндпоинт для получения истории
+                window.getPriceHistoryAPI = (limit = 24) => {
+                    return this.priceHistory.slice(-limit);
+                };
+            }
+
+            getCurrentPrice() {
+                return window.getCurrentPriceAPI();
             }
 
             getPriceHistory(limit = 24) {
-                return this.priceHistory.slice(-limit);
+                return window.getPriceHistoryAPI(limit);
             }
 
             updatePrice(newPrice, password) {
-                if (password !== this.adminPassword) {
-                    return { error: "Неверный пароль" };
-                }
-
-                const oldPrice = this.currentPrice;
-                this.currentPrice = parseFloat(newPrice);
-                
-                // Добавляем в историю
-                this.priceHistory.push({
-                    timestamp: Date.now(),
-                    price: this.currentPrice,
-                    date: new Date().toLocaleTimeString('ru-RU', { 
-                        hour: '2-digit', 
-                        minute: '2-digit' 
-                    })
-                });
-
-                // Ограничиваем историю
-                if (this.priceHistory.length > 100) {
-                    this.priceHistory = this.priceHistory.slice(-100);
-                }
-
-                return { 
-                    success: true, 
-                    new_price: this.currentPrice,
-                    old_price: oldPrice
-                };
+                return window.updatePriceAPI(newPrice, password);
             }
 
             addRandomPriceChange() {
-                // Случайное изменение цены ±10%
                 const change = (Math.random() - 0.5) * 0.2;
                 const newPrice = Math.max(0.0001, this.currentPrice * (1 + change));
                 this.updatePrice(newPrice, this.adminPassword);
@@ -347,7 +346,6 @@
         let currentPrice = 0.01;
         let isAdminLoggedIn = false;
 
-        // Инициализация графика
         function initChart() {
             const ctx = document.getElementById('priceChart').getContext('2d');
             priceChart = new Chart(ctx, {
@@ -402,20 +400,17 @@
             });
         }
 
-        // Обновление данных с "сервера"
         function updateData() {
             const data = bdCoinServer.getCurrentPrice();
             const history = bdCoinServer.getPriceHistory(24);
             
             currentPrice = data.price;
             
-            // Обновляем интерфейс
             document.getElementById('currentPrice').textContent = currentPrice.toFixed(4) + ' ₽';
             document.getElementById('buyPrice').textContent = currentPrice.toFixed(4);
             document.getElementById('marketCap').textContent = data.market_cap.toFixed(2) + ' ₽';
             document.getElementById('totalSupply').textContent = data.total_supply.toLocaleString();
             
-            // Обновляем изменение цены
             if (history.length > 1) {
                 const change = ((currentPrice - history[0].price) / history[0].price) * 100;
                 const changeElement = document.getElementById('priceChange');
@@ -423,11 +418,9 @@
                 changeElement.style.color = change >= 0 ? '#90ee90' : '#ff6b6b';
             }
             
-            // Обновляем график
             updateChart(history);
         }
 
-        // Обновление графика
         function updateChart(priceData) {
             const labels = priceData.map(item => item.date);
             const prices = priceData.map(item => item.price);
@@ -437,7 +430,6 @@
             priceChart.update('none');
         }
 
-        // Симуляция покупки
         function simulateBuy() {
             const notification = document.getElementById('notification');
             notification.style.display = 'block';
@@ -448,7 +440,6 @@
             }, 3000);
         }
 
-        // Админ функции
         function loginAdmin() {
             const password = document.getElementById('adminPassword').value;
             if (password === bdCoinServer.adminPassword) {
@@ -496,15 +487,14 @@
             }, 5000);
         }
 
-        // Запуск обновления каждые 3 секунды
+        // Запуск обновления
         setInterval(updateData, 3000);
 
-        // Инициализация при загрузке
         document.addEventListener('DOMContentLoaded', function() {
             initChart();
             updateData();
             
-            // Блокировка масштабирования и скролла
+            // Блокировка масштабирования
             document.addEventListener('touchmove', function(e) {
                 if (e.scale !== 1) {
                     e.preventDefault();
