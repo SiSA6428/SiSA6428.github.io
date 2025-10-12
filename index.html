@@ -142,6 +142,39 @@
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
         }
 
+        .admin-panel {
+            background: rgba(10, 40, 10, 0.9);
+            padding: 20px;
+            border-radius: 15px;
+            margin: 15px 0;
+            border: 2px solid #ffd700;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .admin-input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid #32cd32;
+            border-radius: 8px;
+            background: rgba(20, 60, 20, 0.8);
+            color: white;
+            font-size: 1em;
+        }
+
+        .admin-button {
+            background: linear-gradient(135deg, #ffd700, #ffa500);
+            color: #0a2f0a;
+            border: none;
+            padding: 12px 25px;
+            font-size: 1.1em;
+            border-radius: 25px;
+            cursor: pointer;
+            margin: 5px;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+        }
+
         /* Анимации */
         @keyframes pulse {
             0% { transform: scale(1); }
@@ -182,8 +215,8 @@
     <div class="container">
         <div class="header">
             <h1 class="coin-name">BD COIN</h1>
-            <div class="price-display" id="currentPrice">0.01 ₽</div>
-            <div class="market-cap">Капитализация: <span id="marketCap">100 ₽</span></div>
+            <div class="price-display" id="currentPrice">0.0100 ₽</div>
+            <div>Капитализация: <span id="marketCap">100.00 ₽</span></div>
         </div>
 
         <div class="chart-container">
@@ -203,13 +236,26 @@
 
         <div class="buy-section">
             <h3>Купить BD Coin</h3>
-            <p>Текущая цена: <span id="buyPrice">0.01</span> ₽</p>
+            <p>Текущая цена: <span id="buyPrice">0.0100</span> ₽</p>
             <button class="buy-button pulse" onclick="simulateBuy()">
                 КУПИТЬ СЕЙЧАС
             </button>
             <p style="margin-top: 10px; font-size: 0.9em; color: #c8e6c8;">
-                Продажа через Telegram бота
+                💎 BD Coin - криптовалюта будущего!
             </p>
+        </div>
+
+        <!-- Админ панель -->
+        <div class="admin-panel">
+            <h3 style="color: #ffd700; text-align: center;">🔧 Админ Панель</h3>
+            <input type="password" id="adminPassword" class="admin-input" placeholder="Пароль администратора">
+            <input type="number" id="newPrice" class="admin-input" placeholder="Новая цена (рубли)" step="0.0001" min="0.0001">
+            <div style="text-align: center;">
+                <button class="admin-button" onclick="loginAdmin()">Войти</button>
+                <button class="admin-button" onclick="updatePrice()">Обновить цену</button>
+                <button class="admin-button" onclick="addRandomData()">Тест данных</button>
+            </div>
+            <div id="adminMessage" style="text-align: center; margin-top: 10px; color: #90ee90;"></div>
         </div>
     </div>
 
@@ -218,8 +264,88 @@
     </div>
 
     <script>
+        // ========== СЕРВЕР НА JAVASCRIPT ==========
+        class BDCoinServer {
+            constructor() {
+                this.totalSupply = 10000;
+                this.currentPrice = 0.01;
+                this.priceHistory = [];
+                this.adminPassword = "bdadmin2024";
+                this.initializeHistory();
+            }
+
+            initializeHistory() {
+                // Создаем начальную историю цен
+                const now = Date.now();
+                for (let i = 50; i >= 0; i--) {
+                    this.priceHistory.push({
+                        timestamp: now - (i * 3600000), // часы в миллисекундах
+                        price: 0.01,
+                        date: new Date(now - (i * 3600000)).toLocaleTimeString('ru-RU', { 
+                            hour: '2-digit', 
+                            minute: '2-digit' 
+                        })
+                    });
+                }
+            }
+
+            getCurrentPrice() {
+                return {
+                    price: this.currentPrice,
+                    market_cap: this.currentPrice * this.totalSupply,
+                    total_supply: this.totalSupply
+                };
+            }
+
+            getPriceHistory(limit = 24) {
+                return this.priceHistory.slice(-limit);
+            }
+
+            updatePrice(newPrice, password) {
+                if (password !== this.adminPassword) {
+                    return { error: "Неверный пароль" };
+                }
+
+                const oldPrice = this.currentPrice;
+                this.currentPrice = parseFloat(newPrice);
+                
+                // Добавляем в историю
+                this.priceHistory.push({
+                    timestamp: Date.now(),
+                    price: this.currentPrice,
+                    date: new Date().toLocaleTimeString('ru-RU', { 
+                        hour: '2-digit', 
+                        minute: '2-digit' 
+                    })
+                });
+
+                // Ограничиваем историю
+                if (this.priceHistory.length > 100) {
+                    this.priceHistory = this.priceHistory.slice(-100);
+                }
+
+                return { 
+                    success: true, 
+                    new_price: this.currentPrice,
+                    old_price: oldPrice
+                };
+            }
+
+            addRandomPriceChange() {
+                // Случайное изменение цены ±10%
+                const change = (Math.random() - 0.5) * 0.2;
+                const newPrice = Math.max(0.0001, this.currentPrice * (1 + change));
+                this.updatePrice(newPrice, this.adminPassword);
+            }
+        }
+
+        // Инициализация сервера
+        const bdCoinServer = new BDCoinServer();
+
+        // ========== КЛИЕНТСКАЯ ЧАСТЬ ==========
         let priceChart;
         let currentPrice = 0.01;
+        let isAdminLoggedIn = false;
 
         // Инициализация графика
         function initChart() {
@@ -276,26 +402,29 @@
             });
         }
 
-        // Обновление данных
-        async function updateData() {
-            try {
-                const response = await fetch('/api/current_price');
-                const data = await response.json();
-                
-                currentPrice = data.price;
-                document.getElementById('currentPrice').textContent = currentPrice.toFixed(4) + ' ₽';
-                document.getElementById('buyPrice').textContent = currentPrice.toFixed(4);
-                document.getElementById('marketCap').textContent = (data.market_cap).toFixed(2) + ' ₽';
-                
-                // Обновляем график
-                const priceResponse = await fetch('/api/price_data');
-                const priceData = await priceResponse.json();
-                
-                updateChart(priceData);
-                
-            } catch (error) {
-                console.error('Error updating data:', error);
+        // Обновление данных с "сервера"
+        function updateData() {
+            const data = bdCoinServer.getCurrentPrice();
+            const history = bdCoinServer.getPriceHistory(24);
+            
+            currentPrice = data.price;
+            
+            // Обновляем интерфейс
+            document.getElementById('currentPrice').textContent = currentPrice.toFixed(4) + ' ₽';
+            document.getElementById('buyPrice').textContent = currentPrice.toFixed(4);
+            document.getElementById('marketCap').textContent = data.market_cap.toFixed(2) + ' ₽';
+            document.getElementById('totalSupply').textContent = data.total_supply.toLocaleString();
+            
+            // Обновляем изменение цены
+            if (history.length > 1) {
+                const change = ((currentPrice - history[0].price) / history[0].price) * 100;
+                const changeElement = document.getElementById('priceChange');
+                changeElement.textContent = (change >= 0 ? '+' : '') + change.toFixed(2) + '%';
+                changeElement.style.color = change >= 0 ? '#90ee90' : '#ff6b6b';
             }
+            
+            // Обновляем график
+            updateChart(history);
         }
 
         // Обновление графика
@@ -305,45 +434,93 @@
             
             priceChart.data.labels = labels;
             priceChart.data.datasets[0].data = prices;
-            priceChart.update();
+            priceChart.update('none');
         }
 
         // Симуляция покупки
         function simulateBuy() {
             const notification = document.getElementById('notification');
             notification.style.display = 'block';
-            notification.textContent = 'Покупка BD Coin выполнена!';
+            notification.textContent = `Покупка BD Coin по цене ${currentPrice.toFixed(4)} ₽ выполнена!`;
             
             setTimeout(() => {
                 notification.style.display = 'none';
             }, 3000);
         }
 
-        // Запуск обновления каждые 5 секунд
-        setInterval(updateData, 5000);
+        // Админ функции
+        function loginAdmin() {
+            const password = document.getElementById('adminPassword').value;
+            if (password === bdCoinServer.adminPassword) {
+                isAdminLoggedIn = true;
+                showAdminMessage('✅ Успешный вход в админ-панель!', '#90ee90');
+            } else {
+                showAdminMessage('❌ Неверный пароль!', '#ff6b6b');
+            }
+        }
+
+        function updatePrice() {
+            if (!isAdminLoggedIn) {
+                showAdminMessage('❌ Сначала войдите в систему!', '#ff6b6b');
+                return;
+            }
+
+            const newPrice = document.getElementById('newPrice').value;
+            if (!newPrice) {
+                showAdminMessage('❌ Введите новую цену!', '#ff6b6b');
+                return;
+            }
+
+            const result = bdCoinServer.updatePrice(newPrice, bdCoinServer.adminPassword);
+            if (result.success) {
+                showAdminMessage(`✅ Цена обновлена: ${result.old_price.toFixed(4)} → ${result.new_price.toFixed(4)} ₽`, '#90ee90');
+                document.getElementById('newPrice').value = '';
+                updateData();
+            } else {
+                showAdminMessage('❌ Ошибка обновления цены', '#ff6b6b');
+            }
+        }
+
+        function addRandomData() {
+            bdCoinServer.addRandomPriceChange();
+            showAdminMessage('🎲 Добавлено случайное изменение цены', '#ffd700');
+            updateData();
+        }
+
+        function showAdminMessage(message, color) {
+            const messageElement = document.getElementById('adminMessage');
+            messageElement.textContent = message;
+            messageElement.style.color = color;
+            setTimeout(() => {
+                messageElement.textContent = '';
+            }, 5000);
+        }
+
+        // Запуск обновления каждые 3 секунды
+        setInterval(updateData, 3000);
 
         // Инициализация при загрузке
         document.addEventListener('DOMContentLoaded', function() {
             initChart();
             updateData();
-        });
+            
+            // Блокировка масштабирования и скролла
+            document.addEventListener('touchmove', function(e) {
+                if (e.scale !== 1) {
+                    e.preventDefault();
+                }
+            }, { passive: false });
 
-        // Блокировка масштабирования и скролла
-        document.addEventListener('touchmove', function(e) {
-            if (e.scale !== 1) {
+            document.addEventListener('gesturestart', function(e) {
                 e.preventDefault();
-            }
-        }, { passive: false });
+            });
 
-        document.addEventListener('gesturestart', function(e) {
-            e.preventDefault();
+            document.addEventListener('wheel', function(e) {
+                if (e.ctrlKey) {
+                    e.preventDefault();
+                }
+            }, { passive: false });
         });
-
-        document.addEventListener('wheel', function(e) {
-            if (e.ctrlKey) {
-                e.preventDefault();
-            }
-        }, { passive: false });
     </script>
 </body>
 </html>
