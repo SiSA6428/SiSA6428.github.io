@@ -18,8 +18,10 @@
         .stat-value { font-size: 1.3em; color: #90ee90; font-weight: bold; }
         .stat-label { font-size: 0.9em; color: #c8e6c8; margin-top: 5px; }
         .buy-section { background: rgba(10, 40, 10, 0.9); padding: 20px; border-radius: 15px; margin: 15px 0; border: 2px solid #32cd32; text-align: center; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); }
+        .sell-section { background: rgba(10, 40, 10, 0.9); padding: 20px; border-radius: 15px; margin: 15px 0; border: 2px solid #ff6b6b; text-align: center; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); }
         .buy-button { background: linear-gradient(135deg, #32cd32, #228b22); color: white; border: none; padding: 15px 30px; font-size: 1.2em; border-radius: 25px; cursor: pointer; margin: 10px 0; width: 100%; font-weight: bold; box-shadow: 0 4px 15px rgba(50, 205, 50, 0.4); transition: all 0.3s ease; }
-        .buy-button:active { transform: scale(0.95); box-shadow: 0 2px 8px rgba(50, 205, 50, 0.6); }
+        .sell-button { background: linear-gradient(135deg, #ff6b6b, #ee5a52); color: white; border: none; padding: 15px 30px; font-size: 1.2em; border-radius: 25px; cursor: pointer; margin: 10px 0; width: 100%; font-weight: bold; box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4); transition: all 0.3s ease; }
+        .buy-button:active, .sell-button:active { transform: scale(0.95); }
         .notification { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: rgba(50, 205, 50, 0.9); color: white; padding: 15px 25px; border-radius: 25px; z-index: 1000; display: none; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); }
         
         /* Секретная админ-панель */
@@ -39,16 +41,49 @@
             margin: 15px 0; 
             border: 2px solid #ffd700; 
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-            display: none; /* Скрыта по умолчанию */
+            display: none;
         }
         .admin-input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #32cd32; border-radius: 8px; background: rgba(20, 60, 20, 0.8); color: white; font-size: 1em; }
         .admin-button { background: linear-gradient(135deg, #ffd700, #ffa500); color: #0a2f0a; border: none; padding: 12px 25px; font-size: 1.1em; border-radius: 25px; cursor: pointer; margin: 5px; font-weight: bold; box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4); }
 
-        /* Стили для кошелька */
+        /* Стили для кошелька и профиля */
         .wallet-section { background: rgba(10, 40, 10, 0.9); padding: 20px; border-radius: 15px; margin: 15px 0; border: 2px solid #4169e1; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); }
         .wallet-info { text-align: center; margin-bottom: 15px; }
         .wallet-id { font-size: 1.2em; color: #90ee90; font-weight: bold; background: rgba(20, 60, 20, 0.8); padding: 10px; border-radius: 8px; margin: 10px 0; }
         .balance { font-size: 2em; color: #32cd32; font-weight: bold; margin: 10px 0; }
+        
+        /* Окно входа/регистрации */
+        .auth-modal { 
+            display: none; 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: rgba(0,0,0,0.8); 
+            z-index: 10000; 
+            justify-content: center; 
+            align-items: center; 
+        }
+        .auth-content { 
+            background: rgba(10, 40, 10, 0.95); 
+            padding: 30px; 
+            border-radius: 15px; 
+            border: 2px solid #32cd32; 
+            width: 90%; 
+            max-width: 400px; 
+        }
+        .auth-tabs { display: flex; margin-bottom: 20px; }
+        .auth-tab { 
+            flex: 1; 
+            padding: 10px; 
+            text-align: center; 
+            background: rgba(20, 60, 20, 0.8); 
+            cursor: pointer; 
+            border-radius: 8px; 
+            margin: 0 5px; 
+        }
+        .auth-tab.active { background: #32cd32; color: white; }
         
         /* Анимации */
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
@@ -58,12 +93,48 @@
     </style>
 </head>
 <body>
-    <!-- Секретный триггер для админки (тройное нажатие) -->
+    <!-- Секретный триггер для админки -->
     <div class="secret-trigger" id="secretTrigger"></div>
 
-    <div class="container">
+    <!-- Модальное окно авторизации -->
+    <div class="auth-modal" id="authModal">
+        <div class="auth-content">
+            <h3 style="color: #90ee90; text-align: center; margin-bottom: 20px;">🔐 Вход в систему</h3>
+            
+            <div class="auth-tabs">
+                <div class="auth-tab active" id="loginTab" onclick="showTab('login')">Вход</div>
+                <div class="auth-tab" id="registerTab" onclick="showTab('register')">Регистрация</div>
+            </div>
+            
+            <!-- Форма входа -->
+            <div id="loginForm">
+                <input type="text" id="loginUsername" class="admin-input" placeholder="ID кошелька">
+                <input type="password" id="loginPassword" class="admin-input" placeholder="Пароль">
+                <button class="buy-button" onclick="login()" style="margin-top: 10px;">Войти</button>
+            </div>
+            
+            <!-- Форма регистрации -->
+            <div id="registerForm" style="display: none;">
+                <input type="text" id="registerUsername" class="admin-input" placeholder="Придумайте логин">
+                <input type="password" id="registerPassword" class="admin-input" placeholder="Придумайте пароль">
+                <input type="password" id="registerConfirm" class="admin-input" placeholder="Повторите пароль">
+                <button class="buy-button" onclick="register()" style="margin-top: 10px;">Создать аккаунт</button>
+            </div>
+            
+            <p style="text-align: center; margin-top: 15px; font-size: 0.9em; color: #c8e6c8;">
+                💡 После регистрации сохраните ваш ID кошелька!
+            </p>
+        </div>
+    </div>
+
+    <div class="container" id="mainContainer" style="display: none;">
         <div class="header">
-            <h1 class="coin-name">BD COIN</h1>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h1 class="coin-name">BD COIN</h1>
+                <button class="admin-button" onclick="logout()" style="background: linear-gradient(135deg, #ff6b6b, #ee5a52); padding: 8px 15px; font-size: 0.9em;">
+                    👤 Выйти
+                </button>
+            </div>
             <div class="price-display" id="currentPrice">0.0100 ₽</div>
             <div>Капитализация: <span id="marketCap">100.00 ₽</span></div>
         </div>
@@ -86,41 +157,78 @@
         <!-- Секция кошелька -->
         <div class="wallet-section">
             <div class="wallet-info">
-                <h3 style="color: #4169e1;">👛 Мой Кошелек BD Coin</h3>
+                <h3 style="color: #4169e1;">👛 Мой Кошелек</h3>
                 <div class="wallet-id" id="walletId">Загрузка...</div>
                 <div class="balance" id="walletBalance">0.00 BD</div>
                 <div style="color: #c8e6c8; font-size: 0.9em;" id="balanceInRub">0.00 ₽</div>
+                <div style="color: #90ee90; font-size: 0.8em; margin-top: 5px;" id="userLogin"></div>
             </div>
-            <button class="buy-button" onclick="showBuyModal()">
-                💰 КУПИТЬ BD COIN
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px;">
+                <button class="admin-button" onclick="showBuyModal()" style="background: linear-gradient(135deg, #32cd32, #228b22);">
+                    💰 Купить
+                </button>
+                <button class="admin-button" onclick="showSellModal()" style="background: linear-gradient(135deg, #ff6b6b, #ee5a52);">
+                    💸 Продать
+                </button>
+            </div>
+        </div>
+
+        <!-- Секция покупки -->
+        <div class="buy-section">
+            <h3>🛒 Купить BD Coin</h3>
+            <p>Текущая цена: <span id="buyPrice">0.0100</span> ₽</p>
+            <button class="buy-button pulse" onclick="showBuyModal()">
+                КУПИТЬ BD COIN
             </button>
             <p style="margin-top: 10px; font-size: 0.9em; color: #c8e6c8;">
-                🤖 Для переводов используйте Telegram бота
+                📈 Покупка увеличивает цену
             </p>
         </div>
 
-        <div class="buy-section">
-            <h3>Торговая площадка</h3>
-            <p>Текущая цена: <span id="buyPrice">0.0100</span> ₽</p>
-            <button class="buy-button pulse" onclick="showBuyModal()">
-                🛒 КУПИТЬ СЕЙЧАС
+        <!-- Секция продажи -->
+        <div class="sell-section">
+            <h3>💸 Продать BD Coin</h3>
+            <p>Текущая цена: <span id="sellPrice">0.0100</span> ₽</p>
+            <button class="sell-button" onclick="showSellModal()">
+                ПРОДАТЬ BD COIN
             </button>
             <p style="margin-top: 10px; font-size: 0.9em; color: #c8e6c8;">
-                💎 BD Coin - криптовалюта будущего!
+                📉 Продажа уменьшает цену
             </p>
         </div>
 
         <!-- Секретная админ-панель -->
         <div class="admin-panel" id="adminPanel">
-            <h3 style="color: #ffd700; text-align: center;">👑 Секретная Админ-Панель</h3>
-            <input type="password" id="adminPassword" class="admin-input" placeholder="Пароль администратора">
-            <input type="password" id="githubToken" class="admin-input" placeholder="GitHub Token (опционально)">
-            <input type="number" id="newPrice" class="admin-input" placeholder="Новая цена (рубли)" step="0.0001" min="0.0001">
-            <div style="text-align: center;">
-                <button class="admin-button" onclick="loginAdmin()">Войти</button>
-                <button class="admin-button" onclick="updatePrice()">Обновить цену</button>
-                <button class="admin-button" onclick="hideAdminPanel()">Скрыть</button>
+            <h3 style="color: #ffd700; text-align: center;">👑 Админ Панель</h3>
+            
+            <div style="background: rgba(255,215,0,0.1); padding: 15px; border-radius: 8px; margin: 10px 0;">
+                <h4 style="color: #ffd700; text-align: center;">💸 Начисление баланса</h4>
+                <input type="text" id="adminWalletId" class="admin-input" placeholder="ID кошелька получателя">
+                <input type="number" id="adminAmount" class="admin-input" placeholder="Сумма BD" step="0.01" min="0.01">
+                <input type="text" id="adminDescription" class="admin-input" placeholder="Причина начисления">
+                
+                <div style="text-align: center;">
+                    <button class="admin-button" onclick="adminAddBalance()">Начислить</button>
+                </div>
             </div>
+
+            <div style="background: rgba(50,205,50,0.1); padding: 15px; border-radius: 8px; margin: 10px 0;">
+                <h4 style="color: #32cd32; text-align: center;">⚙️ Настройки цены</h4>
+                <input type="number" id="priceSensitivity" class="admin-input" placeholder="Чувствительность цены (0.1-1.0)" step="0.01" min="0.01" max="1.0" value="0.05">
+                <input type="number" id="minPrice" class="admin-input" placeholder="Минимальная цена" step="0.0001" min="0.0001" value="0.001">
+                <input type="number" id="maxPrice" class="admin-input" placeholder="Максимальная цена" step="0.01" min="0.01" value="10.0">
+                
+                <div style="text-align: center;">
+                    <button class="admin-button" onclick="savePriceSettings()">Сохранить</button>
+                    <button class="admin-button" onclick="manualPriceChange()" style="background: linear-gradient(135deg, #32cd32, #228b22);">Изменить цену</button>
+                </div>
+            </div>
+            
+            <div style="text-align: center; margin-top: 15px;">
+                <button class="admin-button" onclick="hideAdminPanel()" style="background: linear-gradient(135deg, #ff6b6b, #ee5a52);">Скрыть панель</button>
+            </div>
+            
             <div id="adminMessage" style="text-align: center; margin-top: 10px; color: #90ee90;"></div>
         </div>
     </div>
@@ -129,15 +237,59 @@
     <div id="buyModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 10000; justify-content: center; align-items: center;">
         <div style="background: rgba(10, 40, 10, 0.95); padding: 30px; border-radius: 15px; border: 2px solid #32cd32; width: 90%; max-width: 400px;">
             <h3 style="color: #90ee90; text-align: center; margin-bottom: 20px;">🛒 Покупка BD Coin</h3>
-            <p style="text-align: center; margin-bottom: 15px; color: #c8e6c8;">Текущая цена: <span id="modalPrice">0.0100</span> ₽</p>
+            <p style="text-align: center; margin-bottom: 15px; color: #c8e6c8;">Текущая цена: <span id="modalBuyPrice">0.0100</span> ₽</p>
             <input type="number" id="buyAmount" class="admin-input" placeholder="Сумма в рублях" step="1" min="1">
             <div style="text-align: center; margin: 15px 0;">
                 <div style="color: #90ee90; font-size: 0.9em;">Вы получите: <span id="calculatedBD">0.00</span> BD</div>
+                <div style="color: #ffd700; font-size: 0.8em; margin-top: 5px;">Новая цена: <span id="newPriceAfterBuy">0.0100</span> ₽</div>
             </div>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                 <button class="admin-button" onclick="hideBuyModal()" style="background: linear-gradient(135deg, #ff6b6b, #ee5a52);">Отмена</button>
                 <button class="admin-button" onclick="processBuy()" style="background: linear-gradient(135deg, #32cd32, #228b22);">Купить</button>
             </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно продажи -->
+    <div id="sellModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 10000; justify-content: center; align-items: center;">
+        <div style="background: rgba(10, 40, 10, 0.95); padding: 30px; border-radius: 15px; border: 2px solid #ff6b6b; width: 90%; max-width: 400px;">
+            <h3 style="color: #90ee90; text-align: center; margin-bottom: 20px;">💸 Продажа BD Coin</h3>
+            <p style="text-align: center; margin-bottom: 15px; color: #c8e6c8;">Текущая цена: <span id="modalSellPrice">0.0100</span> ₽</p>
+            <input type="number" id="sellAmount" class="admin-input" placeholder="Количество BD для продажи" step="0.01" min="0.01">
+            <div style="text-align: center; margin: 15px 0;">
+                <div style="color: #90ee90; font-size: 0.9em;">Вы получите: <span id="calculatedRub">0.00</span> ₽</div>
+                <div style="color: #ff6b6b; font-size: 0.8em; margin-top: 5px;">Новая цена: <span id="newPriceAfterSell">0.0100</span> ₽</div>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <button class="admin-button" onclick="hideSellModal()" style="background: linear-gradient(135deg, #ff6b6b, #ee5a52);">Отмена</button>
+                <button class="admin-button" onclick="processSell()" style="background: linear-gradient(135deg, #ff6b6b, #ee5a52);">Продать</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно профиля -->
+    <div id="profileModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 10000; justify-content: center; align-items: center;">
+        <div style="background: rgba(10, 40, 10, 0.95); padding: 30px; border-radius: 15px; border: 2px solid #4169e1; width: 90%; max-width: 400px;">
+            <h3 style="color: #90ee90; text-align: center; margin-bottom: 20px;">👤 Мой Профиль</h3>
+            
+            <div style="background: rgba(20, 60, 20, 0.8); padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                <div style="color: #c8e6c8; font-size: 0.9em;">Логин:</div>
+                <div style="color: #90ee90; font-weight: bold;" id="profileLogin"></div>
+            </div>
+            
+            <div style="background: rgba(20, 60, 20, 0.8); padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                <div style="color: #c8e6c8; font-size: 0.9em;">ID кошелька:</div>
+                <div style="color: #32cd32; font-weight: bold; font-size: 1.1em;" id="profileWalletId"></div>
+            </div>
+            
+            <div style="background: rgba(20, 60, 20, 0.8); padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                <div style="color: #c8e6c8; font-size: 0.9em;">Дата регистрации:</div>
+                <div style="color: #90ee90;" id="profileCreated"></div>
+            </div>
+            
+            <button class="admin-button" onclick="hideProfileModal()" style="width: 100%; background: linear-gradient(135deg, #4169e1, #3742fa);">
+                Закрыть
+            </button>
         </div>
     </div>
 
@@ -153,12 +305,19 @@
         const GITHUB_DATA_URL = `https://raw.githubusercontent.com/${GITHUB_USERNAME}/${GITHUB_REPO}/main/${DATA_FILE_PATH}`;
         const ADMIN_PASSWORD = "bdadmin2024";
 
-        // ========== СИСТЕМА КОШЕЛЬКА ==========
-        class WalletSystem {
+        // ========== СИСТЕМА ПОЛЬЗОВАТЕЛЕЙ ==========
+        class UserSystem {
             constructor() {
-                this.walletId = null;
-                this.balance = 0;
-                this.loadWallet();
+                this.currentUser = null;
+                this.users = this.loadUsers();
+            }
+
+            loadUsers() {
+                return JSON.parse(localStorage.getItem('bd_coin_users') || '{}');
+            }
+
+            saveUsers() {
+                localStorage.setItem('bd_coin_users', JSON.stringify(this.users));
             }
 
             generateWalletId() {
@@ -168,56 +327,73 @@
                 return `${part1}-${part2}`;
             }
 
-            loadWallet() {
-                let walletData = localStorage.getItem('bd_coin_wallet');
-                if (!walletData) {
-                    // Создаем новый кошелек
-                    this.walletId = this.generateWalletId();
-                    this.balance = 0;
-                    this.saveWallet();
-                } else {
-                    const data = JSON.parse(walletData);
-                    this.walletId = data.walletId;
-                    this.balance = data.balance || 0;
+            register(username, password) {
+                if (this.users[username]) {
+                    return { success: false, message: 'Логин уже занят' };
                 }
-                this.updateWalletUI();
-            }
 
-            saveWallet() {
-                const walletData = {
-                    walletId: this.walletId,
-                    balance: this.balance,
-                    created: new Date().toISOString()
+                const walletId = this.generateWalletId();
+                const userData = {
+                    username: username,
+                    password: password,
+                    walletId: walletId,
+                    balance: 0,
+                    created: new Date().toISOString(),
+                    transactions: []
                 };
-                localStorage.setItem('bd_coin_wallet', JSON.stringify(walletData));
-                this.updateWalletUI();
+
+                this.users[username] = userData;
+                this.saveUsers();
+
+                return { 
+                    success: true, 
+                    message: 'Аккаунт создан!',
+                    walletId: walletId,
+                    userData: userData
+                };
             }
 
-            updateWalletUI() {
-                if (this.walletId) {
-                    document.getElementById('walletId').textContent = this.walletId;
-                    document.getElementById('walletBalance').textContent = `${this.balance.toFixed(2)} BD`;
-                    
-                    // Обновляем баланс в рублях
-                    const currentPrice = bdCoinServer ? bdCoinServer.currentPrice : 0.01;
-                    const balanceInRub = this.balance * currentPrice;
-                    document.getElementById('balanceInRub').textContent = `${balanceInRub.toFixed(2)} ₽`;
+            login(username, password) {
+                const user = this.users[username];
+                if (!user) {
+                    return { success: false, message: 'Пользователь не найден' };
                 }
+
+                if (user.password !== password) {
+                    return { success: false, message: 'Неверный пароль' };
+                }
+
+                this.currentUser = user;
+                return { success: true, userData: user };
             }
 
-            addBalance(amount) {
-                this.balance += amount;
-                this.saveWallet();
-                this.showNotification(`✅ Начислено ${amount.toFixed(2)} BD!`);
+            logout() {
+                this.currentUser = null;
             }
 
-            showNotification(message) {
-                const notification = document.getElementById('notification');
-                notification.textContent = message;
-                notification.style.display = 'block';
-                setTimeout(() => {
-                    notification.style.display = 'none';
-                }, 3000);
+            addBalance(username, amount, description = "") {
+                if (!this.users[username]) {
+                    return { success: false, message: 'Пользователь не найден' };
+                }
+
+                this.users[username].balance += amount;
+                this.users[username].transactions.push({
+                    amount: amount,
+                    type: 'admin_add',
+                    description: description,
+                    timestamp: new Date().toISOString()
+                });
+
+                this.saveUsers();
+                return { success: true, newBalance: this.users[username].balance };
+            }
+
+            getCurrentUser() {
+                return this.currentUser;
+            }
+
+            isAdmin() {
+                return this.currentUser && this.currentUser.username === 'admin';
             }
         }
 
@@ -227,9 +403,21 @@
                 this.totalSupply = 10000;
                 this.currentPrice = 0.01;
                 this.priceHistory = [];
-                this.isAdminLoggedIn = false;
-                this.githubToken = null;
-                this.isUpdating = false;
+                this.priceSettings = this.loadPriceSettings();
+            }
+
+            loadPriceSettings() {
+                const settings = JSON.parse(localStorage.getItem('bd_coin_price_settings') || '{}');
+                return {
+                    sensitivity: settings.sensitivity || 0.05, // 5% изменение за сделку
+                    minPrice: settings.minPrice || 0.001,
+                    maxPrice: settings.maxPrice || 10.0,
+                    volumeMultiplier: settings.volumeMultiplier || 0.1
+                };
+            }
+
+            savePriceSettings() {
+                localStorage.setItem('bd_coin_price_settings', JSON.stringify(this.priceSettings));
             }
 
             async loadDataFromGitHub() {
@@ -258,6 +446,52 @@
                 }));
             }
 
+            calculatePriceChange(volume, isBuy) {
+                // Объем в процентах от общего предложения
+                const volumePercent = volume / this.totalSupply;
+                
+                // Изменение цены зависит от объема и чувствительности
+                let priceChange = volumePercent * this.priceSettings.sensitivity * 100;
+                
+                if (!isBuy) {
+                    priceChange = -priceChange; // Продажа уменьшает цену
+                }
+
+                return priceChange / 100; // Конвертируем в десятичную дробь
+            }
+
+            updatePrice(volume, isBuy) {
+                const priceChange = this.calculatePriceChange(volume, isBuy);
+                let newPrice = this.currentPrice * (1 + priceChange);
+
+                // Ограничиваем цену мин/макс значениями
+                newPrice = Math.max(this.priceSettings.minPrice, newPrice);
+                newPrice = Math.min(this.priceSettings.maxPrice, newPrice);
+
+                const oldPrice = this.currentPrice;
+                this.currentPrice = newPrice;
+
+                // Добавляем в историю
+                this.priceHistory.push({
+                    timestamp: Date.now(),
+                    price: newPrice,
+                    date: new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }),
+                    type: isBuy ? 'buy' : 'sell',
+                    volume: volume
+                });
+
+                // Ограничиваем историю
+                if (this.priceHistory.length > 100) {
+                    this.priceHistory = this.priceHistory.slice(-100);
+                }
+
+                return {
+                    oldPrice: oldPrice,
+                    newPrice: newPrice,
+                    change: priceChange * 100
+                };
+            }
+
             getCurrentData() {
                 return {
                     price: this.currentPrice,
@@ -267,95 +501,42 @@
                 };
             }
 
-            async updatePriceOnGitHub(newPrice) {
-                if (!this.githubToken) {
-                    return { success: false, message: "GitHub Token не установлен." };
-                }
+            manualPriceChange(newPrice) {
+                const oldPrice = this.currentPrice;
+                this.currentPrice = parseFloat(newPrice);
 
-                const newPriceFloat = parseFloat(newPrice);
-                if (isNaN(newPriceFloat) || newPriceFloat <= 0) {
-                    return { success: false, message: "Неверный формат цены." };
-                }
+                this.priceHistory.push({
+                    timestamp: Date.now(),
+                    price: this.currentPrice,
+                    date: new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }),
+                    type: 'manual',
+                    volume: 0
+                });
 
-                const API_URL = `https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO}/contents/${DATA_FILE_PATH}`;
-
-                try {
-                    showAdminMessage('🔄 Получение данных...', '#ffd700');
-                    const getFileResponse = await fetch(API_URL, {
-                        headers: { 
-                            'Authorization': `token ${this.githubToken}`,
-                            'Accept': 'application/vnd.github.v3+json'
-                        },
-                        cache: 'no-cache'
-                    });
-                    
-                    if (!getFileResponse.ok) throw new Error('Не удалось получить файл');
-                    
-                    const fileData = await getFileResponse.json();
-                    const currentSha = fileData.sha;
-                    
-                    const decodedContent = atob(fileData.content);
-                    const freshData = JSON.parse(decodedContent);
-                    const freshPriceHistory = freshData.price_history || [];
-
-                    const newHistoryEntry = {
-                        timestamp: Date.now(),
-                        price: newPriceFloat,
-                        date: new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })
-                    };
-
-                    const updatedHistory = [...freshPriceHistory, newHistoryEntry].slice(-100);
-
-                    const newContent = {
-                        current_price: newPriceFloat,
-                        total_supply: this.totalSupply,
-                        last_updated: new Date().toISOString(),
-                        price_history: updatedHistory
-                    };
-                    
-                    const encodedContent = btoa(unescape(encodeURIComponent(JSON.stringify(newContent, null, 2))));
-
-                    showAdminMessage('💾 Сохранение...', '#ffd700');
-                    const updateResponse = await fetch(API_URL, {
-                        method: 'PUT',
-                        headers: {
-                            'Authorization': `token ${this.githubToken}`,
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            message: `💰 Price update: ${newPriceFloat.toFixed(4)} RUB`,
-                            content: encodedContent,
-                            sha: currentSha
-                        })
-                    });
-
-                    if (!updateResponse.ok) {
-                        const errorData = await updateResponse.json();
-                        throw new Error(`GitHub API: ${errorData.message}`);
-                    }
-                    
-                    this.currentPrice = newPriceFloat;
-                    this.priceHistory = updatedHistory;
-
-                    return { success: true, new_price: newPriceFloat };
-
-                } catch (error) {
-                    console.error('Update error:', error);
-                    return { success: false, message: error.message };
-                }
+                return {
+                    oldPrice: oldPrice,
+                    newPrice: this.currentPrice
+                };
             }
         }
 
         // ========== ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ==========
         let priceChart;
-        let walletSystem;
+        let userSystem;
         let bdCoinServer;
         let refreshInterval;
 
         // ========== ИНИЦИАЛИЗАЦИЯ ==========
         async function initApp() {
-            walletSystem = new WalletSystem();
+            userSystem = new UserSystem();
             bdCoinServer = new BDCoinServer();
+            
+            // Проверяем авторизацию
+            if (userSystem.getCurrentUser()) {
+                showMainApp();
+            } else {
+                showAuthModal();
+            }
             
             initChart();
             await bdCoinServer.loadDataFromGitHub();
@@ -363,6 +544,92 @@
             
             refreshInterval = setInterval(refreshData, 30000);
             setupSecretAdminPanel();
+        }
+
+        function showAuthModal() {
+            document.getElementById('authModal').style.display = 'flex';
+            document.getElementById('mainContainer').style.display = 'none';
+        }
+
+        function showMainApp() {
+            document.getElementById('authModal').style.display = 'none';
+            document.getElementById('mainContainer').style.display = 'block';
+            updateUserUI();
+        }
+
+        function showTab(tabName) {
+            document.getElementById('loginTab').classList.remove('active');
+            document.getElementById('registerTab').classList.remove('active');
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('registerForm').style.display = 'none';
+            
+            if (tabName === 'login') {
+                document.getElementById('loginTab').classList.add('active');
+                document.getElementById('loginForm').style.display = 'block';
+            } else {
+                document.getElementById('registerTab').classList.add('active');
+                document.getElementById('registerForm').style.display = 'block';
+            }
+        }
+
+        function register() {
+            const username = document.getElementById('registerUsername').value.trim();
+            const password = document.getElementById('registerPassword').value;
+            const confirm = document.getElementById('registerConfirm').value;
+
+            if (!username || !password) {
+                alert('Заполните все поля!');
+                return;
+            }
+
+            if (password !== confirm) {
+                alert('Пароли не совпадают!');
+                return;
+            }
+
+            const result = userSystem.register(username, password);
+            if (result.success) {
+                alert(`✅ Аккаунт создан!\n\nВаш ID кошелька: ${result.walletId}\nСохраните его!`);
+                userSystem.currentUser = result.userData;
+                showMainApp();
+            } else {
+                alert('❌ ' + result.message);
+            }
+        }
+
+        function login() {
+            const username = document.getElementById('loginUsername').value.trim();
+            const password = document.getElementById('loginPassword').value;
+
+            if (!username || !password) {
+                alert('Заполните все поля!');
+                return;
+            }
+
+            const result = userSystem.login(username, password);
+            if (result.success) {
+                showMainApp();
+            } else {
+                alert('❌ ' + result.message);
+            }
+        }
+
+        function logout() {
+            userSystem.logout();
+            showAuthModal();
+        }
+
+        function updateUserUI() {
+            const user = userSystem.getCurrentUser();
+            if (!user) return;
+
+            document.getElementById('walletId').textContent = user.walletId;
+            document.getElementById('walletBalance').textContent = `${user.balance.toFixed(2)} BD`;
+            document.getElementById('userLogin').textContent = `Логин: ${user.username}`;
+            
+            const currentPrice = bdCoinServer ? bdCoinServer.currentPrice : 0.01;
+            const balanceInRub = user.balance * currentPrice;
+            document.getElementById('balanceInRub').textContent = `${balanceInRub.toFixed(2)} ₽`;
         }
 
         function setupSecretAdminPanel() {
@@ -379,7 +646,7 @@
                 clickCount++;
                 lastClickTime = currentTime;
                 
-                if (clickCount >= 3) {
+                if (clickCount >= 3 && userSystem.isAdmin()) {
                     showAdminPanel();
                     clickCount = 0;
                 }
@@ -388,15 +655,79 @@
 
         function showAdminPanel() {
             document.getElementById('adminPanel').style.display = 'block';
+            // Загружаем текущие настройки
+            document.getElementById('priceSensitivity').value = bdCoinServer.priceSettings.sensitivity;
+            document.getElementById('minPrice').value = bdCoinServer.priceSettings.minPrice;
+            document.getElementById('maxPrice').value = bdCoinServer.priceSettings.maxPrice;
         }
 
         function hideAdminPanel() {
             document.getElementById('adminPanel').style.display = 'none';
         }
 
+        function savePriceSettings() {
+            bdCoinServer.priceSettings.sensitivity = parseFloat(document.getElementById('priceSensitivity').value);
+            bdCoinServer.priceSettings.minPrice = parseFloat(document.getElementById('minPrice').value);
+            bdCoinServer.priceSettings.maxPrice = parseFloat(document.getElementById('maxPrice').value);
+            
+            bdCoinServer.savePriceSettings();
+            showAdminMessage('✅ Настройки цены сохранены!', '#90ee90');
+        }
+
+        function manualPriceChange() {
+            const newPrice = prompt('Введите новую цену BD Coin (в рублях):', bdCoinServer.currentPrice);
+            if (newPrice && !isNaN(newPrice)) {
+                const result = bdCoinServer.manualPriceChange(newPrice);
+                showAdminMessage(`✅ Цена изменена: ${result.oldPrice.toFixed(4)} → ${result.newPrice.toFixed(4)} ₽`, '#90ee90');
+                updateUI();
+            }
+        }
+
+        function adminAddBalance() {
+            const walletId = document.getElementById('adminWalletId').value.trim();
+            const amount = parseFloat(document.getElementById('adminAmount').value);
+            const description = document.getElementById('adminDescription').value.trim();
+
+            if (!walletId || !amount || amount <= 0) {
+                showAdminMessage('❌ Заполните все поля корректно!', '#ff6b6b');
+                return;
+            }
+
+            // Ищем пользователя по walletId
+            let targetUsername = null;
+            for (const username in userSystem.users) {
+                if (userSystem.users[username].walletId === walletId) {
+                    targetUsername = username;
+                    break;
+                }
+            }
+
+            if (!targetUsername) {
+                showAdminMessage('❌ Кошелек не найден!', '#ff6b6b');
+                return;
+            }
+
+            const result = userSystem.addBalance(targetUsername, amount, description);
+            if (result.success) {
+                showAdminMessage(`✅ Начислено ${amount} BD пользователю! Новый баланс: ${result.newBalance} BD`, '#90ee90');
+                
+                // Очищаем поля
+                document.getElementById('adminWalletId').value = '';
+                document.getElementById('adminAmount').value = '';
+                document.getElementById('adminDescription').value = '';
+                
+                // Обновляем UI если это текущий пользователь
+                if (userSystem.getCurrentUser().username === targetUsername) {
+                    updateUserUI();
+                }
+            } else {
+                showAdminMessage('❌ ' + result.message, '#ff6b6b');
+            }
+        }
+
         function showBuyModal() {
             document.getElementById('buyModal').style.display = 'flex';
-            document.getElementById('modalPrice').textContent = bdCoinServer.currentPrice.toFixed(4);
+            document.getElementById('modalBuyPrice').textContent = bdCoinServer.currentPrice.toFixed(4);
             updateCalculatedBD();
         }
 
@@ -404,10 +735,41 @@
             document.getElementById('buyModal').style.display = 'none';
         }
 
+        function showSellModal() {
+            const user = userSystem.getCurrentUser();
+            if (user.balance <= 0) {
+                showNotification('❌ На балансе нет BD для продажи!');
+                return;
+            }
+            document.getElementById('sellModal').style.display = 'flex';
+            document.getElementById('modalSellPrice').textContent = bdCoinServer.currentPrice.toFixed(4);
+            updateCalculatedRub();
+        }
+
+        function hideSellModal() {
+            document.getElementById('sellModal').style.display = 'none';
+        }
+
         function updateCalculatedBD() {
             const amount = parseFloat(document.getElementById('buyAmount').value) || 0;
             const bdAmount = amount / bdCoinServer.currentPrice;
             document.getElementById('calculatedBD').textContent = bdAmount.toFixed(2);
+            
+            // Рассчитываем новую цену после покупки
+            const priceChange = bdCoinServer.calculatePriceChange(bdAmount, true);
+            const newPrice = bdCoinServer.currentPrice * (1 + priceChange);
+            document.getElementById('newPriceAfterBuy').textContent = newPrice.toFixed(4);
+        }
+
+        function updateCalculatedRub() {
+            const amount = parseFloat(document.getElementById('sellAmount').value) || 0;
+            const rubAmount = amount * bdCoinServer.currentPrice;
+            document.getElementById('calculatedRub').textContent = rubAmount.toFixed(2);
+            
+            // Рассчитываем новую цену после продажи
+            const priceChange = bdCoinServer.calculatePriceChange(amount, false);
+            const newPrice = bdCoinServer.currentPrice * (1 + priceChange);
+            document.getElementById('newPriceAfterSell').textContent = newPrice.toFixed(4);
         }
 
         function processBuy() {
@@ -418,13 +780,80 @@
             }
 
             const bdAmount = amount / bdCoinServer.currentPrice;
-            walletSystem.addBalance(bdAmount);
+            const user = userSystem.getCurrentUser();
+            
+            // Обновляем цену
+            const priceResult = bdCoinServer.updatePrice(bdAmount, true);
+            
+            // Начисляем BD пользователю
+            userSystem.addBalance(user.username, bdAmount, `Покупка на ${amount} руб`);
+            
+            updateUserUI();
             hideBuyModal();
             document.getElementById('buyAmount').value = '';
+            
+            showNotification(`✅ Куплено ${bdAmount.toFixed(2)} BD! Цена выросла до ${priceResult.newPrice.toFixed(4)} ₽`);
+            updateUI();
+        }
+
+        function processSell() {
+            const bdAmount = parseFloat(document.getElementById('sellAmount').value);
+            const user = userSystem.getCurrentUser();
+
+            if (!bdAmount || bdAmount <= 0) {
+                alert('Введите корректное количество!');
+                return;
+            }
+
+            if (user.balance < bdAmount) {
+                alert('❌ Недостаточно BD на балансе!');
+                return;
+            }
+
+            const rubAmount = bdAmount * bdCoinServer.currentPrice;
+            
+            // Обновляем цену
+            const priceResult = bdCoinServer.updatePrice(bdAmount, false);
+            
+            // Списываем BD и добавляем транзакцию
+            userSystem.addBalance(user.username, -bdAmount, `Продажа ${bdAmount} BD`);
+            
+            updateUserUI();
+            hideSellModal();
+            document.getElementById('sellAmount').value = '';
+            
+            showNotification(`✅ Продано ${bdAmount.toFixed(2)} BD за ${rubAmount.toFixed(2)} ₽! Цена упала до ${priceResult.newPrice.toFixed(4)} ₽`);
+            updateUI();
+        }
+
+        function showProfile() {
+            const user = userSystem.getCurrentUser();
+            document.getElementById('profileLogin').textContent = user.username;
+            document.getElementById('profileWalletId').textContent = user.walletId;
+            document.getElementById('profileCreated').textContent = new Date(user.created).toLocaleDateString('ru-RU');
+            document.getElementById('profileModal').style.display = 'flex';
+        }
+
+        function hideProfileModal() {
+            document.getElementById('profileModal').style.display = 'none';
+        }
+
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.style.display = 'block';
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 3000);
+        }
+
+        function showAdminMessage(message, color) {
+            const messageElement = document.getElementById('adminMessage');
+            messageElement.textContent = message;
+            messageElement.style.color = color;
         }
 
         async function refreshData() {
-            if (bdCoinServer.isUpdating) return;
             await bdCoinServer.loadDataFromGitHub();
             updateUI();
         }
@@ -434,6 +863,7 @@
             
             document.getElementById('currentPrice').textContent = `${data.price.toFixed(4)} ₽`;
             document.getElementById('buyPrice').textContent = data.price.toFixed(4);
+            document.getElementById('sellPrice').textContent = data.price.toFixed(4);
             document.getElementById('marketCap').textContent = `${data.market_cap.toFixed(2)} ₽`;
             document.getElementById('totalSupply').textContent = data.total_supply.toLocaleString();
             
@@ -448,7 +878,7 @@
             }
             
             updateChart(data.history);
-            walletSystem.updateWalletUI();
+            updateUserUI();
         }
 
         function initChart() {
@@ -473,61 +903,31 @@
             priceChart.update('none');
         }
 
-        function loginAdmin() {
-            const password = document.getElementById('adminPassword').value;
-            const token = document.getElementById('githubToken').value;
-
-            if (password !== ADMIN_PASSWORD) {
-                showAdminMessage('❌ Неверный пароль!', '#ff6b6b');
-                return;
-            }
-
-            bdCoinServer.isAdminLoggedIn = true;
-            if (token) bdCoinServer.githubToken = token;
-            showAdminMessage('✅ Успешный вход!', '#90ee90');
-        }
-
-        async function updatePrice() {
-            if (!bdCoinServer.isAdminLoggedIn) {
-                showAdminMessage('❌ Сначала войдите!', '#ff6b6b');
-                return;
-            }
-
-            const newPrice = document.getElementById('newPrice').value;
-            if (!newPrice) {
-                showAdminMessage('❌ Введите цену!', '#ff6b6b');
-                return;
-            }
-            
-            bdCoinServer.isUpdating = true;
-            clearInterval(refreshInterval);
-            
-            showAdminMessage('🔄 Обновление...', '#ffd700');
-            const result = await bdCoinServer.updatePriceOnGitHub(newPrice);
-
-            if (result.success) {
-                showAdminMessage(`✅ Цена обновлена: ${result.new_price.toFixed(4)} ₽`, '#90ee90');
-                document.getElementById('newPrice').value = '';
-                updateUI();
-            } else {
-                showAdminMessage(`❌ Ошибка: ${result.message}`, '#ff6b6b');
-            }
-
-            bdCoinServer.isUpdating = false;
-            refreshInterval = setInterval(refreshData, 30000);
-        }
-
-        function showAdminMessage(message, color) {
-            const messageElement = document.getElementById('adminMessage');
-            messageElement.textContent = message;
-            messageElement.style.color = color;
-        }
-
-        // Слушатель изменения суммы покупки
+        // Слушатели изменения сумм
         document.getElementById('buyAmount').addEventListener('input', updateCalculatedBD);
+        document.getElementById('sellAmount').addEventListener('input', updateCalculatedRub);
+
+        // Создаем админа при первой загрузке
+        function createAdminIfNeeded() {
+            const users = JSON.parse(localStorage.getItem('bd_coin_users') || '{}');
+            if (!users.admin) {
+                users.admin = {
+                    username: 'admin',
+                    password: ADMIN_PASSWORD,
+                    walletId: 'admin-0001',
+                    balance: 1000,
+                    created: new Date().toISOString(),
+                    transactions: []
+                };
+                localStorage.setItem('bd_coin_users', JSON.stringify(users));
+            }
+        }
 
         // Запуск приложения
-        document.addEventListener('DOMContentLoaded', initApp);
+        document.addEventListener('DOMContentLoaded', function() {
+            createAdminIfNeeded();
+            initApp();
+        });
     </script>
 </body>
 </html>
