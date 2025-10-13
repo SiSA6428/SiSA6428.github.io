@@ -1,7 +1,7 @@
 {
-  "current_price": 0.01,
+  "current_price": 0.05,
   "total_supply": 10000,
-  "last_updated": "2025-10-13T15:33:38.840Z",
+  "last_updated": "2025-10-13T15:55:00.824Z",
   "price_history": [
     {
       "timestamp": 1700000000,
@@ -17,6 +17,11 @@
       "timestamp": 1760369618834,
       "price": 0.01,
       "date": "18:33"
+    },
+    {
+      "timestamp": 1760370900808,
+      "price": 0.05,
+      "date": "18:55"
     }
   ]
 }
