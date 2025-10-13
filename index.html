@@ -6,7 +6,7 @@
     <title>BD Coin - Dark Green Crypto</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        /* YOUR STYLES REMAIN UNCHANGED */
+        /* ВАШИ СТИЛИ ОСТАЮТСЯ БЕЗ ИЗМЕНЕНИЙ */
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; touch-action: pan-y; }
         html, body { width: 100%; height: 100%; overflow: hidden; font-family: 'Arial', sans-serif; background: linear-gradient(135deg, #0a2f0a 0%, #1a5a1a 100%); color: #e8f5e8; position: fixed; }
         .container { width: 100vw; height: 100vh; padding: 15px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
@@ -94,11 +94,13 @@
                 this.priceHistory = [];
                 this.isAdminLoggedIn = false;
                 this.githubToken = null;
+                this.isUpdating = false; // Flag to prevent multiple updates
             }
 
             async loadDataFromGitHub() {
                 try {
-                    const response = await fetch(GITHUB_DATA_URL + '?t=' + Date.now());
+                    // Add cache-busting query parameter
+                    const response = await fetch(GITHUB_DATA_URL + '?cache_bust=' + Date.now());
                     if (!response.ok) throw new Error('Failed to fetch from GitHub');
                     
                     const data = await response.json();
@@ -134,34 +136,45 @@
 
             async updatePriceOnGitHub(newPrice) {
                 if (!this.githubToken) {
-                    return { success: false, message: "GitHub Token is not set." };
+                    return { success: false, message: "GitHub Token не установлен." };
                 }
 
                 const newPriceFloat = parseFloat(newPrice);
                 if (isNaN(newPriceFloat) || newPriceFloat <= 0) {
-                    return { success: false, message: "Invalid price format." };
+                    return { success: false, message: "Неверный формат цены." };
                 }
 
                 const API_URL = `https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO}/contents/${DATA_FILE_PATH}`;
 
                 try {
-                    // 1. Get the current file to get its SHA hash
-                    showAdminMessage('Шаг 1: Получение файла с GitHub...', '#ffd700');
+                    // 1. Get the LATEST file content and SHA from the API, ignoring cache
+                    showAdminMessage('Шаг 1: Получение актуальных данных...', '#ffd700');
                     const getFileResponse = await fetch(API_URL, {
-                        headers: { 'Authorization': `token ${this.githubToken}` }
+                        headers: { 
+                            'Authorization': `token ${this.githubToken}`,
+                            'Accept': 'application/vnd.github.v3+json'
+                        },
+                        cache: 'no-cache' // Ask browser not to cache this API call
                     });
-                    if (!getFileResponse.ok) throw new Error('Could not fetch the file from repository.');
+                    if (!getFileResponse.ok) throw new Error('Не удалось получить файл из репозитория.');
+                    
                     const fileData = await getFileResponse.json();
                     const currentSha = fileData.sha;
+                    
+                    // Decode the content to get the most recent price history
+                    const decodedContent = atob(fileData.content);
+                    const freshData = JSON.parse(decodedContent);
+                    const freshPriceHistory = freshData.price_history || [];
 
-                    // 2. Prepare the new content
+                    // 2. Prepare the new content based on the FRESH data
                     const newHistoryEntry = {
                         timestamp: Date.now(),
                         price: newPriceFloat,
                         date: new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })
                     };
 
-                    const updatedHistory = [...this.priceHistory, newHistoryEntry].slice(-100); // Keep last 100 entries
+                    // Add new entry to the fresh history we just fetched
+                    const updatedHistory = [...freshPriceHistory, newHistoryEntry].slice(-100);
 
                     const newContent = {
                         current_price: newPriceFloat,
@@ -170,11 +183,10 @@
                         price_history: updatedHistory
                     };
                     
-                    // Content must be Base64 encoded
                     const encodedContent = btoa(unescape(encodeURIComponent(JSON.stringify(newContent, null, 2))));
 
                     // 3. Push the new file content to GitHub
-                    showAdminMessage('Шаг 2: Обновление файла в репозитории...', '#ffd700');
+                    showAdminMessage('Шаг 2: Сохранение данных на GitHub...', '#ffd700');
                     const updateResponse = await fetch(API_URL, {
                         method: 'PUT',
                         headers: {
@@ -190,10 +202,10 @@
 
                     if (!updateResponse.ok) {
                         const errorData = await updateResponse.json();
-                        throw new Error(`GitHub API Error: ${errorData.message}`);
+                        throw new Error(`Ошибка API GitHub: ${errorData.message}`);
                     }
                     
-                    // Update local state after successful push
+                    // 4. IMMEDIATELY update local state to reflect the change
                     this.currentPrice = newPriceFloat;
                     this.priceHistory = updatedHistory;
 
@@ -209,12 +221,23 @@
         // ========== CLIENT-SIDE LOGIC ==========
         let priceChart;
         const bdCoinServer = new BDCoinServer();
+        let refreshInterval;
 
         async function initApp() {
             initChart();
             await bdCoinServer.loadDataFromGitHub();
             updateUI();
+            // Start interval to periodically refresh data
+            refreshInterval = setInterval(refreshData, 30000);
         }
+
+        async function refreshData() {
+            if (bdCoinServer.isUpdating) return; // Don't refresh if an update is in progress
+            console.log("Refreshing data from GitHub...");
+            await bdCoinServer.loadDataFromGitHub();
+            updateUI();
+        }
+
 
         function updateUI() {
             const data = bdCoinServer.getCurrentData();
@@ -225,8 +248,11 @@
             document.getElementById('totalSupply').textContent = data.total_supply.toLocaleString();
             
             if (data.history.length > 1) {
-                const firstPrice = data.history[0].price;
-                const change = ((data.price - firstPrice) / firstPrice) * 100;
+                // Use the last two points for the most recent change
+                const lastPrice = data.history[data.history.length - 1].price;
+                const secondLastPrice = data.history[data.history.length - 2].price;
+                const change = ((lastPrice - secondLastPrice) / secondLastPrice) * 100;
+                
                 const changeElement = document.getElementById('priceChange');
                 changeElement.textContent = `${change >= 0 ? '+' : ''}${change.toFixed(2)}%`;
                 changeElement.style.color = change >= 0 ? '#90ee90' : '#ff6b6b';
@@ -243,7 +269,7 @@
                 options: {
                     responsive: true, maintainAspectRatio: false,
                     plugins: { legend: { labels: { color: '#e8f5e8', font: { size: 14 } } } },
-                    scales: { x: { ticks: { color: '#c8e6c8' }, grid: { color: 'rgba(200, 230, 200, 0.1)' } }, y: { ticks: { color: '#c8e6c8' }, grid: { color: 'rgba(200, 230, 200, 0.1)' } } }
+                    scales: { x: { ticks: { color: '#c8e6c8', maxRotation: 0, autoSkip: true, maxTicksLimit: 10 }, grid: { color: 'rgba(200, 230, 200, 0.1)' } }, y: { ticks: { color: '#c8e6c8' }, grid: { color: 'rgba(200, 230, 200, 0.1)' } } }
                 }
             });
         }
@@ -269,8 +295,8 @@
                 showAdminMessage('❌ Неверный пароль администратора!', '#ff6b6b');
                 return;
             }
-            if (!token) {
-                showAdminMessage('❌ Введите ваш GitHub Personal Access Token!', '#ff6b6b');
+            if (!token.startsWith('ghp_')) {
+                showAdminMessage('❌ Неверный формат токена GitHub!', '#ff6b6b');
                 return;
             }
             bdCoinServer.isAdminLoggedIn = true;
@@ -279,6 +305,7 @@
         }
 
         async function updatePrice() {
+            if (bdCoinServer.isUpdating) return;
             if (!bdCoinServer.isAdminLoggedIn) {
                 showAdminMessage('❌ Сначала выполните вход!', '#ff6b6b');
                 return;
@@ -290,16 +317,22 @@
                 return;
             }
             
+            bdCoinServer.isUpdating = true; // Lock function
+            clearInterval(refreshInterval); // Stop auto-refresh during update
+            
             showAdminMessage('🔄 Обновление цены... Пожалуйста, подождите.', '#ffd700');
             const result = await bdCoinServer.updatePriceOnGitHub(newPrice);
 
             if (result.success) {
                 showAdminMessage(`✅ Цена успешно обновлена: ${result.new_price.toFixed(4)} ₽`, '#90ee90');
                 document.getElementById('newPrice').value = '';
-                updateUI(); // Immediately update UI with new data
+                updateUI(); // Immediately update UI with new data from local state
             } else {
                 showAdminMessage(`❌ Ошибка: ${result.message}`, '#ff6b6b');
             }
+
+            bdCoinServer.isUpdating = false; // Unlock function
+            refreshInterval = setInterval(refreshData, 30000); // Restart auto-refresh
         }
 
         function showAdminMessage(message, color) {
@@ -307,13 +340,6 @@
             messageElement.textContent = message;
             messageElement.style.color = color;
         }
-
-        // Refresh data from GitHub every 30 seconds
-        setInterval(async () => {
-            console.log("Refreshing data from GitHub...");
-            await bdCoinServer.loadDataFromGitHub();
-            updateUI();
-        }, 30000);
 
         document.addEventListener('DOMContentLoaded', initApp);
     </script>
