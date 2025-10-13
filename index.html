@@ -1,1 +1,347 @@
-<!DOCTYPE html><html lang=ru><head><meta charset=UTF-8><meta name=viewport content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"><title>BD Coin</title><script src=https://cdn.jsdelivr.net/npm/chart.js></script><style>*{margin:0;padding:0;box-sizing:border-box;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;touch-action:pan-y}html,body{width:100%;height:100%;overflow:hidden;font-family:Arial;background:linear-gradient(135deg,#0a2f0a 0%,#1a5a1a 100%);color:#e8f5e8;position:fixed}.container{width:100vw;height:100vh;padding:15px;overflow-y:auto;-webkit-overflow-scrolling:touch}.header{text-align:center;margin-bottom:20px;padding:15px;background:rgba(10,40,10,0.9);border-radius:15px;border:2px solid #2e8b57;box-shadow:0 4px 15px rgba(0,0,0,0.3)}.coin-name{font-size:2em;color:#32cd32;text-shadow:0 0 10px rgba(50,205,50,0.5);margin-bottom:8px}.price-display{font-size:2.5em;font-weight:700;color:#90ee90;margin:15px 0;text-shadow:0 0 15px rgba(144,238,144,0.7)}.chart-container{background:rgba(10,40,10,0.9);border-radius:15px;padding:15px;margin:15px 0;border:2px solid #2e8b57;height:300px;box-shadow:0 4px 15px rgba(0,0,0,0.3)}.stats{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:15px 0}.stat-card{background:rgba(10,40,10,0.9);padding:15px;border-radius:12px;text-align:center;border:1px solid #2e8b57;box-shadow:0 4px 10px rgba(0,0,0,0.2)}.stat-value{font-size:1.3em;color:#90ee90;font-weight:700}.stat-label{font-size:.9em;color:#c8e6c8;margin-top:5px}.buy-section{background:rgba(10,40,10,0.9);padding:20px;border-radius:15px;margin:15px 0;border:2px solid #32cd32;text-align:center;box-shadow:0 4px 15px rgba(0,0,0,0.3)}.buy-button{background:linear-gradient(135deg,#32cd32,#228b22);color:#fff;border:none;padding:15px 30px;font-size:1.2em;border-radius:25px;cursor:pointer;margin:10px 0;width:100%;font-weight:700;box-shadow:0 4px 15px rgba(50,205,50,0.4);transition:all .3s}.buy-button:active{transform:scale(.95);box-shadow:0 2px 8px rgba(50,205,50,0.6)}.notification{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:rgba(50,205,50,0.9);color:#fff;padding:15px 25px;border-radius:25px;z-index:1000;display:none;box-shadow:0 4px 15px rgba(0,0,0,0.3)}.admin-panel{background:rgba(10,40,10,0.9);padding:20px;border-radius:15px;margin:15px 0;border:2px solid #ffd700;box-shadow:0 4px 15px rgba(0,0,0,0.3)}.admin-input{width:100%;padding:12px;margin:10px 0;border:1px solid #32cd32;border-radius:8px;background:rgba(20,60,20,0.8);color:#fff;font-size:1em}.admin-button{background:linear-gradient(135deg,#ffd700,#ffa500);color:#0a2f0a;border:none;padding:12px 25px;font-size:1.1em;border-radius:25px;cursor:pointer;margin:5px;font-weight:700;box-shadow:0 4px 15px rgba(255,215,0,0.4)}</style></head><body><div class=container><div class=header><h1 class=coin-name>BD COIN</h1><div class=price-display id=currentPrice>0.0100 ₽</div><div>Капитализация: <span id=marketCap>100.00 ₽</span></div></div><div class=chart-container><canvas id=priceChart></canvas></div><div class=stats><div class=stat-card><div class=stat-value id=totalSupply>10,000</div><div class=stat-label>Всего монет</div></div><div class=stat-card><div class=stat-value id=priceChange>+0.00%</div><div class=stat-label>Изменение</div></div></div><div class=buy-section><h3>Купить BD Coin</h3><p>Текущая цена: <span id=buyPrice>0.0100</span> ₽</p><button class=buy-button onclick=simulateBuy()>КУПИТЬ СЕЙЧАС</button><p style="margin-top:10px;font-size:.9em;color:#c8e6c8">💎 BD Coin - криптовалюта будущего!</p></div><div class=admin-panel><h3 style=color:#ffd700;text-align:center>🔧 Админ Панель</h3><input type=password id=adminPassword class=admin-input placeholder="Пароль администратора"><input type=password id=githubToken class=admin-input placeholder="GitHub Personal Access Token"><input type=number id=newPrice class=admin-input placeholder="Новая цена (рубли)" step=0.0001 min=0.0001><div style=text-align:center><button class=admin-button onclick=loginAdmin()>Войти</button><button class=admin-button onclick=updatePrice()>Обновить цену</button></div><div id=adminMessage style="text-align:center;margin-top:10px;color:#90ee90"></div></div></div><div class=notification id=notification>Покупка успешно выполнена!</div><script>const GITHUB_USERNAME="SISA6428",GITHUB_REPO="SISA6428.github.io",DATA_FILE_PATH="data.json",GITHUB_DATA_URL=`https://raw.githubusercontent.com/${GITHUB_USERNAME}/${GITHUB_REPO}/main/${DATA_FILE_PATH}`,ADMIN_PASSWORD="bdadmin2024";class BDCoinServer{constructor(){this.totalSupply=1e4,this.currentPrice=.01,this.priceHistory=[],this.isAdminLoggedIn=!1,this.githubToken=null,this.isUpdating=!1}async loadDataFromGitHub(){try{const e=await fetch(GITHUB_DATA_URL+"?cache_bust="+Date.now());if(!e.ok)throw new Error("Failed to fetch from GitHub");const t=await e.json();return this.currentPrice=t.current_price||.01,this.priceHistory=t.price_history||[],this.totalSupply=t.total_supply||1e4,console.log("Data successfully loaded from GitHub."),!0}catch(e){return console.error("Error loading data from GitHub:",e),this.initializeDefaultData(),!1}}initializeDefaultData(){const e=Date.now();this.priceHistory=Array.from({length:24},(t,a)=>({timestamp:e-(23-a)*36e5,price:.01,date:new Date(e-(23-a)*36e5).toLocaleTimeString("ru-RU",{hour:"2-digit",minute:"2-digit"})}))}getCurrentData(){return{price:this.currentPrice,market_cap:this.currentPrice*this.totalSupply,total_supply:this.totalSupply,history:this.priceHistory.slice(-50)}}async updatePriceOnGitHub(e){if(!this.githubToken)return{success:!1,message:"GitHub Token не установлен."};const t=parseFloat(e);if(isNaN(t)||t<=0)return{success:!1,message:"Неверный формат цены."};const a=`https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO}/contents/${DATA_FILE_PATH}`;try{showAdminMessage("Шаг 1: Получение актуальных данных...","#ffd700");const s=await fetch(a,{headers:{"Authorization":`token ${this.githubToken}`,"Accept":"application/vnd.github.v3+json"},cache:"no-cache"});if(!s.ok)throw new Error("Не удалось получить файл из репозитория.");const r=await s.json(),o=r.sha,n=atob(r.content),c=JSON.parse(n),l=c.price_history||[],d={timestamp:Date.now(),price:t,date:new Date().toLocaleTimeString("ru-RU",{hour:"2-digit",minute:"2-digit"})},i=[...l,d].slice(-100),h={current_price:t,total_supply:this.totalSupply,last_updated:new Date().toISOString(),price_history:i},p=btoa(unescape(encodeURIComponent(JSON.stringify(h,null,2))));showAdminMessage("Шаг 2: Сохранение данных на GitHub...","#ffd700");const u=await fetch(a,{method:"PUT",headers:{"Authorization":`token ${this.githubToken}`,"Content-Type":"application/json"},body:JSON.stringify({message:`Update price to ${t.toFixed(4)}`,content:p,sha:o})});if(!u.ok){const e=await u.json();throw new Error(`Ошибка API GitHub: ${e.message}`)}return this.currentPrice=t,this.priceHistory=i,{success:!0,new_price:t}}catch(e){return console.error("Failed to update price on GitHub:",e),{success:!1,message:e.message}}}}let priceChart,refreshInterval;const bdCoinServer=new BDCoinServer;async function initApp(){initChart(),await bdCoinServer.loadDataFromGitHub(),updateUI(),refreshInterval=setInterval(refreshData,3e4)}async function refreshData(){bdCoinServer.isUpdating||(console.log("Refreshing data from GitHub..."),await bdCoinServer.loadDataFromGitHub(),updateUI())}function updateUI(){const e=bdCoinServer.getCurrentData();document.getElementById("currentPrice").textContent=`${e.price.toFixed(4)} ₽`,document.getElementById("buyPrice").textContent=e.price.toFixed(4),document.getElementById("marketCap").textContent=`${e.market_cap.toFixed(2)} ₽`,document.getElementById("totalSupply").textContent=e.total_supply.toLocaleString(),e.history.length>1&&(a=e.history[e.history.length-1].price,o=e.history[e.history.length-2].price,n=((a-o)/o)*100,changeElement=document.getElementById("priceChange"),changeElement.textContent=`${n>=0?"+":""}${n.toFixed(2)}%`,changeElement.style.color=n>=0?"#90ee90":"#ff6b6b");var a,o,n,changeElement;updateChart(e.history)}function initChart(){const e=document.getElementById("priceChart").getContext("2d");priceChart=new Chart(e,{type:"line",data:{labels:[],datasets:[{label:"Цена BD (₽)",data:[],borderColor:"#32cd32",backgroundColor:"rgba(50,205,50,0.1)",borderWidth:3,fill:!0,tension:.4,pointRadius:0}]},options:{responsive:!0,maintainAspectRatio:!1,plugins:{legend:{labels:{color:"#e8f5e8",font:{size:14}}}}},scales:{x:{ticks:{color:"#c8e6c8",maxRotation:0,autoSkip:!0,maxTicksLimit:10},grid:{color:"rgba(200,230,200,0.1)"}},y:{ticks:{color:"#c8e6c8"},grid:{color:"rgba(200,230,200,0.1)"}}}})}function updateChart(e){priceChart.data.labels=e.map(e=>e.date),priceChart.data.datasets[0].data=e.map(e=>e.price),priceChart.update("none")}function simulateBuy(){const e=document.getElementById("notification");e.style.display="block",e.textContent=`Покупка BD Coin по цене ${bdCoinServer.getCurrentData().price.toFixed(4)} ₽ выполнена!`,setTimeout(()=>{e.style.display="none"},3e3)}function loginAdmin(){const e=document.getElementById("adminPassword").value,t=document.getElementById("githubToken").value;e!==ADMIN_PASSWORD?showAdminMessage("❌ Неверный пароль администратора!","#ff6b6b"):t.startsWith("ghp_")?(bdCoinServer.isAdminLoggedIn=!0,bdCoinServer.githubToken=t,showAdminMessage("✅ Успешный вход! Теперь вы можете обновить цену.","#90ee90")):showAdminMessage("❌ Неверный формат токена GitHub!","#ff6b6b")}async function updatePrice(){if(bdCoinServer.isUpdating)return;if(!bdCoinServer.isAdminLoggedIn)return void showAdminMessage("❌ Сначала выполните вход!","#ff6b6b");const e=document.getElementById("newPrice").value;if(!e)return void showAdminMessage("❌ Введите новую цену!","#ff6b6b");bdCoinServer.isUpdating=!0,clearInterval(refreshInterval),showAdminMessage("🔄 Обновление цены... Пожалуйста, подождите.","#ffd700");const t=await bdCoinServer.updatePriceOnGitHub(e);t.success?(showAdminMessage(`✅ Цена успешно обновлена: ${t.new_price.toFixed(4)} ₽`,"#90ee90"),document.getElementById("newPrice").value="",updateUI()):showAdminMessage(`❌ Ошибка: ${t.message}`,"#ff6b6b"),bdCoinServer.isUpdating=!1,refreshInterval=setInterval(refreshData,3e4)}function showAdminMessage(e,t){const a=document.getElementById("adminMessage");a.textContent=e,a.style.color=t}document.addEventListener("DOMContentLoaded",initApp);</script></body></html>
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>BD Coin - Dark Green Crypto</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* ВАШИ СТИЛИ ОСТАЮТСЯ БЕЗ ИЗМЕНЕНИЙ */
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; touch-action: pan-y; }
+        html, body { width: 100%; height: 100%; overflow: hidden; font-family: 'Arial', sans-serif; background: linear-gradient(135deg, #0a2f0a 0%, #1a5a1a 100%); color: #e8f5e8; position: fixed; }
+        .container { width: 100vw; height: 100vh; padding: 15px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+        .header { text-align: center; margin-bottom: 20px; padding: 15px; background: rgba(10, 40, 10, 0.9); border-radius: 15px; border: 2px solid #2e8b57; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); }
+        .coin-name { font-size: 2em; color: #32cd32; text-shadow: 0 0 10px rgba(50, 205, 50, 0.5); margin-bottom: 8px; }
+        .price-display { font-size: 2.5em; font-weight: bold; color: #90ee90; margin: 15px 0; text-shadow: 0 0 15px rgba(144, 238, 144, 0.7); }
+        .chart-container { background: rgba(10, 40, 10, 0.9); border-radius: 15px; padding: 15px; margin: 15px 0; border: 2px solid #2e8b57; height: 300px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); }
+        .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 15px 0; }
+        .stat-card { background: rgba(10, 40, 10, 0.9); padding: 15px; border-radius: 12px; text-align: center; border: 1px solid #2e8b57; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); }
+        .stat-value { font-size: 1.3em; color: #90ee90; font-weight: bold; }
+        .stat-label { font-size: 0.9em; color: #c8e6c8; margin-top: 5px; }
+        .buy-section { background: rgba(10, 40, 10, 0.9); padding: 20px; border-radius: 15px; margin: 15px 0; border: 2px solid #32cd32; text-align: center; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); }
+        .buy-button { background: linear-gradient(135deg, #32cd32, #228b22); color: white; border: none; padding: 15px 30px; font-size: 1.2em; border-radius: 25px; cursor: pointer; margin: 10px 0; width: 100%; font-weight: bold; box-shadow: 0 4px 15px rgba(50, 205, 50, 0.4); transition: all 0.3s ease; }
+        .buy-button:active { transform: scale(0.95); box-shadow: 0 2px 8px rgba(50, 205, 50, 0.6); }
+        .notification { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: rgba(50, 205, 50, 0.9); color: white; padding: 15px 25px; border-radius: 25px; z-index: 1000; display: none; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); }
+        .admin-panel { background: rgba(10, 40, 10, 0.9); padding: 20px; border-radius: 15px; margin: 15px 0; border: 2px solid #ffd700; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); }
+        .admin-input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #32cd32; border-radius: 8px; background: rgba(20, 60, 20, 0.8); color: white; font-size: 1em; }
+        .admin-button { background: linear-gradient(135deg, #ffd700, #ffa500); color: #0a2f0a; border: none; padding: 12px 25px; font-size: 1.1em; border-radius: 25px; cursor: pointer; margin: 5px; font-weight: bold; box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="coin-name">BD COIN</h1>
+            <div class="price-display" id="currentPrice">0.0100 ₽</div>
+            <div>Капитализация: <span id="marketCap">100.00 ₽</span></div>
+        </div>
+
+        <div class="chart-container">
+            <canvas id="priceChart"></canvas>
+        </div>
+
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-value" id="totalSupply">10,000</div>
+                <div class="stat-label">Всего монет</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="priceChange">+0.00%</div>
+                <div class="stat-label">Изменение</div>
+            </div>
+        </div>
+
+        <div class="buy-section">
+            <h3>Купить BD Coin</h3>
+            <p>Текущая цена: <span id="buyPrice">0.0100</span> ₽</p>
+            <button class="buy-button pulse" onclick="simulateBuy()">
+                КУПИТЬ СЕЙЧАС
+            </button>
+            <p style="margin-top: 10px; font-size: 0.9em; color: #c8e6c8;">
+                💎 BD Coin - криптовалюта будущего!
+            </p>
+        </div>
+
+        <div class="admin-panel">
+            <h3 style="color: #ffd700; text-align: center;">🔧 Админ Панель</h3>
+            <input type="password" id="adminPassword" class="admin-input" placeholder="Пароль администратора">
+            <input type="password" id="githubToken" class="admin-input" placeholder="GitHub Personal Access Token">
+            <input type="number" id="newPrice" class="admin-input" placeholder="Новая цена (рубли)" step="0.0001" min="0.0001">
+            <div style="text-align: center;">
+                <button class="admin-button" onclick="loginAdmin()">Войти</button>
+                <button class="admin-button" onclick="updatePrice()">Обновить цену</button>
+            </div>
+            <div id="adminMessage" style="text-align: center; margin-top: 10px; color: #90ee90;"></div>
+        </div>
+    </div>
+
+    <div class="notification" id="notification">
+        Покупка успешно выполнена!
+    </div>
+
+    <script>
+        // ========== CONFIGURATION ==========
+        const GITHUB_USERNAME = "SISA6428";
+        const GITHUB_REPO = "SISA6428.github.io";
+        const DATA_FILE_PATH = "data.json";
+        const GITHUB_DATA_URL = `https://raw.githubusercontent.com/${GITHUB_USERNAME}/${GITHUB_REPO}/main/${DATA_FILE_PATH}`;
+        const ADMIN_PASSWORD = "bdadmin2024";
+
+        // ========== JAVASCRIPT "SERVER" ==========
+        class BDCoinServer {
+            constructor() {
+                this.totalSupply = 10000;
+                this.currentPrice = 0.01;
+                this.priceHistory = [];
+                this.isAdminLoggedIn = false;
+                this.githubToken = null;
+                this.isUpdating = false; // Flag to prevent multiple updates
+            }
+
+            async loadDataFromGitHub() {
+                try {
+                    // Add cache-busting query parameter
+                    const response = await fetch(GITHUB_DATA_URL + '?cache_bust=' + Date.now());
+                    if (!response.ok) throw new Error('Failed to fetch from GitHub');
+                    
+                    const data = await response.json();
+                    this.currentPrice = data.current_price || 0.01;
+                    this.priceHistory = data.price_history || [];
+                    this.totalSupply = data.total_supply || 10000;
+                    console.log("Data successfully loaded from GitHub.");
+                    return true;
+                } catch (error) {
+                    console.error('Error loading data from GitHub:', error);
+                    this.initializeDefaultData();
+                    return false;
+                }
+            }
+            
+            initializeDefaultData() {
+                const now = Date.now();
+                this.priceHistory = Array.from({ length: 24 }, (_, i) => ({
+                    timestamp: now - ((23 - i) * 3600000),
+                    price: 0.01,
+                    date: new Date(now - ((23 - i) * 3600000)).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })
+                }));
+            }
+
+            getCurrentData() {
+                return {
+                    price: this.currentPrice,
+                    market_cap: this.currentPrice * this.totalSupply,
+                    total_supply: this.totalSupply,
+                    history: this.priceHistory.slice(-50)
+                };
+            }
+
+            async updatePriceOnGitHub(newPrice) {
+                if (!this.githubToken) {
+                    return { success: false, message: "GitHub Token не установлен." };
+                }
+
+                const newPriceFloat = parseFloat(newPrice);
+                if (isNaN(newPriceFloat) || newPriceFloat <= 0) {
+                    return { success: false, message: "Неверный формат цены." };
+                }
+
+                const API_URL = `https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO}/contents/${DATA_FILE_PATH}`;
+
+                try {
+                    // 1. Get the LATEST file content and SHA from the API, ignoring cache
+                    showAdminMessage('Шаг 1: Получение актуальных данных...', '#ffd700');
+                    const getFileResponse = await fetch(API_URL, {
+                        headers: { 
+                            'Authorization': `token ${this.githubToken}`,
+                            'Accept': 'application/vnd.github.v3+json'
+                        },
+                        cache: 'no-cache' // Ask browser not to cache this API call
+                    });
+                    if (!getFileResponse.ok) throw new Error('Не удалось получить файл из репозитория.');
+                    
+                    const fileData = await getFileResponse.json();
+                    const currentSha = fileData.sha;
+                    
+                    // Decode the content to get the most recent price history
+                    const decodedContent = atob(fileData.content);
+                    const freshData = JSON.parse(decodedContent);
+                    const freshPriceHistory = freshData.price_history || [];
+
+                    // 2. Prepare the new content based on the FRESH data
+                    const newHistoryEntry = {
+                        timestamp: Date.now(),
+                        price: newPriceFloat,
+                        date: new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })
+                    };
+
+                    // Add new entry to the fresh history we just fetched
+                    const updatedHistory = [...freshPriceHistory, newHistoryEntry].slice(-100);
+
+                    const newContent = {
+                        current_price: newPriceFloat,
+                        total_supply: this.totalSupply,
+                        last_updated: new Date().toISOString(),
+                        price_history: updatedHistory
+                    };
+                    
+                    const encodedContent = btoa(unescape(encodeURIComponent(JSON.stringify(newContent, null, 2))));
+
+                    // 3. Push the new file content to GitHub
+                    showAdminMessage('Шаг 2: Сохранение данных на GitHub...', '#ffd700');
+                    const updateResponse = await fetch(API_URL, {
+                        method: 'PUT',
+                        headers: {
+                            'Authorization': `token ${this.githubToken}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            message: `Update price to ${newPriceFloat.toFixed(4)}`,
+                            content: encodedContent,
+                            sha: currentSha
+                        })
+                    });
+
+                    if (!updateResponse.ok) {
+                        const errorData = await updateResponse.json();
+                        throw new Error(`Ошибка API GitHub: ${errorData.message}`);
+                    }
+                    
+                    // 4. IMMEDIATELY update local state to reflect the change
+                    this.currentPrice = newPriceFloat;
+                    this.priceHistory = updatedHistory;
+
+                    return { success: true, new_price: newPriceFloat };
+
+                } catch (error) {
+                    console.error('Failed to update price on GitHub:', error);
+                    return { success: false, message: error.message };
+                }
+            }
+        }
+
+        // ========== CLIENT-SIDE LOGIC ==========
+        let priceChart;
+        const bdCoinServer = new BDCoinServer();
+        let refreshInterval;
+
+        async function initApp() {
+            initChart();
+            await bdCoinServer.loadDataFromGitHub();
+            updateUI();
+            // Start interval to periodically refresh data
+            refreshInterval = setInterval(refreshData, 30000);
+        }
+
+        async function refreshData() {
+            if (bdCoinServer.isUpdating) return; // Don't refresh if an update is in progress
+            console.log("Refreshing data from GitHub...");
+            await bdCoinServer.loadDataFromGitHub();
+            updateUI();
+        }
+
+
+        function updateUI() {
+            const data = bdCoinServer.getCurrentData();
+            
+            document.getElementById('currentPrice').textContent = `${data.price.toFixed(4)} ₽`;
+            document.getElementById('buyPrice').textContent = data.price.toFixed(4);
+            document.getElementById('marketCap').textContent = `${data.market_cap.toFixed(2)} ₽`;
+            document.getElementById('totalSupply').textContent = data.total_supply.toLocaleString();
+            
+            if (data.history.length > 1) {
+                // Use the last two points for the most recent change
+                const lastPrice = data.history[data.history.length - 1].price;
+                const secondLastPrice = data.history[data.history.length - 2].price;
+                const change = ((lastPrice - secondLastPrice) / secondLastPrice) * 100;
+                
+                const changeElement = document.getElementById('priceChange');
+                changeElement.textContent = `${change >= 0 ? '+' : ''}${change.toFixed(2)}%`;
+                changeElement.style.color = change >= 0 ? '#90ee90' : '#ff6b6b';
+            }
+            
+            updateChart(data.history);
+        }
+
+        function initChart() {
+            const ctx = document.getElementById('priceChart').getContext('2d');
+            priceChart = new Chart(ctx, {
+                type: 'line',
+                data: { labels: [], datasets: [{ label: 'Цена BD (₽)', data: [], borderColor: '#32cd32', backgroundColor: 'rgba(50, 205, 50, 0.1)', borderWidth: 3, fill: true, tension: 0.4, pointRadius: 0 }] },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { labels: { color: '#e8f5e8', font: { size: 14 } } } },
+                    scales: { x: { ticks: { color: '#c8e6c8', maxRotation: 0, autoSkip: true, maxTicksLimit: 10 }, grid: { color: 'rgba(200, 230, 200, 0.1)' } }, y: { ticks: { color: '#c8e6c8' }, grid: { color: 'rgba(200, 230, 200, 0.1)' } } }
+                }
+            });
+        }
+
+        function updateChart(historyData) {
+            priceChart.data.labels = historyData.map(item => item.date);
+            priceChart.data.datasets[0].data = historyData.map(item => item.price);
+            priceChart.update('none');
+        }
+
+        function simulateBuy() {
+            const notification = document.getElementById('notification');
+            notification.style.display = 'block';
+            notification.textContent = `Покупка BD Coin по цене ${bdCoinServer.getCurrentData().price.toFixed(4)} ₽ выполнена!`;
+            setTimeout(() => { notification.style.display = 'none'; }, 3000);
+        }
+
+        function loginAdmin() {
+            const password = document.getElementById('adminPassword').value;
+            const token = document.getElementById('githubToken').value;
+
+            if (password !== ADMIN_PASSWORD) {
+                showAdminMessage('❌ Неверный пароль администратора!', '#ff6b6b');
+                return;
+            }
+            if (!token.startsWith('ghp_')) {
+                showAdminMessage('❌ Неверный формат токена GitHub!', '#ff6b6b');
+                return;
+            }
+            bdCoinServer.isAdminLoggedIn = true;
+            bdCoinServer.githubToken = token;
+            showAdminMessage('✅ Успешный вход! Теперь вы можете обновить цену.', '#90ee90');
+        }
+
+        async function updatePrice() {
+            if (bdCoinServer.isUpdating) return;
+            if (!bdCoinServer.isAdminLoggedIn) {
+                showAdminMessage('❌ Сначала выполните вход!', '#ff6b6b');
+                return;
+            }
+
+            const newPrice = document.getElementById('newPrice').value;
+            if (!newPrice) {
+                showAdminMessage('❌ Введите новую цену!', '#ff6b6b');
+                return;
+            }
+            
+            bdCoinServer.isUpdating = true; // Lock function
+            clearInterval(refreshInterval); // Stop auto-refresh during update
+            
+            showAdminMessage('🔄 Обновление цены... Пожалуйста, подождите.', '#ffd700');
+            const result = await bdCoinServer.updatePriceOnGitHub(newPrice);
+
+            if (result.success) {
+                showAdminMessage(`✅ Цена успешно обновлена: ${result.new_price.toFixed(4)} ₽`, '#90ee90');
+                document.getElementById('newPrice').value = '';
+                updateUI(); // Immediately update UI with new data from local state
+            } else {
+                showAdminMessage(`❌ Ошибка: ${result.message}`, '#ff6b6b');
+            }
+
+            bdCoinServer.isUpdating = false; // Unlock function
+            refreshInterval = setInterval(refreshData, 30000); // Restart auto-refresh
+        }
+
+        function showAdminMessage(message, color) {
+            const messageElement = document.getElementById('adminMessage');
+            messageElement.textContent = message;
+            messageElement.style.color = color;
+        }
+
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</html>
