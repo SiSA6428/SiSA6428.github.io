@@ -17,8 +17,7 @@
         .stat-card { background: rgba(10, 40, 10, 0.9); padding: 15px; border-radius: 12px; text-align: center; border: 1px solid #2e8b57; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); }
         .stat-value { font-size: 1.3em; color: #90ee90; font-weight: bold; }
         .stat-label { font-size: 0.9em; color: #c8e6c8; margin-top: 5px; }
-        .buy-section { background: rgba(10, 40, 10, 0.9); padding: 20px; border-radius: 15px; margin: 15px 0; border: 2px solid #32cd32; text-align: center; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); }
-        .sell-section { background: rgba(10, 40, 10, 0.9); padding: 20px; border-radius: 15px; margin: 15px 0; border: 2px solid #ff6b6b; text-align: center; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); }
+        .trade-section { background: rgba(10, 40, 10, 0.9); padding: 20px; border-radius: 15px; margin: 15px 0; border: 2px solid #4169e1; text-align: center; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); }
         .buy-button { background: linear-gradient(135deg, #32cd32, #228b22); color: white; border: none; padding: 15px 30px; font-size: 1.2em; border-radius: 25px; cursor: pointer; margin: 10px 0; width: 100%; font-weight: bold; box-shadow: 0 4px 15px rgba(50, 205, 50, 0.4); transition: all 0.3s ease; }
         .sell-button { background: linear-gradient(135deg, #ff6b6b, #ee5a52); color: white; border: none; padding: 15px 30px; font-size: 1.2em; border-radius: 25px; cursor: pointer; margin: 10px 0; width: 100%; font-weight: bold; box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4); transition: all 0.3s ease; }
         .buy-button:active, .sell-button:active { transform: scale(0.95); }
@@ -138,32 +137,25 @@
             </div>
         </div>
 
-        <!-- Секция покупки -->
-        <div class="buy-section">
-            <h3>🛒 Купить BD Coin</h3>
-            <p>Текущая цена: <span id="buyPrice">0.0100</span> ₽</p>
-            <button class="buy-button pulse" onclick="showBuyModal()">
-                КУПИТЬ BD COIN
-            </button>
+        <!-- Объединенная секция торговли -->
+        <div class="trade-section">
+            <h3>💰 Торговля BD Coin</h3>
+            <p>Текущая цена: <span id="tradePrice">0.0100</span> ₽</p>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px;">
+                <button class="buy-button" onclick="showBuyModal()">
+                    КУПИТЬ BD
+                </button>
+                <button class="sell-button" onclick="showSellModal()">
+                    ПРОДАТЬ BD
+                </button>
+            </div>
             <p style="margin-top: 10px; font-size: 0.9em; color: #c8e6c8;">
-                📈 Покупка увеличивает цену
-            </p>
-        </div>
-
-        <!-- Секция продажи -->
-        <div class="sell-section">
-            <h3>💸 Продать BD Coin</h3>
-            <p>Текущая цена: <span id="sellPrice">0.0100</span> ₽</p>
-            <button class="sell-button" onclick="showSellModal()">
-                ПРОДАТЬ BD COIN
-            </button>
-            <p style="margin-top: 10px; font-size: 0.9em; color: #c8e6c8;">
-                📉 Продажа уменьшает цену
+                📈 Покупка увеличивает цену | 📉 Продажа уменьшает цену
             </p>
         </div>
 
         <!-- Админ-панель (только для админа) -->
-        <div class="admin-panel" id="adminPanel">
+        <div class="admin-panel" id="adminPanel" style="display: none;">
             <h3 style="color: #ffd700; text-align: center;">👑 Админ Панель</h3>
             
             <div style="background: rgba(255,215,0,0.1); padding: 15px; border-radius: 8px; margin: 10px 0;">
@@ -173,7 +165,7 @@
                 <input type="text" id="adminDescription" class="admin-input" placeholder="Причина изменения">
                 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
-                    <button class="admin-button" onclick="adminAddBalance()" style="background: linear-gradient(135deg, #32cd32, #228b22);">
+                    <button class="admin-button" onclick="adminAddBalance()" style="background: linear-gradient(135deg, #32cd32, #228b222);">
                         💰 Начислить
                     </button>
                     <button class="admin-button" onclick="adminRemoveBalance()" style="background: linear-gradient(135deg, #ff6b6b, #ee5a52);">
@@ -768,8 +760,7 @@
             const data = bdCoinServer.getCurrentData();
             
             document.getElementById('currentPrice').textContent = `${data.price.toFixed(4)} ₽`;
-            document.getElementById('buyPrice').textContent = data.price.toFixed(4);
-            document.getElementById('sellPrice').textContent = data.price.toFixed(4);
+            document.getElementById('tradePrice').textContent = data.price.toFixed(4);
             document.getElementById('marketCap').textContent = `${data.market_cap.toFixed(2)} ₽`;
             document.getElementById('totalSupply').textContent = data.total_supply.toLocaleString();
             
