@@ -47,8 +47,7 @@
         
         .header .version {
             color: #666;
-            font-size: 14px;
-            margin-top: 5px;
+            font-size: 14px;            margin-top: 5px;
         }
         
         .security-badge {
@@ -97,8 +96,7 @@
             height: 80px;
             resize: vertical;
         }
-        
-        input:focus, textarea:focus {
+                input:focus, textarea:focus {
             outline: none;
             box-shadow: 0 0 10px rgba(0, 255, 157, 0.5);
         }
@@ -147,8 +145,7 @@
         .message {
             margin: 8px 0;
             word-break: break-word;
-            padding: 4px 0;
-            border-bottom: 1px solid #1a1a1a;
+            padding: 4px 0;            border-bottom: 1px solid #1a1a1a;
         }
         
         .message strong {
@@ -197,8 +194,7 @@
         .status {
             color: #00cc7a;
             font-size: 12px;
-            text-align: right;
-            margin-top: 5px;
+            text-align: right;            margin-top: 5px;
         }
         
         .footer {
@@ -247,8 +243,7 @@
             </div>
             <div class="peer-list" id="peerList"></div>
         </div>
-        
-        <!-- Room Section -->
+                <!-- Room Section -->
         <div class="room-section" id="roomSection">
             <input type="text" id="roomCode" placeholder="[enter room name]" maxlength="30">
             <button onclick="createOrJoinRoom()">> CREATE/JOIN ROOM _</button>
@@ -287,17 +282,17 @@
         
         // Global variables
         let currentRoom = null;
-        let peers = [];
+        let peers = {};
         let connections = [];
         let isInitiator = false;
+        let peerNames = {}; // Хранит имена пиров
         
         // Display functions
         function addSystemMessage(text) {
             const messagesDiv = document.getElementById('messages');
             const systemElement = document.createElement('div');
             systemElement.className = 'system-message';
-            systemElement.innerHTML = '>>> ' + text + ' <<<';
-            messagesDiv.appendChild(systemElement);
+            systemElement.innerHTML = '>>> ' + text + ' <<<';            messagesDiv.appendChild(systemElement);
             messagesDiv.scrollTop = messagesDiv.scrollHeight;
         }
         
@@ -346,8 +341,7 @@
             const roomKey = btoa(JSON.stringify({
                 room: roomName,
                 user: username,
-                time: Date.now()
-            }));
+                time: Date.now()            }));
             
             document.getElementById('roomKeyDisplay').innerText = roomKey;
             addSystemMessage('room created: ' + roomName);
@@ -362,13 +356,18 @@
             
             try {
                 const peerData = JSON.parse(atob(peerKey));
-                addJoinMessage(peerData.user + ' connected');
                 
-                // Create peer connection
+                // Создаем пира
                 const peer = new SimplePeer({
                     initiator: false,
                     trickle: false
                 });
+                
+                // Сохраняем имя пира
+                peerNames[peer._id] = peerData.user || 'unknown';
+                
+                // Отображаем сообщение о подключении
+                addJoinMessage(`${peerData.user} connected`);
                 
                 peer.on('signal', data => {
                     // Send signal back
@@ -382,13 +381,26 @@
                 
                 peer.on('data', data => {
                     const message = data.toString();
-                    displayMessage(message, 'peer');
+                    const peerName = peerNames[peer._id] || 'unknown';
+                    displayMessage(message, peerName);
                 });
                 
                 peer.on('connect', () => {
                     addJoinMessage('secure connection established');
                     document.getElementById('sendButton').disabled = false;
                     document.getElementById('status').innerText = '[connected to peer]';
+                    checkPeers(); // Обновляем список пиров
+                });                
+                peer.on('close', () => {
+                    const peerName = peerNames[peer._id] || 'unknown';
+                    addJoinMessage(`${peerName} disconnected`);
+                    delete peerNames[peer._id];
+                    connections = connections.filter(p => p !== peer);
+                    checkPeers(); // Обновляем список пиров
+                });
+                
+                peer.on('error', err => {
+                    console.error('Peer error:', err);
                 });
                 
                 // Simulate receiving signal
@@ -427,7 +439,8 @@
             
             // Send to all peers
             connections.forEach(peer => {
-                peer.send(message);
+                if (peer.connected) {                    peer.send(message);
+                }
             });
             
             messageInput.value = '';
@@ -443,12 +456,14 @@
                 document.getElementById('status').innerText = '[connected to ' + connections.length + ' peer(s)]';
                 
                 connections.forEach((peer, index) => {
+                    const peerName = peerNames[peer._id] || 'unknown';
                     const peerItem = document.createElement('div');
                     peerItem.className = 'peer-item';
-                    peerItem.innerHTML = '▶ peer ' + (index + 1) + ' [active]';
+                    peerItem.innerHTML = `▶ ${peerName} [active]`;
                     peerListDiv.appendChild(peerItem);
                 });
             } else {
+                document.getElementById('sendButton').disabled = true;
                 document.getElementById('status').innerText = '[waiting for peers...]';
             }
         }
