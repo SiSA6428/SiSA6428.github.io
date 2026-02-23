@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Anom Web 1.5</title>
+    <title>Anom Web 2.0</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
@@ -29,7 +29,6 @@
             border: 2px solid #00ff9d;
             border-radius: 10px;
             padding: 20px;
-            box-shadow: 0 0 20px rgba(0, 255, 157, 0.2);
         }
         
         .header {
@@ -42,12 +41,6 @@
         .header h1 {
             font-size: 32px;
             letter-spacing: 4px;
-            text-shadow: 0 0 10px #00ff9d;
-        }
-        
-        .header .version {
-            color: #666;
-            font-size: 14px;            margin-top: 5px;
         }
         
         .security-badge {
@@ -57,7 +50,6 @@
             margin: 15px 0;
             font-size: 12px;
             text-align: center;
-            color: #00cc7a;
         }
         
         .user-info {
@@ -65,24 +57,21 @@
             border: 1px dashed #00ff9d;
             padding: 8px 12px;
             margin: 10px 0;
-            font-size: 14px;
             display: flex;
             justify-content: space-between;
-            align-items: center;
         }
         
-        .user-tag {
-            color: #00cc7a;
-            font-weight: bold;
-        }
-        
-        .setup-section {
-            margin: 20px 0;
+        .connection-panel {
+            background: #1a1a1a;
+            border: 1px solid #00ff9d;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
         }
         
         input, textarea {
             width: 100%;
-            background: #1a1a1a;
+            background: #000;
             border: 1px solid #00ff9d;
             color: #00ff9d;
             padding: 12px;
@@ -93,12 +82,8 @@
         }
         
         textarea {
-            height: 80px;
+            height: 100px;
             resize: vertical;
-        }
-                input:focus, textarea:focus {
-            outline: none;
-            box-shadow: 0 0 10px rgba(0, 255, 157, 0.5);
         }
         
         button {
@@ -112,18 +97,12 @@
             font-weight: bold;
             cursor: pointer;
             border-radius: 5px;
-            transition: all 0.3s;
             margin: 5px 0;
         }
         
         button:hover {
             background: #00ff9d;
             color: #0a0a0a;
-        }
-        
-        button:disabled {
-            opacity: 0.3;
-            cursor: not-allowed;
         }
         
         .chat-area {
@@ -138,14 +117,13 @@
             overflow-y: auto;
             padding: 15px;
             margin: 15px 0;
-            border-radius: 5px;
             font-size: 14px;
         }
         
         .message {
             margin: 8px 0;
-            word-break: break-word;
-            padding: 4px 0;            border-bottom: 1px solid #1a1a1a;
+            padding: 4px 0;
+            border-bottom: 1px solid #333;
         }
         
         .message strong {
@@ -157,44 +135,14 @@
             text-align: center;
             font-size: 12px;
             margin: 8px 0;
-            padding: 4px;
-            background: rgba(255, 170, 0, 0.1);
-            border-left: 3px solid #ffaa00;
             font-style: italic;
-        }
-        
-        .system-message {
-            color: #666;
-            text-align: center;
-            font-size: 12px;
-            margin: 10px 0;
-        }
-        
-        .connection-info {
-            background: #1a1a1a;
-            border: 1px solid #00ff9d;
-            padding: 15px;
-            margin: 15px 0;
-            border-radius: 5px;
-        }
-        
-        .peer-list {
-            margin: 10px 0;
-            padding: 5px;
-            max-height: 100px;
-            overflow-y: auto;
-        }
-        
-        .peer-item {
-            color: #00cc7a;
-            padding: 3px 0;
-            font-size: 12px;
         }
         
         .status {
             color: #00cc7a;
             font-size: 12px;
-            text-align: right;            margin-top: 5px;
+            text-align: right;
+            margin-top: 5px;
         }
         
         .footer {
@@ -205,320 +153,261 @@
             border-top: 1px solid #1a1a1a;
             padding-top: 10px;
         }
-        
-        .room-display {
-            font-size: 24px;
-            text-align: center;
-            margin: 10px 0;
-            color: #00ff9d;
-            word-break: break-all;
-            font-family: monospace;
-        }
-        
-        .step-indicator {
-            display: flex;
-            justify-content: center;
-            margin: 15px 0;
-        }
-        
-        .step {
-            padding: 5px 15px;
-            border: 1px solid #00ff9d;
-            margin: 0 5px;
-            border-radius: 3px;
-        }
-        
-        .step.active {
-            background: #00ff9d;
-            color: #0a0a0a;
-        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>ANOM WEB</h1>
-            <div class="version">version 1.5 // p2p build</div>
+            <h1>ANOM WEB 2.0</h1>
+            <div class="version">direct p2p // github signaling</div>
         </div>
         
         <div class="security-badge">
-            ⚡ P2P EPHEMERAL PROTOCOL ⚡<br>
-            direct connection // no servers // no logs<br>            messages self-destruct on page refresh
+            ⚡ TRUE P2P CONNECTION ⚡<br>
+            direct browser-to-browser // no middle servers<br>
+            exchange keys once // chat forever
         </div>
         
         <div class="user-info">
             <span>🔐 your id:</span>
-            <span class="user-tag" id="userDisplay">agent_</span>
+            <span class="user-tag" id="userDisplay"></span>
         </div>
         
-        <!-- Setup Section -->
-        <div class="setup-section" id="setupSection">
-            <div class="step-indicator">
-                <div class="step active" id="step1">1. ROOM NAME</div>
-                <div class="step" id="step2">2. JOIN ROOM</div>
+        <!-- Connection Panel -->
+        <div class="connection-panel" id="connectionPanel">
+            <div style="text-align: center; margin-bottom: 15px;">
+                <strong>[ CONNECTION SETUP ]</strong>
             </div>
             
-            <input type="text" id="roomName" placeholder="[enter room name]" maxlength="30">
-            <button onclick="joinRoom()">> JOIN ROOM _</button>
-        </div>
-        
-        <!-- Room Section -->
-        <div class="setup-section" id="roomSection" style="display: none;">
-            <div class="room-display" id="roomDisplay"></div>
-            <div class="connection-info">
-                <div style="text-align: center; margin-bottom: 10px;">
-                    <strong>[ CONNECTION STATUS ]</strong>
-                </div>
-                <div id="connectionStatus" style="color: #ffaa00; text-align: center;">
-                    waiting for peer...
-                </div>
-                <div class="peer-list" id="peerList"></div>
-            </div>
+            <button onclick="createOffer()">> 1. CREATE OFFER _</button>
+            
+            <div style="margin: 15px 0; text-align: center; color: #666;">- or -</div>
+            
+            <textarea id="offerInput" placeholder="[paste friend's offer here]"></textarea>
+            <button onclick="createAnswer()">> 2. CREATE ANSWER _</button>
+            
+            <textarea id="answerInput" placeholder="[paste friend's answer here]"></textarea>
+            <button onclick="completeConnection()">> 3. COMPLETE CONNECTION _</button>
         </div>
         
         <!-- Chat Area -->
         <div id="chatArea" class="chat-area">
             <div class="messages" id="messages"></div>
-            
-            <input type="text" id="messageInput" placeholder="[type message]" maxlength="500">
-            <button onclick="sendMessage()" id="sendButton" disabled>> SEND _</button>
-            
-            <div class="status" id="status">[connecting...]</div>
+            <input type="text" id="messageInput" placeholder="[type message]">
+            <button onclick="sendMessage()">> SEND _</button>
+            <div class="status" id="status">[disconnected]</div>
         </div>
         
         <div class="footer">
-            [PER-ANOM 1.5] // [P2P] // [NO STORAGE]
+            [ANOM 2.0] // [DIRECT P2P] // [NO CLOUD]
         </div>
     </div>
 
-    <!-- Socket.IO and Simple Peer -->
-    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>    <script src="https://cdn.jsdelivr.net/npm/simple-peer@9.11.1/simplepeer.min.js"></script>
-    
     <script>
-        // Generate random username
-        const username = 'agent_' + Math.random().toString(36).substr(2, 4).toUpperCase();
+        // Generate user ID
+        const username = 'user_' + Math.random().toString(36).substr(2, 6);
         document.getElementById('userDisplay').innerText = username;
         
-        // Global variables
-        let socket = null;
-        let peer = null;
-        let currentRoom = null;
+        // WebRTC setup
+        let peerConnection = null;
+        let dataChannel = null;
         let isConnected = false;
         
-        // Initialize socket connection
-        function initSocket() {
-            // Using public Socket.IO server
-            socket = io('https://socket-io-chat-app-server.onrender.com/', {
-                transports: ['websocket']
-            });
+        // STUN servers (free, just for finding public IP)
+        const configuration = {
+            iceServers: [
+                { urls: 'stun:stun.l.google.com:19302' },
+                { urls: 'stun:stun1.l.google.com:19302' },
+                { urls: 'stun:stun2.l.google.com:19302' }
+            ]
+        };
+        
+        // Create Offer (User A)
+        function createOffer() {
+            peerConnection = new RTCPeerConnection(configuration);
             
-            socket.on('connect', () => {
-                console.log('Connected to signaling server');
-            });
+            // Create data channel
+            dataChannel = peerConnection.createDataChannel('chat');
+            setupDataChannel();
             
-            socket.on('user-joined', (data) => {
-                if (data.room === currentRoom && data.username !== username) {
-                    addJoinMessage(`${data.username} joined the room`);
+            // Create offer
+            peerConnection.createOffer()
+                .then(offer => peerConnection.setLocalDescription(offer))
+                .then(() => {
+                    // Wait for ICE candidates to gather
+                    setTimeout(() => {
+                        const offerText = JSON.stringify({
+                            type: 'offer',
+                            sdp: peerConnection.localDescription.sdp,
+                            user: username
+                        });
+                        
+                        // Show offer to copy
+                        document.getElementById('offerInput').value = offerText;
+                        alert('COPY THIS OFFER and send to your friend:\n\n' + offerText);
+                    }, 1000);
+                });
+            
+            // Handle ICE candidates
+            peerConnection.onicecandidate = (event) => {
+                if (event.candidate) {
+                    console.log('ICE candidate generated');
                 }
-            });
-            
-            socket.on('user-left', (data) => {
-                if (data.room === currentRoom) {
-                    addJoinMessage(`${data.username} left the room`);
-                    document.getElementById('sendButton').disabled = true;
-                    document.getElementById('status').innerText = '[peer disconnected]';
-                    isConnected = false;
-                }
-            });
-            
-            socket.on('signal', (data) => {
-                if (data.room === currentRoom && data.from !== username) {
-                    handleSignal(data.signal);
-                }
-            });
+            };
         }
         
-        // Join a room
-        function joinRoom() {
-            const roomName = document.getElementById('roomName').value.trim();
-            if (!roomName) {                alert('[ERROR] enter room name');
+        // Create Answer (User B)
+        function createAnswer() {
+            const offerText = document.getElementById('offerInput').value.trim();
+            if (!offerText) {
+                alert('Paste friend\'s offer first');
                 return;
             }
             
-            currentRoom = roomName;
-            
-            // Initialize socket if not already done
-            if (!socket) {
-                initSocket();
-            }
-            
-            // Join room via socket
-            socket.emit('join-room', { room: roomName, username: username });
-            
-            // Update UI
-            document.getElementById('setupSection').style.display = 'none';
-            document.getElementById('roomSection').style.display = 'block';
-            document.getElementById('chatArea').style.display = 'block';
-            document.getElementById('roomDisplay').innerText = `[${roomName}]`;
-            
-            // Listen for peer connections
-            setupPeerConnection();
-        }
-        
-        // Set up peer connection
-        function setupPeerConnection() {
-            peer = new SimplePeer({
-                initiator: true, // Always start as initiator
-                trickle: true
-            });
-            
-            peer.on('signal', data => {
-                if (socket && currentRoom) {
-                    socket.emit('signal', {
-                        room: currentRoom,
-                        signal: data,
-                        from: username
-                    });
-                }
-            });
-            
-            peer.on('connect', () => {
-                addJoinMessage('secure connection established');
-                document.getElementById('sendButton').disabled = false;
-                document.getElementById('status').innerText = '[connected]';
-                isConnected = true;
-            });
-            
-            peer.on('data', data => {
-                const message = data.toString();                displayMessage(message, 'friend');
-            });
-            
-            peer.on('close', () => {
-                document.getElementById('sendButton').disabled = true;
-                document.getElementById('status').innerText = '[disconnected]';
-                isConnected = false;
-            });
-            
-            peer.on('error', err => {
-                console.error('Peer error:', err);
-            });
-        }
-        
-        // Handle incoming signals
-        function handleSignal(signal) {
-            if (!peer) {
-                // If we don't have a peer yet, create one as responder
-                peer = new SimplePeer({
-                    initiator: false,
-                    trickle: true
-                });
+            try {
+                const offer = JSON.parse(offerText);
                 
-                peer.on('signal', data => {
-                    if (socket && currentRoom) {
-                        socket.emit('signal', {
-                            room: currentRoom,
-                            signal: data,
-                            from: username
+                peerConnection = new RTCPeerConnection(configuration);
+                
+                // Handle incoming data channel
+                peerConnection.ondatachannel = (event) => {
+                    dataChannel = event.channel;
+                    setupDataChannel();
+                };
+                
+                // Set remote description (offer)
+                peerConnection.setRemoteDescription(new RTCSessionDescription({
+                    type: 'offer',
+                    sdp: offer.sdp
+                }))
+                .then(() => peerConnection.createAnswer())
+                .then(answer => peerConnection.setLocalDescription(answer))
+                .then(() => {
+                    setTimeout(() => {
+                        const answerText = JSON.stringify({
+                            type: 'answer',
+                            sdp: peerConnection.localDescription.sdp,
+                            user: username
                         });
-                    }
+                        
+                        document.getElementById('answerInput').value = answerText;
+                        alert('COPY THIS ANSWER and send to your friend:\n\n' + answerText);
+                    }, 1000);
                 });
                 
-                peer.on('connect', () => {
-                    addJoinMessage('secure connection established');
-                    document.getElementById('sendButton').disabled = false;
-                    document.getElementById('status').innerText = '[connected]';
-                    isConnected = true;
-                });
-                
-                peer.on('data', data => {
-                    const message = data.toString();
-                    displayMessage(message, 'friend');
-                });
-                
-                peer.on('close', () => {
-                    document.getElementById('sendButton').disabled = true;
-                    document.getElementById('status').innerText = '[disconnected]';
-                    isConnected = false;
-                });                
-                peer.on('error', err => {
-                    console.error('Peer error:', err);
-                });
+            } catch (e) {
+                alert('Invalid offer format');
             }
-            
-            // Signal the peer
-            peer.signal(signal);
         }
         
-        // Display functions
-        function addSystemMessage(text) {
+        // Complete Connection (User A receives answer)
+        function completeConnection() {
+            const answerText = document.getElementById('answerInput').value.trim();
+            if (!answerText || !peerConnection) {
+                alert('Paste friend\'s answer first');
+                return;
+            }
+            
+            try {
+                const answer = JSON.parse(answerText);
+                
+                peerConnection.setRemoteDescription(new RTCSessionDescription({
+                    type: 'answer',
+                    sdp: answer.sdp
+                }))
+                .then(() => {
+                    console.log('Connection established!');
+                });
+                
+            } catch (e) {
+                alert('Invalid answer format');
+            }
+        }
+        
+        // Setup data channel
+        function setupDataChannel() {
+            dataChannel.onopen = () => {
+                isConnected = true;
+                document.getElementById('connectionPanel').style.display = 'none';
+                document.getElementById('chatArea').style.display = 'block';
+                document.getElementById('status').innerText = '[connected]';
+                addJoinMessage(username + ' connected');
+                
+                // Send join message
+                dataChannel.send(JSON.stringify({
+                    type: 'join',
+                    user: username
+                }));
+            };
+            
+            dataChannel.onclose = () => {
+                isConnected = false;
+                document.getElementById('status').innerText = '[disconnected]';
+            };
+            
+            dataChannel.onmessage = (event) => {
+                try {
+                    const data = JSON.parse(event.data);
+                    if (data.type === 'join') {
+                        addJoinMessage(data.user + ' joined');
+                    } else if (data.type === 'message') {
+                        displayMessage(data.text, data.user);
+                    }
+                } catch (e) {
+                    // Plain text message
+                    displayMessage(event.data, 'friend');
+                }
+            };
+        }
+        
+        // Send message
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const text = input.value.trim();
+            
+            if (!text || !isConnected) {
+                alert('Not connected');
+                return;
+            }
+            
+            // Display own message
+            displayMessage(text, username);
+            
+            // Send to peer
+            dataChannel.send(JSON.stringify({
+                type: 'message',
+                text: text,
+                user: username
+            }));
+            
+            input.value = '';
+        }
+        
+        // Display message
+        function displayMessage(text, from) {
             const messagesDiv = document.getElementById('messages');
-            const systemElement = document.createElement('div');
-            systemElement.className = 'system-message';
-            systemElement.innerHTML = '>>> ' + text + ' <<<';
-            messagesDiv.appendChild(systemElement);
+            const msgDiv = document.createElement('div');
+            msgDiv.className = 'message';
+            
+            const time = new Date().toLocaleTimeString();
+            msgDiv.innerHTML = `<strong>[${from}]</strong> ${time}<br>${text}`;
+            
+            messagesDiv.appendChild(msgDiv);
             messagesDiv.scrollTop = messagesDiv.scrollHeight;
         }
         
         function addJoinMessage(text) {
             const messagesDiv = document.getElementById('messages');
-            const joinElement = document.createElement('div');
-            joinElement.className = 'join-message';
-            joinElement.innerHTML = '➤ ' + text;
-            messagesDiv.appendChild(joinElement);
-            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            const joinDiv = document.createElement('div');
+            joinDiv.className = 'join-message';
+            joinDiv.innerText = '➤ ' + text;
+            messagesDiv.appendChild(joinDiv);
         }
         
-        function displayMessage(text, from) {
-            const messagesDiv = document.getElementById('messages');
-            const messageElement = document.createElement('div');
-            messageElement.className = 'message';
-            
-            const time = new Date().toLocaleTimeString();
-            
-            messageElement.innerHTML = `
-                <strong>[${from}]</strong> 
-                <span style="color:#888;">${time}</span><br>
-                ${text}
-            `;
-            
-            messagesDiv.appendChild(messageElement);
-            messagesDiv.scrollTop = messagesDiv.scrollHeight;
-        }
-        
-        // Send message
-        function sendMessage() {
-            const messageInput = document.getElementById('messageInput');
-            const message = messageInput.value.trim();            
-            if (!message) return;
-            if (!isConnected) {
-                alert('[ERROR] not connected');
-                return;
-            }
-            
-            // Display own message
-            displayMessage(message, username);
-            
-            // Send to peer
-            peer.send(message);
-            
-            messageInput.value = '';
-        }
-        
-        // Handle Enter key
+        // Enter to send
         document.getElementById('messageInput').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                sendMessage();
-            }
+            if (e.key === 'Enter') sendMessage();
         });
-        
-        // Cleanup on page unload
-        window.addEventListener('beforeunload', function (e) {
-            if (socket && currentRoom) {
-                socket.emit('leave-room', { room: currentRoom, username: username });
-            }
-        });
-        
-        console.log('ANOM WEB 1.5 P2P // READY');
     </script>
 </body>
 </html>
