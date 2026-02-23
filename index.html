@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Anom Web 1.3</title>
+    <title>Anom Web 1.5</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
@@ -76,7 +76,7 @@
             font-weight: bold;
         }
         
-        .room-section {
+        .setup-section {
             margin: 20px 0;
         }
         
@@ -206,12 +206,31 @@
             padding-top: 10px;
         }
         
-        .room-key-display {
+        .room-display {
             font-size: 24px;
             text-align: center;
             margin: 10px 0;
             color: #00ff9d;
             word-break: break-all;
+            font-family: monospace;
+        }
+        
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            margin: 15px 0;
+        }
+        
+        .step {
+            padding: 5px 15px;
+            border: 1px solid #00ff9d;
+            margin: 0 5px;
+            border-radius: 3px;
+        }
+        
+        .step.active {
+            background: #00ff9d;
+            color: #0a0a0a;
         }
     </style>
 </head>
@@ -219,13 +238,12 @@
     <div class="container">
         <div class="header">
             <h1>ANOM WEB</h1>
-            <div class="version">version 1.3 // p2p build</div>
+            <div class="version">version 1.5 // p2p build</div>
         </div>
         
         <div class="security-badge">
             ⚡ P2P EPHEMERAL PROTOCOL ⚡<br>
-            direct connection // no servers // no logs<br>
-            messages self-destruct on page refresh
+            direct connection // no servers // no logs<br>            messages self-destruct on page refresh
         </div>
         
         <div class="user-info">
@@ -233,28 +251,29 @@
             <span class="user-tag" id="userDisplay">agent_</span>
         </div>
         
-        <!-- Connection Info -->
-        <div class="connection-info" id="connectionInfo">
-            <div style="text-align: center; margin-bottom: 10px;">
-                <strong>[ CONNECTION STATUS ]</strong>
+        <!-- Setup Section -->
+        <div class="setup-section" id="setupSection">
+            <div class="step-indicator">
+                <div class="step active" id="step1">1. ROOM NAME</div>
+                <div class="step" id="step2">2. JOIN ROOM</div>
             </div>
-            <div id="connectionStatus" style="color: #ffaa00; text-align: center;">
-                not connected
-            </div>
-            <div class="peer-list" id="peerList"></div>
-        </div>
-                <!-- Room Section -->
-        <div class="room-section" id="roomSection">
-            <input type="text" id="roomCode" placeholder="[enter room name]" maxlength="30">
-            <button onclick="createOrJoinRoom()">> CREATE/JOIN ROOM _</button>
+            
+            <input type="text" id="roomName" placeholder="[enter room name]" maxlength="30">
+            <button onclick="joinRoom()">> JOIN ROOM _</button>
         </div>
         
-        <!-- Share Section -->
-        <div class="room-section" id="shareSection" style="display: none;">
-            <div class="room-key-display" id="roomKeyDisplay"></div>
-            <textarea id="peerInput" placeholder="[paste peer connection key here]"></textarea>
-            <button onclick="connectToPeer()">> CONNECT PEER _</button>
-            <button onclick="copyRoomKey()">> COPY KEY _</button>
+        <!-- Room Section -->
+        <div class="setup-section" id="roomSection" style="display: none;">
+            <div class="room-display" id="roomDisplay"></div>
+            <div class="connection-info">
+                <div style="text-align: center; margin-bottom: 10px;">
+                    <strong>[ CONNECTION STATUS ]</strong>
+                </div>
+                <div id="connectionStatus" style="color: #ffaa00; text-align: center;">
+                    waiting for peer...
+                </div>
+                <div class="peer-list" id="peerList"></div>
+            </div>
         </div>
         
         <!-- Chat Area -->
@@ -264,16 +283,16 @@
             <input type="text" id="messageInput" placeholder="[type message]" maxlength="500">
             <button onclick="sendMessage()" id="sendButton" disabled>> SEND _</button>
             
-            <div class="status" id="status">[waiting for peers...]</div>
+            <div class="status" id="status">[connecting...]</div>
         </div>
         
         <div class="footer">
-            [PER-ANOM 1.3] // [P2P] // [NO STORAGE]
+            [PER-ANOM 1.5] // [P2P] // [NO STORAGE]
         </div>
     </div>
 
-    <!-- Simple Peer for WebRTC -->
-    <script src="https://cdn.jsdelivr.net/npm/simple-peer@9.11.1/simplepeer.min.js"></script>
+    <!-- Socket.IO and Simple Peer -->
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>    <script src="https://cdn.jsdelivr.net/npm/simple-peer@9.11.1/simplepeer.min.js"></script>
     
     <script>
         // Generate random username
@@ -281,18 +300,162 @@
         document.getElementById('userDisplay').innerText = username;
         
         // Global variables
+        let socket = null;
+        let peer = null;
         let currentRoom = null;
-        let peers = {};
-        let connections = [];
-        let isInitiator = false;
-        let peerNames = {}; // Хранит имена пиров
+        let isConnected = false;
+        
+        // Initialize socket connection
+        function initSocket() {
+            // Using public Socket.IO server
+            socket = io('https://socket-io-chat-app-server.onrender.com/', {
+                transports: ['websocket']
+            });
+            
+            socket.on('connect', () => {
+                console.log('Connected to signaling server');
+            });
+            
+            socket.on('user-joined', (data) => {
+                if (data.room === currentRoom && data.username !== username) {
+                    addJoinMessage(`${data.username} joined the room`);
+                }
+            });
+            
+            socket.on('user-left', (data) => {
+                if (data.room === currentRoom) {
+                    addJoinMessage(`${data.username} left the room`);
+                    document.getElementById('sendButton').disabled = true;
+                    document.getElementById('status').innerText = '[peer disconnected]';
+                    isConnected = false;
+                }
+            });
+            
+            socket.on('signal', (data) => {
+                if (data.room === currentRoom && data.from !== username) {
+                    handleSignal(data.signal);
+                }
+            });
+        }
+        
+        // Join a room
+        function joinRoom() {
+            const roomName = document.getElementById('roomName').value.trim();
+            if (!roomName) {                alert('[ERROR] enter room name');
+                return;
+            }
+            
+            currentRoom = roomName;
+            
+            // Initialize socket if not already done
+            if (!socket) {
+                initSocket();
+            }
+            
+            // Join room via socket
+            socket.emit('join-room', { room: roomName, username: username });
+            
+            // Update UI
+            document.getElementById('setupSection').style.display = 'none';
+            document.getElementById('roomSection').style.display = 'block';
+            document.getElementById('chatArea').style.display = 'block';
+            document.getElementById('roomDisplay').innerText = `[${roomName}]`;
+            
+            // Listen for peer connections
+            setupPeerConnection();
+        }
+        
+        // Set up peer connection
+        function setupPeerConnection() {
+            peer = new SimplePeer({
+                initiator: true, // Always start as initiator
+                trickle: true
+            });
+            
+            peer.on('signal', data => {
+                if (socket && currentRoom) {
+                    socket.emit('signal', {
+                        room: currentRoom,
+                        signal: data,
+                        from: username
+                    });
+                }
+            });
+            
+            peer.on('connect', () => {
+                addJoinMessage('secure connection established');
+                document.getElementById('sendButton').disabled = false;
+                document.getElementById('status').innerText = '[connected]';
+                isConnected = true;
+            });
+            
+            peer.on('data', data => {
+                const message = data.toString();                displayMessage(message, 'friend');
+            });
+            
+            peer.on('close', () => {
+                document.getElementById('sendButton').disabled = true;
+                document.getElementById('status').innerText = '[disconnected]';
+                isConnected = false;
+            });
+            
+            peer.on('error', err => {
+                console.error('Peer error:', err);
+            });
+        }
+        
+        // Handle incoming signals
+        function handleSignal(signal) {
+            if (!peer) {
+                // If we don't have a peer yet, create one as responder
+                peer = new SimplePeer({
+                    initiator: false,
+                    trickle: true
+                });
+                
+                peer.on('signal', data => {
+                    if (socket && currentRoom) {
+                        socket.emit('signal', {
+                            room: currentRoom,
+                            signal: data,
+                            from: username
+                        });
+                    }
+                });
+                
+                peer.on('connect', () => {
+                    addJoinMessage('secure connection established');
+                    document.getElementById('sendButton').disabled = false;
+                    document.getElementById('status').innerText = '[connected]';
+                    isConnected = true;
+                });
+                
+                peer.on('data', data => {
+                    const message = data.toString();
+                    displayMessage(message, 'friend');
+                });
+                
+                peer.on('close', () => {
+                    document.getElementById('sendButton').disabled = true;
+                    document.getElementById('status').innerText = '[disconnected]';
+                    isConnected = false;
+                });                
+                peer.on('error', err => {
+                    console.error('Peer error:', err);
+                });
+            }
+            
+            // Signal the peer
+            peer.signal(signal);
+        }
         
         // Display functions
         function addSystemMessage(text) {
             const messagesDiv = document.getElementById('messages');
             const systemElement = document.createElement('div');
             systemElement.className = 'system-message';
-            systemElement.innerHTML = '>>> ' + text + ' <<<';            messagesDiv.appendChild(systemElement);
+            systemElement.innerHTML = '>>> ' + text + ' <<<';
+            messagesDiv.appendChild(systemElement);
             messagesDiv.scrollTop = messagesDiv.scrollHeight;
         }
         
@@ -322,150 +485,23 @@
             messagesDiv.scrollTop = messagesDiv.scrollHeight;
         }
         
-        // Peer connection handling
-        function createOrJoinRoom() {
-            const roomName = document.getElementById('roomCode').value.trim();
-            if (!roomName) {
-                alert('[ERROR] enter room name');
-                return;
-            }
-            
-            currentRoom = roomName;
-            
-            // Show share section
-            document.getElementById('roomSection').style.display = 'none';
-            document.getElementById('shareSection').style.display = 'block';
-            document.getElementById('chatArea').style.display = 'block';
-            
-            // Create room key (signal data)
-            const roomKey = btoa(JSON.stringify({
-                room: roomName,
-                user: username,
-                time: Date.now()            }));
-            
-            document.getElementById('roomKeyDisplay').innerText = roomKey;
-            addSystemMessage('room created: ' + roomName);
-            
-            // Enable send button when peers connect
-            checkPeers();
-        }
-        
-        function connectToPeer() {
-            const peerKey = document.getElementById('peerInput').value.trim();
-            if (!peerKey) return;
-            
-            try {
-                const peerData = JSON.parse(atob(peerKey));
-                
-                // Создаем пира
-                const peer = new SimplePeer({
-                    initiator: false,
-                    trickle: false
-                });
-                
-                // Сохраняем имя пира
-                peerNames[peer._id] = peerData.user || 'unknown';
-                
-                // Отображаем сообщение о подключении
-                addJoinMessage(`${peerData.user} connected`);
-                
-                peer.on('signal', data => {
-                    // Send signal back
-                    const responseKey = btoa(JSON.stringify({
-                        type: 'signal',
-                        data: data,
-                        user: username
-                    }));
-                    document.getElementById('peerInput').value = responseKey;
-                });
-                
-                peer.on('data', data => {
-                    const message = data.toString();
-                    const peerName = peerNames[peer._id] || 'unknown';
-                    displayMessage(message, peerName);
-                });
-                
-                peer.on('connect', () => {
-                    addJoinMessage('secure connection established');
-                    document.getElementById('sendButton').disabled = false;
-                    document.getElementById('status').innerText = '[connected to peer]';
-                    checkPeers(); // Обновляем список пиров
-                });                
-                peer.on('close', () => {
-                    const peerName = peerNames[peer._id] || 'unknown';
-                    addJoinMessage(`${peerName} disconnected`);
-                    delete peerNames[peer._id];
-                    connections = connections.filter(p => p !== peer);
-                    checkPeers(); // Обновляем список пиров
-                });
-                
-                peer.on('error', err => {
-                    console.error('Peer error:', err);
-                });
-                
-                // Simulate receiving signal
-                setTimeout(() => {
-                    if (peerData.type === 'signal') {
-                        peer.signal(peerData.data);
-                    }
-                }, 100);
-                
-                connections.push(peer);
-                
-            } catch (e) {
-                alert('[ERROR] invalid connection key');
-            }
-        }
-        
-        function copyRoomKey() {
-            const key = document.getElementById('roomKeyDisplay').innerText;
-            navigator.clipboard.writeText(key).then(() => {
-                alert('[KEY COPIED] send to friend');
-            });
-        }
-        
+        // Send message
         function sendMessage() {
             const messageInput = document.getElementById('messageInput');
-            const message = messageInput.value.trim();
-            
+            const message = messageInput.value.trim();            
             if (!message) return;
-            if (connections.length === 0) {
-                alert('[ERROR] no peers connected');
+            if (!isConnected) {
+                alert('[ERROR] not connected');
                 return;
             }
             
             // Display own message
             displayMessage(message, username);
             
-            // Send to all peers
-            connections.forEach(peer => {
-                if (peer.connected) {                    peer.send(message);
-                }
-            });
+            // Send to peer
+            peer.send(message);
             
             messageInput.value = '';
-        }
-        
-        function checkPeers() {
-            // Update peer list
-            const peerListDiv = document.getElementById('peerList');
-            peerListDiv.innerHTML = '';
-            
-            if (connections.length > 0) {
-                document.getElementById('sendButton').disabled = false;
-                document.getElementById('status').innerText = '[connected to ' + connections.length + ' peer(s)]';
-                
-                connections.forEach((peer, index) => {
-                    const peerName = peerNames[peer._id] || 'unknown';
-                    const peerItem = document.createElement('div');
-                    peerItem.className = 'peer-item';
-                    peerItem.innerHTML = `▶ ${peerName} [active]`;
-                    peerListDiv.appendChild(peerItem);
-                });
-            } else {
-                document.getElementById('sendButton').disabled = true;
-                document.getElementById('status').innerText = '[waiting for peers...]';
-            }
         }
         
         // Handle Enter key
@@ -475,15 +511,14 @@
             }
         });
         
-        // Warn on refresh
+        // Cleanup on page unload
         window.addEventListener('beforeunload', function (e) {
-            if (currentRoom) {
-                e.preventDefault();
-                e.returnValue = '';
+            if (socket && currentRoom) {
+                socket.emit('leave-room', { room: currentRoom, username: username });
             }
         });
         
-        console.log('ANOM WEB 1.3 P2P // READY');
+        console.log('ANOM WEB 1.5 P2P // READY');
     </script>
 </body>
 </html>
