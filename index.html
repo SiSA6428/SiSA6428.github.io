@@ -61,23 +61,44 @@
             color: #00cc7a;
         }
         
+        .user-info {
+            background: #1a1a1a;
+            border: 1px dashed #00ff9d;
+            padding: 8px 12px;
+            margin: 10px 0;
+            font-size: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .user-tag {
+            color: #00cc7a;
+            font-weight: bold;
+        }
+        
         .room-section {
             margin: 20px 0;
         }
         
-        input {
+        input, textarea {
             width: 100%;
             background: #1a1a1a;
             border: 1px solid #00ff9d;
             color: #00ff9d;
             padding: 12px;
             font-family: 'Courier New', monospace;
-            font-size: 16px;
+            font-size: 14px;
             margin: 5px 0 15px 0;
             border-radius: 5px;
         }
         
-        input:focus {
+        textarea {
+            height: 80px;
+            resize: vertical;
+        }
+        
+        input:focus, textarea:focus {
             outline: none;
             box-shadow: 0 0 10px rgba(0, 255, 157, 0.5);
         }
@@ -89,7 +110,7 @@
             color: #00ff9d;
             padding: 12px;
             font-family: 'Courier New', monospace;
-            font-size: 18px;
+            font-size: 16px;
             font-weight: bold;
             cursor: pointer;
             border-radius: 5px;
@@ -102,6 +123,11 @@
             color: #0a0a0a;
         }
         
+        button:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+        
         .chat-area {
             display: none;
             margin-top: 20px;
@@ -110,7 +136,7 @@
         .messages {
             background: #1a1a1a;
             border: 1px solid #00ff9d;
-            height: 350px;
+            height: 300px;
             overflow-y: auto;
             padding: 15px;
             margin: 15px 0;
@@ -121,10 +147,23 @@
         .message {
             margin: 8px 0;
             word-break: break-word;
+            padding: 4px 0;
+            border-bottom: 1px solid #1a1a1a;
         }
         
         .message strong {
             color: #00cc7a;
+        }
+        
+        .join-message {
+            color: #ffaa00;
+            text-align: center;
+            font-size: 12px;
+            margin: 8px 0;
+            padding: 4px;
+            background: rgba(255, 170, 0, 0.1);
+            border-left: 3px solid #ffaa00;
+            font-style: italic;
         }
         
         .system-message {
@@ -132,6 +171,27 @@
             text-align: center;
             font-size: 12px;
             margin: 10px 0;
+        }
+        
+        .connection-info {
+            background: #1a1a1a;
+            border: 1px solid #00ff9d;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+        }
+        
+        .peer-list {
+            margin: 10px 0;
+            padding: 5px;
+            max-height: 100px;
+            overflow-y: auto;
+        }
+        
+        .peer-item {
+            color: #00cc7a;
+            padding: 3px 0;
+            font-size: 12px;
         }
         
         .status {
@@ -149,164 +209,254 @@
             border-top: 1px solid #1a1a1a;
             padding-top: 10px;
         }
+        
+        .room-key-display {
+            font-size: 24px;
+            text-align: center;
+            margin: 10px 0;
+            color: #00ff9d;
+            word-break: break-all;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
             <h1>ANOM WEB</h1>
-            <div class="version">version 1.3 // build 2026</div>
+            <div class="version">version 1.3 // p2p build</div>
         </div>
         
         <div class="security-badge">
-            ⚡ EPHEMERAL PROTOCOL ⚡<br>
-            messages self-destruct on page refresh<br>
-            no history // no logs // no trace
+            ⚡ P2P EPHEMERAL PROTOCOL ⚡<br>
+            direct connection // no servers // no logs<br>
+            messages self-destruct on page refresh
         </div>
         
-        <div class="room-section">
-            <input type="text" id="roomCode" placeholder="[enter room key]" maxlength="20">
-            <button onclick="joinRoom()">> CONNECT _</button>
+        <div class="user-info">
+            <span>🔐 your id:</span>
+            <span class="user-tag" id="userDisplay">agent_</span>
         </div>
         
+        <!-- Connection Info -->
+        <div class="connection-info" id="connectionInfo">
+            <div style="text-align: center; margin-bottom: 10px;">
+                <strong>[ CONNECTION STATUS ]</strong>
+            </div>
+            <div id="connectionStatus" style="color: #ffaa00; text-align: center;">
+                not connected
+            </div>
+            <div class="peer-list" id="peerList"></div>
+        </div>
+        
+        <!-- Room Section -->
+        <div class="room-section" id="roomSection">
+            <input type="text" id="roomCode" placeholder="[enter room name]" maxlength="30">
+            <button onclick="createOrJoinRoom()">> CREATE/JOIN ROOM _</button>
+        </div>
+        
+        <!-- Share Section -->
+        <div class="room-section" id="shareSection" style="display: none;">
+            <div class="room-key-display" id="roomKeyDisplay"></div>
+            <textarea id="peerInput" placeholder="[paste peer connection key here]"></textarea>
+            <button onclick="connectToPeer()">> CONNECT PEER _</button>
+            <button onclick="copyRoomKey()">> COPY KEY _</button>
+        </div>
+        
+        <!-- Chat Area -->
         <div id="chatArea" class="chat-area">
             <div class="messages" id="messages"></div>
             
             <input type="text" id="messageInput" placeholder="[type message]" maxlength="500">
-            <button onclick="sendMessage()">> SEND _</button>
+            <button onclick="sendMessage()" id="sendButton" disabled>> SEND _</button>
             
-            <div class="status" id="status">[system ready]</div>
+            <div class="status" id="status">[waiting for peers...]</div>
         </div>
         
         <div class="footer">
-            [PER-ANOM 1.3] // [END-TO-END TEMPORARY] // [NO STORAGE]
+            [PER-ANOM 1.3] // [P2P] // [NO STORAGE]
         </div>
     </div>
 
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <!-- Simple Peer for WebRTC -->
+    <script src="https://cdn.jsdelivr.net/npm/simple-peer@9.11.1/simplepeer.min.js"></script>
     
     <script>
-        // 🔐 ВСТАВЬ СВОИ ДАННЫЕ ИЗ FIREBASE (Замени этот объект)
-        const firebaseConfig = {
-            apiKey: "AIzaSyBx1JATLdFSxUHkZLE-jvDfF_jkYx-t1FA",
-            authDomain: "anom-web.firebaseapp.com",
-            databaseURL: "https://anom-web-default-rtdb.firebaseio.com",
-            projectId: "anom-web",
-            storageBucket: "anom-web.appspot.com",
-            messagingSenderId: "123456789012",
-            appId: "1:123456789012:web:abc123def456"
-        };
-        
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const database = firebase.database();
+        // Generate random username
+        const username = 'agent_' + Math.random().toString(36).substr(2, 4).toUpperCase();
+        document.getElementById('userDisplay').innerText = username;
         
         // Global variables
         let currentRoom = null;
-        let username = 'user_' + Math.random().toString(36).substr(2, 6);
-        let messageListener = null;
+        let peers = [];
+        let connections = [];
+        let isInitiator = false;
         
-        // Join room function
-        function joinRoom() {
-            const roomCode = document.getElementById('roomCode').value.trim();
-            
-            if (!roomCode) {
-                alert('[ERROR] room key required');
-                return;
-            }
-            
-            // Clean up previous listener
-            if (messageListener) {
-                messageListener.off();
-            }
-            
-            currentRoom = roomCode;
-            
-            // Show chat area
-            document.getElementById('chatArea').style.display = 'block';
-            document.getElementById('messages').innerHTML = '';
-            
-            // Update status
-            document.getElementById('status').innerText = '[connected to room: ' + roomCode + ']';
-            
-            // Add system message
-            addSystemMessage('connected to room [' + roomCode + ']');
-            addSystemMessage('all messages are temporary');
-            
-            // Listen for messages
-            const roomRef = database.ref('rooms/' + roomCode + '/messages');
-            
-            messageListener = roomRef.on('child_added', (snapshot) => {
-                const msg = snapshot.val();
-                displayMessage(msg);
-            });
-        }
-        
-        // Send message function
-        function sendMessage() {
-            const messageInput = document.getElementById('messageInput');
-            const message = messageInput.value.trim();
-            
-            if (!message || !currentRoom) {
-                alert('[ERROR] join room first');
-                return;
-            }
-            
-            // Create message object
-            const messageObj = {
-                text: message,
-                user: username,
-                time: Date.now(),
-                id: Math.random().toString(36).substr(2, 9)
-            };
-            
-            // Save to Firebase
-            const roomRef = database.ref('rooms/' + currentRoom + '/messages');
-            roomRef.push(messageObj);
-            
-            // Clear input
-            messageInput.value = '';
-        }
-        
-        // Display message in chat
-        function displayMessage(msg) {
-            const messagesDiv = document.getElementById('messages');
-            const messageElement = document.createElement('div');
-            messageElement.className = 'message';
-            
-            const time = new Date(msg.time).toLocaleTimeString();
-            
-            messageElement.innerHTML = `
-                <strong>[${msg.user}]</strong> 
-                <span style="color:#888;">${time}</span><br>
-                ${msg.text}
-            `;
-            
-            messagesDiv.appendChild(messageElement);
-            messagesDiv.scrollTop = messagesDiv.scrollHeight;
-        }
-        
-        // Add system message
+        // Display functions
         function addSystemMessage(text) {
             const messagesDiv = document.getElementById('messages');
             const systemElement = document.createElement('div');
             systemElement.className = 'system-message';
             systemElement.innerHTML = '>>> ' + text + ' <<<';
             messagesDiv.appendChild(systemElement);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+        
+        function addJoinMessage(text) {
+            const messagesDiv = document.getElementById('messages');
+            const joinElement = document.createElement('div');
+            joinElement.className = 'join-message';
+            joinElement.innerHTML = '➤ ' + text;
+            messagesDiv.appendChild(joinElement);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+        
+        function displayMessage(text, from) {
+            const messagesDiv = document.getElementById('messages');
+            const messageElement = document.createElement('div');
+            messageElement.className = 'message';
+            
+            const time = new Date().toLocaleTimeString();
+            
+            messageElement.innerHTML = `
+                <strong>[${from}]</strong> 
+                <span style="color:#888;">${time}</span><br>
+                ${text}
+            `;
+            
+            messagesDiv.appendChild(messageElement);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+        
+        // Peer connection handling
+        function createOrJoinRoom() {
+            const roomName = document.getElementById('roomCode').value.trim();
+            if (!roomName) {
+                alert('[ERROR] enter room name');
+                return;
+            }
+            
+            currentRoom = roomName;
+            
+            // Show share section
+            document.getElementById('roomSection').style.display = 'none';
+            document.getElementById('shareSection').style.display = 'block';
+            document.getElementById('chatArea').style.display = 'block';
+            
+            // Create room key (signal data)
+            const roomKey = btoa(JSON.stringify({
+                room: roomName,
+                user: username,
+                time: Date.now()
+            }));
+            
+            document.getElementById('roomKeyDisplay').innerText = roomKey;
+            addSystemMessage('room created: ' + roomName);
+            
+            // Enable send button when peers connect
+            checkPeers();
+        }
+        
+        function connectToPeer() {
+            const peerKey = document.getElementById('peerInput').value.trim();
+            if (!peerKey) return;
+            
+            try {
+                const peerData = JSON.parse(atob(peerKey));
+                addJoinMessage(peerData.user + ' connected');
+                
+                // Create peer connection
+                const peer = new SimplePeer({
+                    initiator: false,
+                    trickle: false
+                });
+                
+                peer.on('signal', data => {
+                    // Send signal back
+                    const responseKey = btoa(JSON.stringify({
+                        type: 'signal',
+                        data: data,
+                        user: username
+                    }));
+                    document.getElementById('peerInput').value = responseKey;
+                });
+                
+                peer.on('data', data => {
+                    const message = data.toString();
+                    displayMessage(message, 'peer');
+                });
+                
+                peer.on('connect', () => {
+                    addJoinMessage('secure connection established');
+                    document.getElementById('sendButton').disabled = false;
+                    document.getElementById('status').innerText = '[connected to peer]';
+                });
+                
+                // Simulate receiving signal
+                setTimeout(() => {
+                    if (peerData.type === 'signal') {
+                        peer.signal(peerData.data);
+                    }
+                }, 100);
+                
+                connections.push(peer);
+                
+            } catch (e) {
+                alert('[ERROR] invalid connection key');
+            }
+        }
+        
+        function copyRoomKey() {
+            const key = document.getElementById('roomKeyDisplay').innerText;
+            navigator.clipboard.writeText(key).then(() => {
+                alert('[KEY COPIED] send to friend');
+            });
+        }
+        
+        function sendMessage() {
+            const messageInput = document.getElementById('messageInput');
+            const message = messageInput.value.trim();
+            
+            if (!message) return;
+            if (connections.length === 0) {
+                alert('[ERROR] no peers connected');
+                return;
+            }
+            
+            // Display own message
+            displayMessage(message, username);
+            
+            // Send to all peers
+            connections.forEach(peer => {
+                peer.send(message);
+            });
+            
+            messageInput.value = '';
+        }
+        
+        function checkPeers() {
+            // Update peer list
+            const peerListDiv = document.getElementById('peerList');
+            peerListDiv.innerHTML = '';
+            
+            if (connections.length > 0) {
+                document.getElementById('sendButton').disabled = false;
+                document.getElementById('status').innerText = '[connected to ' + connections.length + ' peer(s)]';
+                
+                connections.forEach((peer, index) => {
+                    const peerItem = document.createElement('div');
+                    peerItem.className = 'peer-item';
+                    peerItem.innerHTML = '▶ peer ' + (index + 1) + ' [active]';
+                    peerListDiv.appendChild(peerItem);
+                });
+            } else {
+                document.getElementById('status').innerText = '[waiting for peers...]';
+            }
         }
         
         // Handle Enter key
         document.getElementById('messageInput').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
                 sendMessage();
-            }
-        });
-        
-        document.getElementById('roomCode').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                joinRoom();
             }
         });
         
@@ -318,7 +468,7 @@
             }
         });
         
-        console.log('ANOM WEB 1.3 // SYSTEM READY');
+        console.log('ANOM WEB 1.3 P2P // READY');
     </script>
 </body>
 </html>
