@@ -1,811 +1,324 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BD Coin - Инвестиционная платформа</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>Anom Web 1.3</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; touch-action: pan-y; }
-        html, body { width: 100%; height: 100%; overflow: hidden; font-family: 'Arial', sans-serif; background: linear-gradient(135deg, #0a2f0a 0%, #1a5a1a 100%); color: #e8f5e8; position: fixed; }
-        .container { width: 100vw; height: 100vh; padding: 15px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
-        .header { text-align: center; margin-bottom: 20px; padding: 15px; background: rgba(10, 40, 10, 0.9); border-radius: 15px; border: 2px solid #2e8b57; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); }
-        .coin-name { font-size: 2em; color: #32cd32; text-shadow: 0 0 10px rgba(50, 205, 50, 0.5); margin-bottom: 8px; }
-        .price-display { font-size: 2.5em; font-weight: bold; color: #90ee90; margin: 15px 0; text-shadow: 0 0 15px rgba(144, 238, 144, 0.7); }
-        .chart-container { background: rgba(10, 40, 10, 0.9); border-radius: 15px; padding: 15px; margin: 15px 0; border: 2px solid #2e8b57; height: 300px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); }
-        .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 15px 0; }
-        .stat-card { background: rgba(10, 40, 10, 0.9); padding: 15px; border-radius: 12px; text-align: center; border: 1px solid #2e8b57; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); }
-        .stat-value { font-size: 1.3em; color: #90ee90; font-weight: bold; }
-        .stat-label { font-size: 0.9em; color: #c8e6c8; margin-top: 5px; }
-        .trade-section { background: rgba(10, 40, 10, 0.9); padding: 20px; border-radius: 15px; margin: 15px 0; border: 2px solid #4169e1; text-align: center; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); }
-        .buy-button { background: linear-gradient(135deg, #32cd32, #228b22); color: white; border: none; padding: 15px 30px; font-size: 1.2em; border-radius: 25px; cursor: pointer; margin: 10px 0; width: 100%; font-weight: bold; box-shadow: 0 4px 15px rgba(50, 205, 50, 0.4); transition: all 0.3s ease; }
-        .sell-button { background: linear-gradient(135deg, #ff6b6b, #ee5a52); color: white; border: none; padding: 15px 30px; font-size: 1.2em; border-radius: 25px; cursor: pointer; margin: 10px 0; width: 100%; font-weight: bold; box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4); transition: all 0.3s ease; }
-        .buy-button:active, .sell-button:active { transform: scale(0.95); }
-        .notification { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: rgba(50, 205, 50, 0.9); color: white; padding: 15px 25px; border-radius: 25px; z-index: 1000; display: none; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); }
-        
-        /* Админ-панель */
-        .admin-panel { 
-            background: rgba(10, 40, 10, 0.95); 
-            padding: 20px; 
-            border-radius: 15px; 
-            margin: 15px 0; 
-            border: 2px solid #ffd700; 
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-        }
-        .admin-input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #32cd32; border-radius: 8px; background: rgba(20, 60, 20, 0.8); color: white; font-size: 1em; }
-        .admin-button { background: linear-gradient(135deg, #ffd700, #ffa500); color: #0a2f0a; border: none; padding: 12px 25px; font-size: 1.1em; border-radius: 25px; cursor: pointer; margin: 5px; font-weight: bold; box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4); }
-
-        /* Стили для кошелька */
-        .wallet-section { background: rgba(10, 40, 10, 0.9); padding: 20px; border-radius: 15px; margin: 15px 0; border: 2px solid #4169e1; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); }
-        .wallet-info { text-align: center; margin-bottom: 15px; }
-        .wallet-id { font-size: 1.2em; color: #90ee90; font-weight: bold; background: rgba(20, 60, 20, 0.8); padding: 10px; border-radius: 8px; margin: 10px 0; }
-        .balance { font-size: 2em; color: #32cd32; font-weight: bold; margin: 10px 0; }
-        
-        /* Окно входа */
-        .auth-modal { 
-            display: flex; 
-            position: fixed; 
-            top: 0; 
-            left: 0; 
-            width: 100%; 
-            height: 100%; 
-            background: rgba(0,0,0,0.8); 
-            z-index: 10000; 
-            justify-content: center; 
-            align-items: center; 
-        }
-        .auth-content { 
-            background: rgba(10, 40, 10, 0.95); 
-            padding: 30px; 
-            border-radius: 15px; 
-            border: 2px solid #32cd32; 
-            width: 90%; 
-            max-width: 400px; 
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
         
-        .container::-webkit-scrollbar { display: none; }
+        body {
+            background: #0a0a0a;
+            font-family: 'Courier New', monospace;
+            color: #00ff9d;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 15px;
+        }
+        
+        .container {
+            max-width: 600px;
+            width: 100%;
+            background: #111;
+            border: 2px solid #00ff9d;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 0 20px rgba(0, 255, 157, 0.2);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+            border-bottom: 1px solid #00ff9d;
+            padding-bottom: 15px;
+        }
+        
+        .header h1 {
+            font-size: 32px;
+            letter-spacing: 4px;
+            text-shadow: 0 0 10px #00ff9d;
+        }
+        
+        .header .version {
+            color: #666;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        
+        .security-badge {
+            background: #1a1a1a;
+            border: 1px solid #00ff9d;
+            padding: 8px;
+            margin: 15px 0;
+            font-size: 12px;
+            text-align: center;
+            color: #00cc7a;
+        }
+        
+        .room-section {
+            margin: 20px 0;
+        }
+        
+        input {
+            width: 100%;
+            background: #1a1a1a;
+            border: 1px solid #00ff9d;
+            color: #00ff9d;
+            padding: 12px;
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+            margin: 5px 0 15px 0;
+            border-radius: 5px;
+        }
+        
+        input:focus {
+            outline: none;
+            box-shadow: 0 0 10px rgba(0, 255, 157, 0.5);
+        }
+        
+        button {
+            width: 100%;
+            background: transparent;
+            border: 2px solid #00ff9d;
+            color: #00ff9d;
+            padding: 12px;
+            font-family: 'Courier New', monospace;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: all 0.3s;
+            margin: 5px 0;
+        }
+        
+        button:hover {
+            background: #00ff9d;
+            color: #0a0a0a;
+        }
+        
+        .chat-area {
+            display: none;
+            margin-top: 20px;
+        }
+        
+        .messages {
+            background: #1a1a1a;
+            border: 1px solid #00ff9d;
+            height: 350px;
+            overflow-y: auto;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        
+        .message {
+            margin: 8px 0;
+            word-break: break-word;
+        }
+        
+        .message strong {
+            color: #00cc7a;
+        }
+        
+        .system-message {
+            color: #666;
+            text-align: center;
+            font-size: 12px;
+            margin: 10px 0;
+        }
+        
+        .status {
+            color: #00cc7a;
+            font-size: 12px;
+            text-align: right;
+            margin-top: 5px;
+        }
+        
+        .footer {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 10px;
+            color: #333;
+            border-top: 1px solid #1a1a1a;
+            padding-top: 10px;
+        }
     </style>
 </head>
 <body>
-    <!-- Модальное окно авторизации -->
-    <div class="auth-modal" id="authModal">
-        <div class="auth-content">
-            <h3 style="color: #90ee90; text-align: center; margin-bottom: 20px;">🔐 Вход в систему BD Coin</h3>
-            
-            <div id="loginForm">
-                <input type="text" id="loginUsername" class="admin-input" placeholder="Логин">
-                <input type="password" id="loginPassword" class="admin-input" placeholder="Пароль">
-                <button class="buy-button" onclick="login()" style="margin-top: 10px;">Войти в систему</button>
-                
-                <div style="text-align: center; margin-top: 20px; padding: 15px; background: rgba(255,215,0,0.1); border-radius: 8px;">
-                    <div style="color: #ffd700; font-size: 1em; margin-bottom: 10px;">👑 Админ доступ:</div>
-                    <div style="color: #90ee90; font-size: 0.9em;">Логин: <strong>admin</strong></div>
-                    <div style="color: #90ee90; font-size: 0.9em;">Пароль: <strong>admin123</strong></div>
-                </div>
-            </div>
-            
-            <p style="text-align: center; margin-top: 15px; font-size: 0.9em; color: #c8e6c8;">
-                💰 Пополнение баланса: @BDCoinSupportBot
-            </p>
-        </div>
-    </div>
-
-    <div class="container" id="mainContainer" style="display: none;">
+    <div class="container">
         <div class="header">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <h1 class="coin-name">BD COIN</h1>
-                <button class="admin-button" onclick="logout()" style="background: linear-gradient(135deg, #ff6b6b, #ee5a52); padding: 8px 15px; font-size: 0.9em;">
-                    👤 Выйти
-                </button>
-            </div>
-            <div class="price-display" id="currentPrice">0.0100 ₽</div>
-            <div>Капитализация: <span id="marketCap">100.00 ₽</span></div>
+            <h1>ANOM WEB</h1>
+            <div class="version">version 1.3 // build 2026</div>
         </div>
-
-        <div class="chart-container">
-            <canvas id="priceChart"></canvas>
+        
+        <div class="security-badge">
+            ⚡ EPHEMERAL PROTOCOL ⚡<br>
+            messages self-destruct on page refresh<br>
+            no history // no logs // no trace
         </div>
-
-        <div class="stats">
-            <div class="stat-card">
-                <div class="stat-value" id="totalSupply">10,000</div>
-                <div class="stat-label">Всего монет</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value" id="priceChange">+0.00%</div>
-                <div class="stat-label">Изменение</div>
-            </div>
+        
+        <div class="room-section">
+            <input type="text" id="roomCode" placeholder="[enter room key]" maxlength="20">
+            <button onclick="joinRoom()">> CONNECT _</button>
         </div>
-
-        <!-- Секция кошелька -->
-        <div class="wallet-section">
-            <div class="wallet-info">
-                <h3 style="color: #4169e1;">👛 Мой Кошелек</h3>
-                <div class="wallet-id" id="walletId">Загрузка...</div>
-                <div class="balance" id="walletBalance">0.00 BD</div>
-                <div style="color: #ffd700; font-size: 1.1em; margin: 10px 0;" id="rubBalance">0.00 ₽</div>
-                <div style="color: #90ee90; font-size: 0.8em; margin-top: 5px;" id="userLogin"></div>
-            </div>
+        
+        <div id="chatArea" class="chat-area">
+            <div class="messages" id="messages"></div>
             
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px;">
-                <button class="admin-button" onclick="showBuyModal()" style="background: linear-gradient(135deg, #32cd32, #228b22);">
-                    💰 Купить BD
-                </button>
-                <button class="admin-button" onclick="showSellModal()" style="background: linear-gradient(135deg, #ff6b6b, #ee5a52);">
-                    💸 Продать BD
-                </button>
-            </div>
-        </div>
-
-        <!-- Объединенная секция торговли -->
-        <div class="trade-section">
-            <h3>💰 Торговля BD Coin</h3>
-            <p>Текущая цена: <span id="tradePrice">0.0100</span> ₽</p>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px;">
-                <button class="buy-button" onclick="showBuyModal()">
-                    КУПИТЬ BD
-                </button>
-                <button class="sell-button" onclick="showSellModal()">
-                    ПРОДАТЬ BD
-                </button>
-            </div>
-            <p style="margin-top: 10px; font-size: 0.9em; color: #c8e6c8;">
-                📈 Покупка увеличивает цену | 📉 Продажа уменьшает цену
-            </p>
-        </div>
-
-        <!-- Админ-панель (только для админа) -->
-        <div class="admin-panel" id="adminPanel" style="display: none;">
-            <h3 style="color: #ffd700; text-align: center;">👑 Админ Панель</h3>
+            <input type="text" id="messageInput" placeholder="[type message]" maxlength="500">
+            <button onclick="sendMessage()">> SEND _</button>
             
-            <div style="background: rgba(255,215,0,0.1); padding: 15px; border-radius: 8px; margin: 10px 0;">
-                <h4 style="color: #ffd700; text-align: center;">💸 Управление балансами</h4>
-                <input type="text" id="adminWalletId" class="admin-input" placeholder="ID кошелька пользователя">
-                <input type="number" id="adminAmount" class="admin-input" placeholder="Сумма в рублях" step="1" min="1">
-                <input type="text" id="adminDescription" class="admin-input" placeholder="Причина изменения">
-                
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
-                    <button class="admin-button" onclick="adminAddBalance()" style="background: linear-gradient(135deg, #32cd32, #228b222);">
-                        💰 Начислить
-                    </button>
-                    <button class="admin-button" onclick="adminRemoveBalance()" style="background: linear-gradient(135deg, #ff6b6b, #ee5a52);">
-                        💸 Списать
-                    </button>
-                </div>
-            </div>
-
-            <div style="background: rgba(50,205,50,0.1); padding: 15px; border-radius: 8px; margin: 10px 0;">
-                <h4 style="color: #32cd32; text-align: center;">📊 Статистика системы</h4>
-                <div style="color: #c8e6c8; font-size: 0.9em;">
-                    <div>👥 Всего пользователей: <span id="statsUsers">0</span></div>
-                    <div>💰 Общий рублевый баланс: <span id="statsTotalRub">0</span> ₽</div>
-                    <div>💎 Общий баланс BD: <span id="statsTotalBD">0</span> BD</div>
-                </div>
-                <button class="admin-button" onclick="updateStats()" style="width: 100%; margin-top: 10px;">
-                    🔄 Обновить статистику
-                </button>
-            </div>
-            
-            <div id="adminMessage" style="text-align: center; margin-top: 10px; color: #90ee90;"></div>
+            <div class="status" id="status">[system ready]</div>
         </div>
-
-        <!-- Информация о пополнении -->
-        <div style="background: rgba(10, 40, 10, 0.9); padding: 20px; border-radius: 15px; margin: 15px 0; border: 2px solid #ffd700; text-align: center;">
-            <h3 style="color: #ffd700;">💳 Пополнение баланса</h3>
-            <p style="color: #c8e6c8; margin: 10px 0;">
-                Для пополнения рублевого баланса обращайтесь к нашему боту:
-            </p>
-            <div style="background: rgba(255,215,0,0.1); padding: 15px; border-radius: 8px; margin: 10px 0;">
-                <div style="color: #ffd700; font-size: 1.1em; font-weight: bold;">@BDCoinSupportBot</div>
-                <div style="color: #90ee90; font-size: 0.9em; margin-top: 5px;">Telegram бот для пополнения</div>
-            </div>
-            <p style="color: #c8e6c8; font-size: 0.9em; margin-top: 10px;">
-                После оплаты администратор начислит рублевый баланс на ваш аккаунт
-            </p>
+        
+        <div class="footer">
+            [PER-ANOM 1.3] // [END-TO-END TEMPORARY] // [NO STORAGE]
         </div>
     </div>
 
-    <!-- Модальное окно покупки -->
-    <div id="buyModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 10000; justify-content: center; align-items: center;">
-        <div style="background: rgba(10, 40, 10, 0.95); padding: 30px; border-radius: 15px; border: 2px solid #32cd32; width: 90%; max-width: 400px;">
-            <h3 style="color: #90ee90; text-align: center; margin-bottom: 20px;">🛒 Покупка BD Coin</h3>
-            <p style="text-align: center; margin-bottom: 15px; color: #c8e6c8;">Текущая цена: <span id="modalBuyPrice">0.0100</span> ₽</p>
-            <p style="text-align: center; margin-bottom: 15px; color: #ffd700;">Ваш баланс: <span id="modalUserBalance">0.00</span> ₽</p>
-            <input type="number" id="buyAmount" class="admin-input" placeholder="Сумма в рублях для покупки BD" step="1" min="1">
-            <div style="text-align: center; margin: 15px 0;">
-                <div style="color: #90ee90; font-size: 0.9em;">Вы получите: <span id="calculatedBD">0.00</span> BD</div>
-                <div style="color: #ffd700; font-size: 0.8em; margin-top: 5px;">Новая цена: <span id="newPriceAfterBuy">0.0100</span> ₽</div>
-            </div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                <button class="admin-button" onclick="hideBuyModal()" style="background: linear-gradient(135deg, #ff6b6b, #ee5a52);">Отмена</button>
-                <button class="admin-button" onclick="processBuy()" style="background: linear-gradient(135deg, #32cd32, #228b22);">Купить</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Модальное окно продажи -->
-    <div id="sellModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 10000; justify-content: center; align-items: center;">
-        <div style="background: rgba(10, 40, 10, 0.95); padding: 30px; border-radius: 15px; border: 2px solid #ff6b6b; width: 90%; max-width: 400px;">
-            <h3 style="color: #90ee90; text-align: center; margin-bottom: 20px;">💸 Продажа BD Coin</h3>
-            <p style="text-align: center; margin-bottom: 15px; color: #c8e6c8;">Текущая цена: <span id="modalSellPrice">0.0100</span> ₽</p>
-            <p style="text-align: center; margin-bottom: 15px; color: #32cd32;">Ваш баланс BD: <span id="modalUserBDBalance">0.00</span> BD</p>
-            <input type="number" id="sellAmount" class="admin-input" placeholder="Количество BD для продажи" step="0.01" min="0.01">
-            <div style="text-align: center; margin: 15px 0;">
-                <div style="color: #90ee90; font-size: 0.9em;">Вы получите: <span id="calculatedRub">0.00</span> ₽</div>
-                <div style="color: #ff6b6b; font-size: 0.8em; margin-top: 5px;">Новая цена: <span id="newPriceAfterSell">0.0100</span> ₽</div>
-            </div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                <button class="admin-button" onclick="hideSellModal()" style="background: linear-gradient(135deg, #ff6b6b, #ee5a52);">Отмена</button>
-                <button class="admin-button" onclick="processSell()" style="background: linear-gradient(135deg, #ff6b6b, #ee5a52);">Продать</button>
-            </div>
-        </div>
-    </div>
-
-    <div class="notification" id="notification">
-        Операция выполнена!
-    </div>
-
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    
     <script>
-        // ========== КОНФИГУРАЦИЯ ==========
-        const ADMIN_PASSWORD = "admin123";
-
-        // ========== СИСТЕМА ПОЛЬЗОВАТЕЛЕЙ ==========
-        class UserSystem {
-            constructor() {
-                this.currentUser = null;
-                this.users = this.loadUsers();
-                this.initializeDefaultUsers();
-            }
-
-            loadUsers() {
-                try {
-                    return JSON.parse(localStorage.getItem('bd_coin_users') || '{}');
-                } catch (e) {
-                    console.error('Error loading users:', e);
-                    return {};
-                }
-            }
-
-            saveUsers() {
-                localStorage.setItem('bd_coin_users', JSON.stringify(this.users));
-            }
-
-            initializeDefaultUsers() {
-                // Создаем админа если его нет
-                if (!this.users.admin) {
-                    this.users.admin = {
-                        username: 'admin',
-                        password: ADMIN_PASSWORD,
-                        walletId: 'admin-0001',
-                        rubBalance: 0, // Рублевый баланс
-                        bdBalance: 0,  // Баланс BD
-                        created: new Date().toISOString(),
-                        transactions: [],
-                        isAdmin: true
-                    };
-                    this.saveUsers();
-                }
-            }
-
-            generateWalletId() {
-                const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
-                const part1 = Array.from({length: 4}, () => chars[Math.floor(Math.random() * chars.length)]).join('');
-                const part2 = Array.from({length: 4}, () => chars[Math.floor(Math.random() * chars.length)]).join('');
-                return `${part1}-${part2}`;
-            }
-
-            register(username, password) {
-                if (!username || !password) {
-                    return { success: false, message: 'Заполните все поля!' };
-                }
-
-                if (this.users[username]) {
-                    return { success: false, message: 'Логин уже занят' };
-                }
-
-                const walletId = this.generateWalletId();
-                const userData = {
-                    username: username,
-                    password: password,
-                    walletId: walletId,
-                    rubBalance: 0, // Начальный рублевый баланс 0
-                    bdBalance: 0,  // Начальный баланс BD 0
-                    created: new Date().toISOString(),
-                    transactions: [],
-                    isAdmin: false
-                };
-
-                this.users[username] = userData;
-                this.saveUsers();
-
-                return { 
-                    success: true, 
-                    message: 'Аккаунт создан! Обратитесь к админу для пополнения баланса.',
-                    walletId: walletId,
-                    userData: userData
-                };
-            }
-
-            login(username, password) {
-                if (!username || !password) {
-                    return { success: false, message: 'Заполните все поля' };
-                }
-
-                const user = this.users[username];
-                if (!user) {
-                    // Автоматическая регистрация при первом входе
-                    return this.register(username, password);
-                }
-
-                if (user.password !== password) {
-                    return { success: false, message: 'Неверный пароль' };
-                }
-
-                this.currentUser = user;
-                return { success: true, userData: user };
-            }
-
-            logout() {
-                this.currentUser = null;
-            }
-
-            // Админские функции для управления балансами
-            updateUserBalance(walletId, rubAmount, bdAmount, description = "", isAdminAction = false) {
-                let targetUser = null;
-                for (const username in this.users) {
-                    if (this.users[username].walletId === walletId) {
-                        targetUser = this.users[username];
-                        break;
-                    }
-                }
-
-                if (!targetUser) {
-                    return { success: false, message: 'Пользователь не найден' };
-                }
-
-                // Обновляем рублевый баланс
-                if (rubAmount !== 0) {
-                    targetUser.rubBalance += rubAmount;
-                    if (targetUser.rubBalance < 0) targetUser.rubBalance = 0;
-                }
-
-                // Обновляем баланс BD
-                if (bdAmount !== 0) {
-                    targetUser.bdBalance += bdAmount;
-                    if (targetUser.bdBalance < 0) targetUser.bdBalance = 0;
-                }
-
-                // Добавляем транзакцию
-                targetUser.transactions.push({
-                    rubAmount: rubAmount,
-                    bdAmount: bdAmount,
-                    type: isAdminAction ? 'admin' : 'trade',
-                    description: description,
-                    timestamp: new Date().toISOString()
-                });
-
-                this.saveUsers();
-
-                return { 
-                    success: true, 
-                    newRubBalance: targetUser.rubBalance,
-                    newBDBalance: targetUser.bdBalance
-                };
-            }
-
-            getCurrentUser() {
-                return this.currentUser;
-            }
-
-            isAdmin() {
-                return this.currentUser && this.currentUser.isAdmin;
-            }
-
-            getStats() {
-                let totalUsers = 0;
-                let totalRub = 0;
-                let totalBD = 0;
-
-                for (const username in this.users) {
-                    if (!this.users[username].isAdmin) { // Не считаем админа
-                        totalUsers++;
-                        totalRub += this.users[username].rubBalance;
-                        totalBD += this.users[username].bdBalance;
-                    }
-                }
-
-                return {
-                    totalUsers: totalUsers,
-                    totalRub: totalRub,
-                    totalBD: totalBD
-                };
-            }
-        }
-
-        // ========== СИСТЕМА ЦЕН ==========
-        class BDCoinServer {
-            constructor() {
-                this.totalSupply = 10000;
-                this.currentPrice = 0.01;
-                this.priceHistory = [];
-                this.priceSettings = this.loadPriceSettings();
-                this.initializePriceHistory();
-            }
-
-            loadPriceSettings() {
-                try {
-                    const settings = JSON.parse(localStorage.getItem('bd_coin_price_settings') || '{}');
-                    return {
-                        sensitivity: settings.sensitivity || 0.05,
-                        minPrice: settings.minPrice || 0.001,
-                        maxPrice: settings.maxPrice || 10.0
-                    };
-                } catch (e) {
-                    return {
-                        sensitivity: 0.05,
-                        minPrice: 0.001,
-                        maxPrice: 10.0
-                    };
-                }
-            }
-
-            initializePriceHistory() {
-                if (!this.priceHistory.length) {
-                    const now = Date.now();
-                    this.priceHistory = Array.from({ length: 24 }, (_, i) => ({
-                        timestamp: now - ((23 - i) * 3600000),
-                        price: 0.01,
-                        date: new Date(now - ((23 - i) * 3600000)).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })
-                    }));
-                }
-            }
-
-            calculatePriceChange(volume, isBuy) {
-                const volumePercent = volume / this.totalSupply;
-                let priceChange = volumePercent * this.priceSettings.sensitivity * 100;
-                
-                if (!isBuy) {
-                    priceChange = -priceChange;
-                }
-
-                return priceChange / 100;
-            }
-
-            updatePrice(volume, isBuy) {
-                const priceChange = this.calculatePriceChange(volume, isBuy);
-                let newPrice = this.currentPrice * (1 + priceChange);
-
-                newPrice = Math.max(this.priceSettings.minPrice, newPrice);
-                newPrice = Math.min(this.priceSettings.maxPrice, newPrice);
-
-                const oldPrice = this.currentPrice;
-                this.currentPrice = newPrice;
-
-                this.priceHistory.push({
-                    timestamp: Date.now(),
-                    price: newPrice,
-                    date: new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }),
-                    type: isBuy ? 'buy' : 'sell',
-                    volume: volume
-                });
-
-                if (this.priceHistory.length > 100) {
-                    this.priceHistory = this.priceHistory.slice(-100);
-                }
-
-                return {
-                    oldPrice: oldPrice,
-                    newPrice: newPrice,
-                    change: priceChange * 100
-                };
-            }
-
-            getCurrentData() {
-                return {
-                    price: this.currentPrice,
-                    market_cap: this.currentPrice * this.totalSupply,
-                    total_supply: this.totalSupply,
-                    history: this.priceHistory.slice(-50)
-                };
-            }
-        }
-
-        // ========== ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ==========
-        let priceChart;
-        let userSystem;
-        let bdCoinServer;
-
-        // ========== ИНИЦИАЛИЗАЦИЯ ==========
-        function initApp() {
-            userSystem = new UserSystem();
-            bdCoinServer = new BDCoinServer();
+        // 🔐 ВСТАВЬ СВОИ ДАННЫЕ ИЗ FIREBASE (Замени этот объект)
+        const firebaseConfig = {
+            apiKey: "AIzaSyBx1JATLdFSxUHkZLE-jvDfF_jkYx-t1FA",
+            authDomain: "anom-web.firebaseapp.com",
+            databaseURL: "https://anom-web-default-rtdb.firebaseio.com",
+            projectId: "anom-web",
+            storageBucket: "anom-web.appspot.com",
+            messagingSenderId: "123456789012",
+            appId: "1:123456789012:web:abc123def456"
+        };
+        
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+        
+        // Global variables
+        let currentRoom = null;
+        let username = 'user_' + Math.random().toString(36).substr(2, 6);
+        let messageListener = null;
+        
+        // Join room function
+        function joinRoom() {
+            const roomCode = document.getElementById('roomCode').value.trim();
             
-            showAuthModal();
-            initChart();
-            updateUI();
-        }
-
-        function showAuthModal() {
-            document.getElementById('authModal').style.display = 'flex';
-            document.getElementById('mainContainer').style.display = 'none';
-        }
-
-        function showMainApp() {
-            document.getElementById('authModal').style.display = 'none';
-            document.getElementById('mainContainer').style.display = 'block';
-            updateUserUI();
-            updateStats();
-            
-            // Показываем админ-панель только админу
-            if (userSystem.isAdmin()) {
-                document.getElementById('adminPanel').style.display = 'block';
-            } else {
-                document.getElementById('adminPanel').style.display = 'none';
-            }
-        }
-
-        function login() {
-            const username = document.getElementById('loginUsername').value.trim();
-            const password = document.getElementById('loginPassword').value;
-
-            const result = userSystem.login(username, password);
-            if (result.success) {
-                showMainApp();
-                if (!userSystem.isAdmin()) {
-                    showNotification('✅ Добро пожаловать! Для пополнения баланса обратитесь к @BDCoinSupportBot');
-                }
-            } else {
-                alert('❌ ' + result.message);
-            }
-        }
-
-        function logout() {
-            userSystem.logout();
-            showAuthModal();
-        }
-
-        function updateUserUI() {
-            const user = userSystem.getCurrentUser();
-            if (!user) return;
-
-            document.getElementById('walletId').textContent = user.walletId;
-            document.getElementById('walletBalance').textContent = `${user.bdBalance.toFixed(2)} BD`;
-            document.getElementById('rubBalance').textContent = `${user.rubBalance.toFixed(2)} ₽`;
-            document.getElementById('userLogin').textContent = `Логин: ${user.username}`;
-        }
-
-        function updateStats() {
-            const stats = userSystem.getStats();
-            document.getElementById('statsUsers').textContent = stats.totalUsers;
-            document.getElementById('statsTotalRub').textContent = stats.totalRub.toFixed(2);
-            document.getElementById('statsTotalBD').textContent = stats.totalBD.toFixed(2);
-        }
-
-        // Админские функции
-        function adminAddBalance() {
-            const walletId = document.getElementById('adminWalletId').value.trim();
-            const amount = parseFloat(document.getElementById('adminAmount').value);
-            const description = document.getElementById('adminDescription').value.trim();
-
-            if (!walletId || !amount || amount <= 0) {
-                showAdminMessage('❌ Заполните все поля корректно!', '#ff6b6b');
+            if (!roomCode) {
+                alert('[ERROR] room key required');
                 return;
             }
-
-            const result = userSystem.updateUserBalance(walletId, amount, 0, description, true);
-            if (result.success) {
-                showAdminMessage(`✅ Начислено ${amount} ₽ пользователю! Новый баланс: ${result.newRubBalance} ₽`, '#90ee90');
-                document.getElementById('adminWalletId').value = '';
-                document.getElementById('adminAmount').value = '';
-                document.getElementById('adminDescription').value = '';
-                updateStats();
-            } else {
-                showAdminMessage('❌ ' + result.message, '#ff6b6b');
-            }
-        }
-
-        function adminRemoveBalance() {
-            const walletId = document.getElementById('adminWalletId').value.trim();
-            const amount = parseFloat(document.getElementById('adminAmount').value);
-            const description = document.getElementById('adminDescription').value.trim();
-
-            if (!walletId || !amount || amount <= 0) {
-                showAdminMessage('❌ Заполните все поля корректно!', '#ff6b6b');
-                return;
-            }
-
-            const result = userSystem.updateUserBalance(walletId, -amount, 0, description, true);
-            if (result.success) {
-                showAdminMessage(`✅ Списано ${amount} ₽ с пользователя! Новый баланс: ${result.newRubBalance} ₽`, '#90ee90');
-                document.getElementById('adminWalletId').value = '';
-                document.getElementById('adminAmount').value = '';
-                document.getElementById('adminDescription').value = '';
-                updateStats();
-            } else {
-                showAdminMessage('❌ ' + result.message, '#ff6b6b');
-            }
-        }
-
-        function showAdminMessage(message, color) {
-            const messageElement = document.getElementById('adminMessage');
-            messageElement.textContent = message;
-            messageElement.style.color = color;
-        }
-
-        // Торговые функции
-        function showBuyModal() {
-            const user = userSystem.getCurrentUser();
-            if (user.rubBalance <= 0) {
-                showNotification('❌ На рублевом балансе нет средств! Обратитесь к @BDCoinSupportBot для пополнения.');
-                return;
-            }
-
-            document.getElementById('buyModal').style.display = 'flex';
-            document.getElementById('modalBuyPrice').textContent = bdCoinServer.currentPrice.toFixed(4);
-            document.getElementById('modalUserBalance').textContent = user.rubBalance.toFixed(2);
-            updateCalculatedBD();
-        }
-
-        function hideBuyModal() {
-            document.getElementById('buyModal').style.display = 'none';
-        }
-
-        function showSellModal() {
-            const user = userSystem.getCurrentUser();
-            if (user.bdBalance <= 0) {
-                showNotification('❌ На балансе нет BD для продажи!');
-                return;
-            }
-
-            document.getElementById('sellModal').style.display = 'flex';
-            document.getElementById('modalSellPrice').textContent = bdCoinServer.currentPrice.toFixed(4);
-            document.getElementById('modalUserBDBalance').textContent = user.bdBalance.toFixed(2);
-            updateCalculatedRub();
-        }
-
-        function hideSellModal() {
-            document.getElementById('sellModal').style.display = 'none';
-        }
-
-        function updateCalculatedBD() {
-            const amount = parseFloat(document.getElementById('buyAmount').value) || 0;
-            const bdAmount = amount / bdCoinServer.currentPrice;
-            document.getElementById('calculatedBD').textContent = bdAmount.toFixed(2);
             
-            const priceChange = bdCoinServer.calculatePriceChange(bdAmount, true);
-            const newPrice = bdCoinServer.currentPrice * (1 + priceChange);
-            document.getElementById('newPriceAfterBuy').textContent = newPrice.toFixed(4);
-        }
-
-        function updateCalculatedRub() {
-            const amount = parseFloat(document.getElementById('sellAmount').value) || 0;
-            const rubAmount = amount * bdCoinServer.currentPrice;
-            document.getElementById('calculatedRub').textContent = rubAmount.toFixed(2);
-            
-            const priceChange = bdCoinServer.calculatePriceChange(amount, false);
-            const newPrice = bdCoinServer.currentPrice * (1 + priceChange);
-            document.getElementById('newPriceAfterSell').textContent = newPrice.toFixed(4);
-        }
-
-        function processBuy() {
-            const rubAmount = parseFloat(document.getElementById('buyAmount').value);
-            const user = userSystem.getCurrentUser();
-
-            if (!rubAmount || rubAmount <= 0) {
-                alert('Введите корректную сумму!');
-                return;
-            }
-
-            if (user.rubBalance < rubAmount) {
-                alert('❌ Недостаточно средств на рублевом балансе!');
-                return;
-            }
-
-            const bdAmount = rubAmount / bdCoinServer.currentPrice;
-            
-            // Обновляем цену
-            const priceResult = bdCoinServer.updatePrice(bdAmount, true);
-            
-            // Обновляем балансы пользователя
-            userSystem.updateUserBalance(user.walletId, -rubAmount, bdAmount, `Покупка ${bdAmount.toFixed(2)} BD`);
-            
-            updateUserUI();
-            hideBuyModal();
-            document.getElementById('buyAmount').value = '';
-            
-            showNotification(`✅ Куплено ${bdAmount.toFixed(2)} BD за ${rubAmount} ₽! Цена выросла до ${priceResult.newPrice.toFixed(4)} ₽`);
-            updateUI();
-        }
-
-        function processSell() {
-            const bdAmount = parseFloat(document.getElementById('sellAmount').value);
-            const user = userSystem.getCurrentUser();
-
-            if (!bdAmount || bdAmount <= 0) {
-                alert('Введите корректное количество!');
-                return;
-            }
-
-            if (user.bdBalance < bdAmount) {
-                alert('❌ Недостаточно BD на балансе!');
-                return;
-            }
-
-            const rubAmount = bdAmount * bdCoinServer.currentPrice;
-            
-            // Обновляем цену
-            const priceResult = bdCoinServer.updatePrice(bdAmount, false);
-            
-            // Обновляем балансы пользователя
-            userSystem.updateUserBalance(user.walletId, rubAmount, -bdAmount, `Продажа ${bdAmount.toFixed(2)} BD`);
-            
-            updateUserUI();
-            hideSellModal();
-            document.getElementById('sellAmount').value = '';
-            
-            showNotification(`✅ Продано ${bdAmount.toFixed(2)} BD за ${rubAmount.toFixed(2)} ₽! Цена упала до ${priceResult.newPrice.toFixed(4)} ₽`);
-            updateUI();
-        }
-
-        function showNotification(message) {
-            const notification = document.getElementById('notification');
-            notification.textContent = message;
-            notification.style.display = 'block';
-            setTimeout(() => {
-                notification.style.display = 'none';
-            }, 4000);
-        }
-
-        function updateUI() {
-            const data = bdCoinServer.getCurrentData();
-            
-            document.getElementById('currentPrice').textContent = `${data.price.toFixed(4)} ₽`;
-            document.getElementById('tradePrice').textContent = data.price.toFixed(4);
-            document.getElementById('marketCap').textContent = `${data.market_cap.toFixed(2)} ₽`;
-            document.getElementById('totalSupply').textContent = data.total_supply.toLocaleString();
-            
-            if (data.history.length > 1) {
-                const lastPrice = data.history[data.history.length - 1].price;
-                const secondLastPrice = data.history[data.history.length - 2].price;
-                const change = ((lastPrice - secondLastPrice) / secondLastPrice) * 100;
-                
-                const changeElement = document.getElementById('priceChange');
-                changeElement.textContent = `${change >= 0 ? '+' : ''}${change.toFixed(2)}%`;
-                changeElement.style.color = change >= 0 ? '#90ee90' : '#ff6b6b';
+            // Clean up previous listener
+            if (messageListener) {
+                messageListener.off();
             }
             
-            updateChart(data.history);
-            updateUserUI();
-        }
-
-        function initChart() {
-            const ctx = document.getElementById('priceChart').getContext('2d');
-            priceChart = new Chart(ctx, {
-                type: 'line',
-                data: { labels: [], datasets: [{ label: 'Цена BD (₽)', data: [], borderColor: '#32cd32', backgroundColor: 'rgba(50, 205, 50, 0.1)', borderWidth: 3, fill: true, tension: 0.4, pointRadius: 0 }] },
-                options: {
-                    responsive: true, maintainAspectRatio: false,
-                    plugins: { legend: { labels: { color: '#e8f5e8', font: { size: 14 } } } },
-                    scales: { 
-                        x: { ticks: { color: '#c8e6c8', maxRotation: 0, autoSkip: true, maxTicksLimit: 10 }, grid: { color: 'rgba(200, 230, 200, 0.1)' } }, 
-                        y: { ticks: { color: '#c8e6c8' }, grid: { color: 'rgba(200, 230, 200, 0.1)' } } 
-                    }
-                }
+            currentRoom = roomCode;
+            
+            // Show chat area
+            document.getElementById('chatArea').style.display = 'block';
+            document.getElementById('messages').innerHTML = '';
+            
+            // Update status
+            document.getElementById('status').innerText = '[connected to room: ' + roomCode + ']';
+            
+            // Add system message
+            addSystemMessage('connected to room [' + roomCode + ']');
+            addSystemMessage('all messages are temporary');
+            
+            // Listen for messages
+            const roomRef = database.ref('rooms/' + roomCode + '/messages');
+            
+            messageListener = roomRef.on('child_added', (snapshot) => {
+                const msg = snapshot.val();
+                displayMessage(msg);
             });
         }
-
-        function updateChart(historyData) {
-            priceChart.data.labels = historyData.map(item => item.date);
-            priceChart.data.datasets[0].data = historyData.map(item => item.price);
-            priceChart.update('none');
+        
+        // Send message function
+        function sendMessage() {
+            const messageInput = document.getElementById('messageInput');
+            const message = messageInput.value.trim();
+            
+            if (!message || !currentRoom) {
+                alert('[ERROR] join room first');
+                return;
+            }
+            
+            // Create message object
+            const messageObj = {
+                text: message,
+                user: username,
+                time: Date.now(),
+                id: Math.random().toString(36).substr(2, 9)
+            };
+            
+            // Save to Firebase
+            const roomRef = database.ref('rooms/' + currentRoom + '/messages');
+            roomRef.push(messageObj);
+            
+            // Clear input
+            messageInput.value = '';
         }
-
-        // Слушатели изменения сумм
-        document.getElementById('buyAmount').addEventListener('input', updateCalculatedBD);
-        document.getElementById('sellAmount').addEventListener('input', updateCalculatedRub);
-
-        // Запуск приложения
-        document.addEventListener('DOMContentLoaded', initApp);
+        
+        // Display message in chat
+        function displayMessage(msg) {
+            const messagesDiv = document.getElementById('messages');
+            const messageElement = document.createElement('div');
+            messageElement.className = 'message';
+            
+            const time = new Date(msg.time).toLocaleTimeString();
+            
+            messageElement.innerHTML = `
+                <strong>[${msg.user}]</strong> 
+                <span style="color:#888;">${time}</span><br>
+                ${msg.text}
+            `;
+            
+            messagesDiv.appendChild(messageElement);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+        
+        // Add system message
+        function addSystemMessage(text) {
+            const messagesDiv = document.getElementById('messages');
+            const systemElement = document.createElement('div');
+            systemElement.className = 'system-message';
+            systemElement.innerHTML = '>>> ' + text + ' <<<';
+            messagesDiv.appendChild(systemElement);
+        }
+        
+        // Handle Enter key
+        document.getElementById('messageInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+        
+        document.getElementById('roomCode').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                joinRoom();
+            }
+        });
+        
+        // Warn on refresh
+        window.addEventListener('beforeunload', function (e) {
+            if (currentRoom) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        });
+        
+        console.log('ANOM WEB 1.3 // SYSTEM READY');
     </script>
 </body>
 </html>
