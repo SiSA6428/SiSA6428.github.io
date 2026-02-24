@@ -1,27 +1,35 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>ANOM DIRECT</title>
+    <title>ANOM PRO</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
         
         body {
-            background: #0a0a0a;
-            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+            font-family: 'Inter', 'Courier New', monospace;
             color: #00ff9d;
             padding: 15px;
             min-height: 100vh;
         }
         
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        
         .container {
-            max-width: 650px;
+            max-width: 800px;
             margin: 0 auto;
-            background: #111;
+            background: rgba(17, 17, 17, 0.95);
+            backdrop-filter: blur(10px);
             border: 2px solid #00ff9d;
-            border-radius: 10px;
+            border-radius: 20px;
             padding: 20px;
+            box-shadow: 0 0 30px rgba(0, 255, 157, 0.2);
         }
         
         .header {
@@ -29,230 +37,285 @@
             align-items: center;
             justify-content: space-between;
             margin-bottom: 20px;
-            border-bottom: 1px solid #00ff9d;
-            padding-bottom: 10px;
+            border-bottom: 2px solid #00ff9d;
+            padding-bottom: 15px;
             gap: 10px;
         }
         
         .header h1 {
-            font-size: 24px;
-            letter-spacing: 3px;
-            flex: 1;
-            text-align: center;
+            font-size: 28px;
+            letter-spacing: 4px;
+            text-shadow: 0 0 10px #00ff9d;
+            background: linear-gradient(45deg, #00ff9d, #00cc7a);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 700;
         }
         
         .back-btn {
             background: transparent;
-            border: 1px solid #00ff9d;
+            border: 2px solid #00ff9d;
             color: #00ff9d;
             padding: 8px 15px;
-            border-radius: 5px;
-            cursor: pointer;            font-family: inherit;
+            border-radius: 10px;
+            cursor: pointer;
+            font-family: inherit;
             font-size: 14px;
             display: none;
-            transition: all 0.2s;
+            transition: all 0.3s;
+            font-weight: 600;
         }
         
-        .back-btn:hover { background: #00ff9d; color: #0a0a0a; }
-        .back-btn.visible { display: block; }
+        .back-btn:hover {
+            background: #00ff9d;
+            color: #0a0a0a;
+            box-shadow: 0 0 15px #00ff9d;
+        }
+        
+        .back-btn.visible {
+            display: block;
+        }
         
         .version {
-            font-size: 10px;
+            font-size: 11px;
             color: #666;
             text-align: center;
             width: 100%;
             margin-top: 5px;
         }
         
-        .setup-section { transition: opacity 0.3s ease; }
-        .setup-section.hidden { display: none; }
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        
+        .tab {
+            flex: 1;
+            text-align: center;
+            padding: 15px;
+            border: 2px solid #00ff9d;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            background: rgba(0, 255, 157, 0.1);
+        }
+        
+        .tab:hover {
+            background: rgba(0, 255, 157, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        .tab.active {
+            background: #00ff9d;
+            color: #0a0a0a;
+            box-shadow: 0 0 20px #00ff9d;
+        }
+        
+        .setup-section {
+            transition: opacity 0.3s ease;
+        }
+        
+        .setup-section.hidden {
+            display: none;
+        }
+        
+        .tab-content {
+            display: none;
+            animation: slideIn 0.3s ease;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
         
         .alert-box {
-            background: #0d1a0d;
-            border: 1px solid #00ff9d;
+            background: rgba(0, 255, 157, 0.1);
+            border: 2px solid #00ff9d;
             color: #00ff9d;
-            padding: 12px;
-            margin: 10px 0 20px;
-            border-radius: 5px;
-            font-size: 11px;
-            line-height: 1.5;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 12px;
+            font-size: 12px;
+            line-height: 1.6;
+            backdrop-filter: blur(5px);
         }
         
         .alert-box.warning {
-            background: #1a0d0d;
+            background: rgba(255, 107, 107, 0.1);
             border-color: #ff6b6b;
             color: #ffaa00;
         }
         
-        .alert-box strong { color: inherit; }
+        .alert-box.success {
+            background: rgba(0, 255, 157, 0.15);
+            border-color: #00ff9d;
+        }
         
         .signal-area {
-            background: #1a1a1a;
-            border: 1px solid #00ff9d;
-            padding: 15px;
+            background: rgba(26, 26, 26, 0.8);
+            backdrop-filter: blur(5px);
+            border: 2px solid #00ff9d;
+            padding: 20px;
             margin: 15px 0;
-            border-radius: 5px;
+            border-radius: 15px;
+            transition: all 0.3s;
+        }
+        
+        .signal-area:hover {
+            box-shadow: 0 0 20px rgba(0, 255, 157, 0.3);
         }
         
         .signal-title {
             color: #00ff9d;
-            font-size: 14px;            margin-bottom: 10px;
+            font-size: 16px;
+            margin-bottom: 15px;
             text-align: center;
             font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
         }
         
         .step-number {
             display: inline-block;
             background: #00ff9d;
             color: #0a0a0a;
-            width: 20px;
-            height: 20px;
+            width: 24px;
+            height: 24px;
             border-radius: 50%;
             text-align: center;
-            line-height: 20px;
-            font-size: 12px;
+            line-height: 24px;
+            font-size: 13px;
             font-weight: bold;
             margin-right: 8px;
         }
         
         input, button, textarea {
             width: 100%;
-            padding: 12px;
-            margin: 5px 0;
-            background: #1a1a1a;
-            border: 1px solid #00ff9d;
+            padding: 14px;
+            margin: 8px 0;
+            background: rgba(26, 26, 26, 0.9);
+            border: 2px solid #00ff9d;
             color: #00ff9d;
-            font-family: 'Courier New', monospace;
-            font-size: 13px;
-            border-radius: 5px;
-            transition: all 0.2s;
+            font-family: 'Inter', 'Courier New', monospace;
+            font-size: 14px;
+            border-radius: 12px;
+            transition: all 0.3s;
+        }
+        
+        input:focus, textarea:focus {
+            outline: none;
+            box-shadow: 0 0 15px #00ff9d;
+            border-color: #00ff9d;
         }
         
         textarea {
             resize: vertical;
             min-height: 100px;
-            font-size: 10px;
+            font-size: 12px;
             word-break: break-all;
-        }
-        
-        .candidates-textarea {
-            min-height: 60px;
-            font-size: 9px;
-            color: #666;
         }
         
         button {
             cursor: pointer;
-            font-weight: bold;
+            font-weight: 600;
             text-transform: uppercase;
-            font-size: 12px;            letter-spacing: 1px;
+            letter-spacing: 1px;
+            font-size: 13px;
+            background: rgba(0, 255, 157, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        button::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 5px;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.5);
+            opacity: 0;
+            border-radius: 100%;
+            transform: scale(1, 1) translate(-50%);
+            transform-origin: 50% 50%;
         }
         
         button:hover:not(:disabled) {
             background: #00ff9d;
             color: #0a0a0a;
+            box-shadow: 0 0 20px #00ff9d;
+            transform: translateY(-2px);
         }
         
-        button:disabled { opacity: 0.4; cursor: not-allowed; }
+        button:active:not(:disabled) {
+            transform: translateY(0);
+        }
+        
+        button:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
         
         .btn-row {
             display: flex;
-            gap: 8px;
-            margin: 5px 0;
-        }
-        
-        .btn-row button { flex: 1; }
-        
-        .chat-area { display: none; animation: fadeIn 0.3s ease; }
-        .chat-area.active { display: block; }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .messages {
-            background: #1a1a1a;
-            border: 1px solid #00ff9d;
-            height: 350px;
-            overflow-y: auto;
-            padding: 12px;
-            margin: 15px 0;
-            font-size: 13px;
-            border-radius: 5px;
-        }
-        
-        .message {
-            margin: 6px 0;
-            padding: 10px;
-            border-left: 3px solid #00ff9d;
-            background: #0d0d0d;
-            border-radius: 0 5px 5px 0;
-            word-wrap: break-word;
-        }
-        
-        .message.own {
-            border-left-color: #ff6b6b;
-            background: #1a0d0d;
-            border-right: 3px solid #ff6b6b;            border-left: none;
-            border-radius: 5px 0 0 5px;
-            text-align: right;
-        }
-        
-        .system-message {
-            color: #ffaa00;
-            text-align: center;
-            font-style: italic;
+            gap: 10px;
             margin: 8px 0;
-            font-size: 11px;
-            padding: 5px;
-            border-top: 1px dashed #333;
-            border-bottom: 1px dashed #333;
         }
         
-        .status {
-            color: #00cc7a;
-            font-size: 11px;
-            text-align: center;
-            margin: 10px 0;
+        .btn-row button {
+            flex: 1;
+        }
+        
+        .users-list {
+            background: rgba(0, 255, 157, 0.05);
+            border: 2px solid #00ff9d;
+            border-radius: 15px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        
+        .users-title {
+            font-size: 14px;
+            color: #00ff9d;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .user-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
             padding: 8px;
-            background: #0d0d0d;
-            border-radius: 3px;
-            border: 1px solid #333;
+            border-bottom: 1px solid rgba(0, 255, 157, 0.3);
         }
         
-        .status.error { color: #ff6b6b; border-color: #ff6b6b; }
-        .status.connecting { color: #ffaa00; border-color: #ffaa00; }
-        .status.success { color: #00ff9d; border-color: #00ff9d; }
-        
-        .candidate-info {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 10px;
-            color: #666;
-            margin-top: 5px;
-            padding: 5px;
-            background: #0d0d0d;
-            border-radius: 3px;
-        }
-        
-        .candidate-info span {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        
-        .candidate-dot {            width: 8px;
-            height: 8px;
+        .user-status {
+            width: 10px;
+            height: 10px;
             border-radius: 50%;
-            background: #333;
-            display: inline-block;
+            background: #00ff9d;
+            animation: pulse 2s infinite;
         }
         
-        .candidate-dot.active {
-            background: #00ff9d;
-            animation: pulse 1s infinite;
+        .user-name {
+            flex: 1;
+            font-size: 13px;
         }
         
         @keyframes pulse {
@@ -260,118 +323,308 @@
             50% { opacity: 0.5; }
         }
         
-        .input-row { display: flex; gap: 8px; margin: 10px 0; }
-        .input-row input { flex: 1; margin: 0; }
-        .input-row button { flex: 0 0 80px; margin: 0; padding: 12px 8px; }
-        
-        .file-input-container { margin: 8px 0; position: relative; }
-        
-        .file-input-label {
-            display: block;
-            padding: 10px;
-            background: #1a1a1a;
-            border: 1px dashed #00ff9d;
-            color: #00ff9d;
-            text-align: center;
-            cursor: pointer;
-            border-radius: 5px;
-            font-size: 12px;
-            transition: all 0.2s;
-        }
-        
-        .file-input-label:hover { background: #003322; border-style: solid; }
-        
-        input[type="file"] {
-            position: absolute;
-            opacity: 0;
-            width: 0.1px;
-            height: 0.1px;
-        }
-        
-        .photo-preview {
+        .chat-area {
             display: none;
+        }
+        
+        .chat-area.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .messages {
+            background: rgba(26, 26, 26, 0.9);
+            border: 2px solid #00ff9d;
+            height: 400px;
+            overflow-y: auto;
+            padding: 15px;
+            margin: 15px 0;
+            font-size: 13px;
+            border-radius: 15px;
+        }
+        
+        .message {
             margin: 10px 0;
-            padding: 10px;
-            background: #1a1a1a;            border: 1px solid #00ff9d;
-            border-radius: 5px;
+            padding: 12px;
+            border-left: 4px solid #00ff9d;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 0 12px 12px 0;
+            word-wrap: break-word;
+            animation: messageIn 0.3s ease;
         }
         
-        .photo-preview img {
-            max-width: 100%;
-            max-height: 150px;
-            border: 1px solid #00ff9d;
-            border-radius: 3px;
+        @keyframes messageIn {
+            from {
+                opacity: 0;
+                transform: translateX(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        .message.own {
+            border-left-color: #ff6b6b;
+            border-right: 4px solid #ff6b6b;
+            border-left: none;
+            border-radius: 12px 0 0 12px;
+            text-align: right;
+        }
+        
+        .message-header {
+            display: flex;
+            justify-content: space-between;
             margin-bottom: 8px;
+            font-size: 12px;
         }
         
-        .photo-preview .actions { display: flex; gap: 8px; }
-        .photo-preview button { flex: 1; margin: 0; padding: 8px; font-size: 11px; }
-        .photo-preview button.cancel { background: #330000; border-color: #ff6b6b; }
+        .message-user {
+            font-weight: bold;
+            color: #00ff9d;
+        }
+        
+        .message-time {
+            color: #666;
+        }
+        
+        .system-message {
+            color: #ffaa00;
+            text-align: center;
+            font-style: italic;
+            margin: 10px 0;
+            padding: 8px;
+            border-top: 1px dashed #333;
+            border-bottom: 1px dashed #333;
+            font-size: 12px;
+        }
+        
+        .file-message {
+            background: rgba(0, 255, 157, 0.05);
+            border: 2px solid #00ff9d;
+            border-radius: 10px;
+            padding: 10px;
+            margin: 5px 0;
+        }
+        
+        .file-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .file-icon {
+            font-size: 30px;
+        }
+        
+        .file-details {
+            flex: 1;
+        }
+        
+        .file-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+            word-break: break-all;
+        }
+        
+        .file-size {
+            font-size: 11px;
+            color: #666;
+        }
+        
+        .download-btn {
+            background: transparent;
+            border: 2px solid #00ff9d;
+            color: #00ff9d;
+            padding: 8px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s;
+            width: auto;
+            margin: 0;
+        }
+        
+        .download-btn:hover {
+            background: #00ff9d;
+            color: #0a0a0a;
+        }
         
         .photo-message {
-            max-width: 180px;
-            max-height: 180px;
-            margin: 5px 0;
-            border: 2px solid #00ff9d;
-            border-radius: 5px;
+            max-width: 250px;
+            max-height: 250px;
+            border: 3px solid #00ff9d;
+            border-radius: 12px;
             cursor: pointer;
-            transition: opacity 0.2s;
+            transition: all 0.3s;
+            margin: 5px 0;
         }
         
-        .photo-message:hover { opacity: 0.85; }
+        .photo-message:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 30px #00ff9d;
+        }
+        
+        .video-message {
+            max-width: 100%;
+            max-height: 300px;
+            border: 3px solid #00ff9d;
+            border-radius: 12px;
+            margin: 5px 0;
+        }
+        
+        .status {
+            color: #00ff9d;
+            font-size: 12px;
+            text-align: center;
+            margin: 15px 0;
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            border: 2px solid #333;
+        }
+        
+        .status.connected {
+            border-color: #00ff9d;
+            color: #00ff9d;
+        }
+        
+        .status.error {
+            border-color: #ff6b6b;
+            color: #ff6b6b;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: #333;
+            border-radius: 2px;
+            margin: 8px 0;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: #00ff9d;
+            transition: width 0.3s;
+            border-radius: 2px;
+        }
         
         .modal {
             display: none;
             position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(0,0,0,0.95);
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.98);
+            backdrop-filter: blur(10px);
             z-index: 1000;
             justify-content: center;
             align-items: center;
             flex-direction: column;
         }
         
-        .modal.active { display: flex; }
+        .modal.active {
+            display: flex;
+            animation: modalIn 0.3s ease;
+        }
         
-        .modal img {
+        @keyframes modalIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        
+        .modal img, .modal video {
             max-width: 95%;
             max-height: 80%;
-            border: 3px solid #00ff9d;
-            border-radius: 5px;
+            border: 4px solid #00ff9d;
+            border-radius: 20px;
+            box-shadow: 0 0 50px rgba(0, 255, 157, 0.5);
         }
         
-        .modal-close {            position: absolute;
-            top: 20px;
-            right: 25px;
+        .modal-close {
+            position: absolute;
+            top: 25px;
+            right: 30px;
             color: #00ff9d;
-            font-size: 35px;
+            font-size: 45px;
             cursor: pointer;
             font-weight: bold;
+            transition: all 0.3s;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 50%;
         }
         
-        .modal-close:hover { color: #fff; }
-        
-        .footer {
-            margin-top: 25px;
-            text-align: center;
-            font-size: 9px;
-            color: #333;
-            border-top: 1px solid #1a1a1a;
-            padding-top: 12px;
+        .modal-close:hover {
+            color: #fff;
+            transform: rotate(90deg);
         }
         
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #0a0a0a; }
-        ::-webkit-scrollbar-thumb { background: #00ff9d; border-radius: 3px; opacity: 0.6; }
-        ::-webkit-scrollbar-thumb:hover { opacity: 1; }
+        .modal-info {
+            color: #00ff9d;
+            margin-top: 20px;
+            font-size: 14px;
+        }
         
-        @media (max-width: 480px) {
-            body { padding: 10px; }
-            .container { padding: 15px; border-radius: 8px; }
-            .header h1 { font-size: 20px; }
-            .messages { height: 300px; }
-            .btn-row { flex-direction: column; }
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #0a0a0a;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #00ff9d;
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #00cc7a;
+        }
+        
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+            
+            .container {
+                padding: 15px;
+            }
+            
+            .header h1 {
+                font-size: 22px;
+            }
+            
+            .btn-row {
+                flex-direction: column;
+            }
+            
+            .tabs {
+                flex-direction: column;
+            }
+            
+            .message-header {
+                flex-direction: column;
+                gap: 5px;
+            }
         }
     </style>
 </head>
@@ -379,103 +632,84 @@
     <div class="container">
         <div class="header">
             <button class="back-btn" id="backBtn" onclick="goBack()">← НАЗАД</button>
-            <h1>ANOM DIRECT</h1>
+            <h1>ANOM PRO</h1>
             <div style="width: 70px;"></div>
         </div>
-        <div class="version">TRICKLE ICE • FAST CONNECT • NO TURN</div>
+        <div class="version">GROUP CHAT • ANY FILES • P2P ENCRYPTED</div>
+        
+        <div class="tabs">
+            <div class="tab active" onclick="switchMainTab('setup')" id="tabSetup">🔧 НАСТРОЙКИ</div>
+            <div class="tab" onclick="switchMainTab('chat')" id="tabChat">💬 ЧАТ</div>
+        </div>
         
         <div id="setupArea" class="setup-section">
-            <div class="alert-box">
-                <strong>⚡ TRICKLE ICE режим:</strong><br>
-                • SDP можно копировать СРАЗУ после создания<br>
-                • ICE кандидаты собираются в фоне (не нужно ждать)<br>
-                • Для разных сетей: скопируйте кандидаты через 5-10 сек и отправьте тоже
-            </div>            
-            <!-- HOST -->
+            <!-- Создать комнату -->
+            <div class="alert-box success">
+                <strong>🌟 ГРУППОВОЙ ЧАТ (MESH):</strong><br>
+                • Каждый участник создает соединение с каждым<br>
+                • Для 3+ людей обменяйтесь сигналами со всеми<br>
+                • Поддерживаются любые файлы до 50MB
+            </div>
+            
             <div class="signal-area">
-                <div class="signal-title">🔵 HOST — создать соединение</div>
-                
-                <button onclick="createOffer()" id="createOfferBtn">
-                    <span class="step-number">1</span>CREATE OFFER
-                </button>
-                
-                <div class="candidate-info" id="offerCandidateInfo" style="display:none;">
-                    <span><span class="candidate-dot active" id="offerDot"></span>Сбор ICE кандидатов...</span>
-                    <span id="offerCount">0 найдено</span>
-                </div>
-                
-                <textarea id="offerSDP" placeholder="Нажмите CREATE OFFER..."></textarea>
-                <textarea id="offerCandidates" class="candidates-textarea" placeholder="ICE кандидаты (появятся через 5-10 сек)..."></textarea>
-                
-                <div class="btn-row">
-                    <button onclick="copyOffer()" id="copyOfferBtn" disabled>📋 COPY SDP</button>
-                    <button onclick="copyOfferCandidates()" id="copyOfferCandBtn" disabled>📋 COPY CANDIDATES</button>
-                </div>
-                
-                <div style="margin: 15px 0; border-top: 1px solid #333;"></div>
-                
-                <textarea id="answerSDP" placeholder="Вставьте SDP answer от друга..."></textarea>
-                <textarea id="answerCandidates" class="candidates-textarea" placeholder="Вставьте ICE кандидаты от друга (если есть)..."></textarea>
-                
-                <button onclick="setAnswer()" id="setAnswerBtn" disabled>
-                    <span class="step-number">3</span>SET ANSWER
+                <div class="signal-title">🔵 СОЗДАТЬ КОМНАТУ</div>
+                <input type="text" id="roomName" placeholder="название комнаты" maxlength="30">
+                <button onclick="createRoom()">
+                    <span class="step-number">1</span>СОЗДАТЬ КОМНАТУ
                 </button>
             </div>
             
-            <!-- JOIN -->
+            <!-- Подключиться -->
             <div class="signal-area">
-                <div class="signal-title">🟢 JOIN — подключиться к хосту</div>
-                
-                <textarea id="remoteOfferSDP" placeholder="Вставьте SDP offer от хоста..."></textarea>
-                <textarea id="remoteOfferCandidates" class="candidates-textarea" placeholder="Вставьте ICE кандидаты от хоста (если есть)..."></textarea>
-                
-                <button onclick="createAnswer()" id="createAnswerBtn">
-                    <span class="step-number">2</span>CREATE ANSWER
+                <div class="signal-title">🟢 ПОДКЛЮЧИТЬСЯ</div>
+                <input type="text" id="peerIdInput" placeholder="ID участника (вставьте сюда)">
+                <button onclick="connectToPeer()">
+                    <span class="step-number">2</span>ПОДКЛЮЧИТЬСЯ
                 </button>
-                
-                <div class="candidate-info" id="answerCandidateInfo" style="display:none;">
-                    <span><span class="candidate-dot active" id="answerDot"></span>Сбор ICE кандидатов...</span>
-                    <span id="answerCount">0 найдено</span>
-                </div>
-                
-                <textarea id="localAnswerSDP" placeholder="Нажмите CREATE ANSWER..."></textarea>
-                <textarea id="localAnswerCandidates" class="candidates-textarea" placeholder="ICE кандидаты (появятся через 5-10 сек)..."></textarea>                
-                <div class="btn-row">
-                    <button onclick="copyAnswer()" id="copyAnswerBtn" disabled>📋 COPY SDP</button>
-                    <button onclick="copyAnswerCandidates()" id="copyAnswerCandBtn" disabled>📋 COPY CANDIDATES</button>
-                </div>
             </div>
             
-            <div class="alert-box warning" style="margin-top: 15px;">
-                <strong>📋 Порядок обмена для разных сетей:</strong><br>
-                1. Хост: CREATE OFFER → скопировать SDP → отправить другу<br>
-                2. Хост: подождать 5-10 сек → скопировать ICE кандидаты → отправить другу<br>
-                3. Друг: вставить SDP + кандидаты → CREATE ANSWER<br>
-                4. Друг: скопировать SDP answer → отправить хосту<br>
-                5. Друг: подождать 5-10 сек → скопировать ICE кандидаты → отправить хосту<br>
-                6. Хост: вставить answer + кандидаты → SET ANSWER → ✅
+            <!-- Активные подключения -->
+            <div class="users-list" id="usersList" style="display: none;">
+                <div class="users-title">👥 УЧАСТНИКИ ОНЛАЙН</div>
+                <div id="usersContainer"></div>
             </div>
         </div>
         
-        <!-- CHAT AREA -->
+        <!-- ЧАТ -->
         <div id="chatArea" class="chat-area">
             <div class="messages" id="messages"></div>
             
-            <div class="input-row">
-                <input type="text" id="messageInput" placeholder="введите сообщение..." autocomplete="off">
-                <button onclick="sendMessage()">SEND</button>
+            <div class="users-list" id="chatUsersList" style="display: none; margin-top: 0;">
+                <div class="users-title">👥 В КОМНАТЕ</div>
+                <div id="chatUsersContainer"></div>
             </div>
             
-            <div class="file-input-container">
-                <label for="photoInput" class="file-input-label">📷 ПРИКРЕПИТЬ ФОТО</label>
-                <input type="file" id="photoInput" accept="image/*" onchange="handlePhotoSelect(event)">
+            <div class="input-row" style="display: flex; gap: 10px; margin: 15px 0;">
+                <input type="text" id="messageInput" placeholder="введите сообщение..." autocomplete="off" style="flex: 3;">
+                <button onclick="sendMessage()" style="flex: 1;">ОТПРАВИТЬ</button>
             </div>
             
-            <div class="photo-preview" id="photoPreview">
-                <img id="previewImage" src="">
-                <div class="actions">
-                    <button onclick="sendPhoto()">➤ ОТПРАВИТЬ</button>
-                    <button class="cancel" onclick="cancelPhoto()">✕ ОТМЕНИТЬ</button>
+            <div class="file-input-container" style="margin: 15px 0;">
+                <label for="fileInput" class="file-input-label" style="display: block; padding: 15px; background: rgba(0,255,157,0.05); border: 2px dashed #00ff9d; border-radius: 12px; text-align: center; cursor: pointer;">
+                    📁 ВЫБРАТЬ ФАЙЛ (до 50MB)
+                </label>
+                <input type="file" id="fileInput" onchange="handleFileSelect(event)" style="opacity: 0; position: absolute; width: 0.1px; height: 0.1px;">
+            </div>
+            
+            <div id="filePreview" style="display: none; background: rgba(0,255,157,0.05); border: 2px solid #00ff9d; border-radius: 12px; padding: 15px; margin: 15px 0;">
+                <div style="display: flex; gap: 15px; align-items: center;">
+                    <span class="file-icon" id="fileIcon">📄</span>
+                    <div style="flex: 1;">
+                        <div id="fileName" style="font-weight: bold; margin-bottom: 5px;"></div>
+                        <div id="fileSize" style="font-size: 12px; color: #666;"></div>
+                        <div class="progress-bar" id="progressBar" style="display: none;">
+                            <div class="progress-fill" id="progressFill" style="width: 0%;"></div>
+                        </div>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 15px;">
+                    <button onclick="sendFile()" style="flex: 1;">➤ ОТПРАВИТЬ</button>
+                    <button onclick="cancelFile()" style="flex: 1; background: #330000; border-color: #ff6b6b;">✕ ОТМЕНИТЬ</button>
                 </div>
             </div>
             
@@ -483,383 +717,660 @@
         </div>
         
         <div class="footer">
-            [ANOM DIRECT] • P2P ENCRYPTED • TRICKLE ICE • v4.0
+            [ANOM PRO] • GROUP MESH P2P • ANY FILES • v5.0
         </div>
     </div>
 
-    <div id="photoModal" class="modal" onclick="closeModal(event)">
-        <span class="modal-close" onclick="closeModal(event)">&times;</span>        <img id="modalImage" src="">
+    <!-- Модальное окно -->
+    <div id="fileModal" class="modal" onclick="closeModal(event)">
+        <span class="modal-close" onclick="closeModal(event)">&times;</span>
+        <div id="modalContent"></div>
+        <div class="modal-info" id="modalInfo"></div>
     </div>
 
     <script>
         // ===== CONFIG =====
-        const username = 'anon_' + Math.floor(Math.random() * 9000 + 1000);
-        let peerConnection = null;
-        let dataChannel = null;
-        let selectedPhotoData = null;
-        let isConnected = false;
-        let iceCandidatesBuffer = [];
-        let isGatheringComplete = false;
+        const username = 'user_' + Math.floor(Math.random() * 9000 + 1000);
+        let peerConnections = new Map(); // peerId -> { connection, dataChannel, username }
+        let myPeerId = null;
+        let selectedFile = null;
+        let roomName = '';
+        let fileChunks = new Map(); // Для сборки файлов
+        let reconnectAttempts = new Map();
         
-        // 🔥 Оптимизированная конфигурация
+        // STUN servers
         const configuration = {
             iceServers: [
                 { urls: 'stun:stun.l.google.com:19302' },
                 { urls: 'stun:stun1.l.google.com:19302' },
                 { urls: 'stun:stun2.l.google.com:19302' },
                 { urls: 'stun:stun3.l.google.com:19302' },
-                { urls: 'stun:stun.services.mozilla.com' }
+                { urls: 'stun:stun4.l.google.com:19302' }
             ],
-            iceTransportPolicy: 'all',
-            bundlePolicy: 'max-bundle',
-            rtcpMuxPolicy: 'require',
-            sdpSemantics: 'unified-plan'
+            iceCandidatePoolSize: 10
         };
         
-        // ===== UI FUNCTIONS =====
-        function updateStatus(text, type = 'normal') {
-            const status = document.getElementById('chatStatus');
-            status.innerText = `[${text}]`;
-            status.className = 'status ' + (type === 'error' ? 'error' : type === 'connecting' ? 'connecting' : type === 'success' ? 'success' : '');
+        // ===== INIT =====
+        function init() {
+            // Генерируем ID
+            myPeerId = generatePeerId();
+            
+            // Создаем сигнальный канал через localStorage (как временное решение)
+            // В реальности нужно использовать сервер, но для GitHub Pages так проще
+            setupSignaling();
+            
+            updateUsersList();
         }
         
-        function updateCandidateInfo(prefix, count, gathering) {
-            const info = document.getElementById(prefix + 'CandidateInfo');
-            const dot = document.getElementById(prefix + 'Dot');
-            const countEl = document.getElementById(prefix + 'Count');
-            
-            if (info) info.style.display = count > 0 || gathering ? 'flex' : 'none';
-            if (dot) dot.className = 'candidate-dot' + (gathering ? ' active' : '');
-            if (countEl) countEl.innerText = count + ' найдено';
+        function generatePeerId() {
+            return Math.random().toString(36).substring(2, 10) + Math.random().toString(36).substring(2, 10);
         }
         
-        function showChat() {
-            document.getElementById('setupArea').classList.add('hidden');
-            document.getElementById('chatArea').classList.add('active');
-            document.getElementById('backBtn').classList.add('visible');
-            isConnected = true;            updateStatus('подключено ✓', 'success');
-            document.getElementById('messageInput').focus();
-        }
-        
-        function hideChat() {
-            document.getElementById('setupArea').classList.remove('hidden');
-            document.getElementById('chatArea').classList.remove('active');
-            document.getElementById('backBtn').classList.remove('visible');
-            isConnected = false;
-            updateStatus('отключено');
-        }
-        
-        function goBack() {
-            if (isConnected && peerConnection) {
-                if (dataChannel && dataChannel.readyState === 'open') {
-                    dataChannel.close();
-                }
-                peerConnection.close();
-                peerConnection = null;
-                dataChannel = null;
-            }
-            iceCandidatesBuffer = [];
-            isGatheringComplete = false;
-            
-            document.getElementById('messages').innerHTML = '';
-            document.getElementById('offerSDP').value = '';
-            document.getElementById('offerCandidates').value = '';
-            document.getElementById('answerSDP').value = '';
-            document.getElementById('answerCandidates').value = '';
-            document.getElementById('remoteOfferSDP').value = '';
-            document.getElementById('remoteOfferCandidates').value = '';
-            document.getElementById('localAnswerSDP').value = '';
-            document.getElementById('localAnswerCandidates').value = '';
-            
-            document.getElementById('copyOfferBtn').disabled = true;
-            document.getElementById('copyOfferCandBtn').disabled = true;
-            document.getElementById('copyAnswerBtn').disabled = true;
-            document.getElementById('copyAnswerCandBtn').disabled = true;
-            document.getElementById('setAnswerBtn').disabled = true;
-            document.getElementById('createOfferBtn').disabled = false;
-            document.getElementById('createAnswerBtn').disabled = false;
-            
-            updateCandidateInfo('offer', 0, false);
-            updateCandidateInfo('answer', 0, false);
-            
-            hideChat();
-        }
-        
-        // ===== WEBRTC FUNCTIONS =====
-                // ⚡ TRICKLE ICE — не ждём завершения, отправляем SDP сразу!
-        function setupICEGathering(pc, prefix) {
-            iceCandidatesBuffer = [];
-            isGatheringComplete = false;
-            
-            pc.onicecandidate = (event) => {
-                if (event.candidate) {
-                    iceCandidatesBuffer.push(event.candidate);
-                    updateCandidateInfo(prefix, iceCandidatesBuffer.length, true);
-                    
-                    // Обновляем textarea с кандидатами в реальном времени
-                    const candidatesText = JSON.stringify(iceCandidatesBuffer.map(c => c.toJSON()));
-                    if (prefix === 'offer') {
-                        document.getElementById('offerCandidates').value = candidatesText;
-                        document.getElementById('copyOfferCandBtn').disabled = false;
-                    } else {
-                        document.getElementById('localAnswerCandidates').value = candidatesText;
-                        document.getElementById('copyAnswerCandBtn').disabled = false;
+        // ===== SIGNALING =====
+        function setupSignaling() {
+            // Слушаем сигналы
+            window.addEventListener('storage', (e) => {
+                if (e.key && e.key.startsWith('signal_')) {
+                    try {
+                        const signal = JSON.parse(e.newValue);
+                        if (signal.target === myPeerId) {
+                            handleSignal(signal);
+                        }
+                    } catch (err) {
+                        console.log('Signal error:', err);
                     }
-                    
-                    console.log('ICE candidate:', event.candidate.candidate?.substring(0, 50) + '...');
                 }
-            };
-            
-            pc.onicegatheringstatechange = () => {
-                console.log('ICE gathering:', pc.iceGatheringState);
-                if (pc.iceGatheringState === 'complete') {
-                    isGatheringComplete = true;
-                    updateCandidateInfo(prefix, iceCandidatesBuffer.length, false);
-                }
-            };
+            });
         }
         
-        function setupDataChannel(channel) {
-            dataChannel = channel;
+        function sendSignal(targetId, type, data) {
+            const signal = {
+                from: myPeerId,
+                target: targetId,
+                type: type,
+                data: data,
+                room: roomName,
+                timestamp: Date.now()
+            };
+            localStorage.setItem('signal_' + Date.now() + '_' + Math.random(), JSON.stringify(signal));
+            // Очищаем старые сигналы
+            setTimeout(() => {
+                localStorage.removeItem('signal_' + Date.now());
+            }, 10000);
+        }
+        
+        async function handleSignal(signal) {
+            console.log('Signal received:', signal.type);
             
+            if (signal.type === 'offer') {
+                // Создаем ответ
+                await handleOffer(signal);
+            } else if (signal.type === 'answer') {
+                await handleAnswer(signal);
+            } else if (signal.type === 'candidate') {
+                await handleCandidate(signal);
+            }
+        }
+        
+        async function handleOffer(signal) {
+            try {
+                const peerId = signal.from;
+                
+                const pc = new RTCPeerConnection(configuration);
+                
+                // Настраиваем DataChannel
+                const dataChannel = pc.createDataChannel('chat_' + peerId, {
+                    ordered: true,
+                    maxRetransmits: 3
+                });
+                
+                setupDataChannel(pc, dataChannel, peerId);
+                
+                // ICE кандидаты
+                pc.onicecandidate = (event) => {
+                    if (event.candidate) {
+                        sendSignal(peerId, 'candidate', {
+                            candidate: event.candidate.toJSON()
+                        });
+                    }
+                };
+                
+                pc.oniceconnectionstatechange = () => {
+                    console.log(`ICE state with ${peerId}:`, pc.iceConnectionState);
+                    if (pc.iceConnectionState === 'connected' || pc.iceConnectionState === 'completed') {
+                        updateUsersList();
+                    } else if (pc.iceConnectionState === 'failed') {
+                        // Пытаемся переподключиться
+                        reconnectAttempts.set(peerId, (reconnectAttempts.get(peerId) || 0) + 1);
+                        if (reconnectAttempts.get(peerId) < 3) {
+                            setTimeout(() => {
+                                createOffer(peerId);
+                            }, 2000);
+                        }
+                    }
+                };
+                
+                await pc.setRemoteDescription(new RTCSessionDescription(signal.data));
+                
+                const answer = await pc.createAnswer();
+                await pc.setLocalDescription(answer);
+                
+                peerConnections.set(peerId, { pc, dataChannel, username: signal.data?.username || 'unknown' });
+                
+                sendSignal(peerId, 'answer', {
+                    sdp: pc.localDescription,
+                    username: username
+                });
+                
+                addSystemMessage(`✅ Подключился: ${signal.data?.username || peerId}`);
+                
+            } catch (err) {
+                console.error('Handle offer error:', err);
+            }
+        }
+        
+        async function handleAnswer(signal) {
+            try {
+                const peerId = signal.from;
+                const conn = peerConnections.get(peerId);
+                if (conn && conn.pc) {
+                    await conn.pc.setRemoteDescription(new RTCSessionDescription(signal.data.sdp));
+                    conn.username = signal.data.username || peerId;
+                    addSystemMessage(`✅ Подключен: ${conn.username}`);
+                }
+            } catch (err) {
+                console.error('Handle answer error:', err);
+            }
+        }
+        
+        async function handleCandidate(signal) {
+            try {
+                const peerId = signal.from;
+                const conn = peerConnections.get(peerId);
+                if (conn && conn.pc) {
+                    await conn.pc.addIceCandidate(new RTCIceCandidate(signal.data.candidate));
+                }
+            } catch (err) {
+                console.error('Handle candidate error:', err);
+            }
+        }
+        
+        // ===== CREATE OFFER =====
+        async function createOffer(targetId) {
+            try {
+                const pc = new RTCPeerConnection(configuration);
+                
+                const dataChannel = pc.createDataChannel('chat_' + targetId, {
+                    ordered: true,
+                    maxRetransmits: 3
+                });
+                
+                setupDataChannel(pc, dataChannel, targetId);
+                
+                pc.onicecandidate = (event) => {
+                    if (event.candidate) {
+                        sendSignal(targetId, 'candidate', {
+                            candidate: event.candidate.toJSON()
+                        });
+                    }
+                };
+                
+                pc.oniceconnectionstatechange = () => {
+                    console.log(`ICE state with ${targetId}:`, pc.iceConnectionState);
+                    if (pc.iceConnectionState === 'connected' || pc.iceConnectionState === 'completed') {
+                        updateUsersList();
+                    }
+                };
+                
+                const offer = await pc.createOffer();
+                await pc.setLocalDescription(offer);
+                
+                peerConnections.set(targetId, { pc, dataChannel, username: 'connecting...' });
+                
+                sendSignal(targetId, 'offer', {
+                    sdp: pc.localDescription,
+                    username: username
+                });
+                
+                addSystemMessage(`🔄 Подключаемся к ${targetId}...`);
+                
+            } catch (err) {
+                console.error('Create offer error:', err);
+            }
+        }
+        
+        // ===== SETUP DATA CHANNEL =====
+        function setupDataChannel(pc, channel, peerId) {
             channel.onopen = () => {
-                addSystemMessage('✅ Канал данных открыт');
-                showChat();
-                sendSystemMessage(username + ' подключился');
+                console.log(`Data channel open with ${peerId}`);
+                updateUsersList();
+                
+                // Отправляем инфо о себе
+                channel.send(JSON.stringify({
+                    type: 'userinfo',
+                    username: username,
+                    timestamp: Date.now()
+                }));
             };
             
             channel.onclose = () => {
-                addSystemMessage('❌ Соединение разорвано');
-                updateStatus('отключено', 'error');
-                setTimeout(() => { if (!isConnected) hideChat(); }, 2000);
+                console.log(`Data channel closed with ${peerId}`);
+                peerConnections.delete(peerId);
+                updateUsersList();
+                addSystemMessage(`❌ Отключился: ${peerId}`);
             };
             
             channel.onerror = (err) => {
-                console.error('DataChannel error:', err);                updateStatus('ошибка канала', 'error');
+                console.error(`Data channel error with ${peerId}:`, err);
             };
             
             channel.onmessage = (event) => {
                 try {
                     const data = JSON.parse(event.data);
-                    displayMessage(data);
-                } catch (e) {
-                    displayMessage({ type: 'text', user: 'unknown', text: event.data, time: Date.now() });
+                    
+                    if (data.type === 'userinfo') {
+                        // Обновляем username
+                        const conn = peerConnections.get(peerId);
+                        if (conn) {
+                            conn.username = data.username;
+                            updateUsersList();
+                            addSystemMessage(`👤 Пользователь: ${data.username}`);
+                        }
+                    } else if (data.type === 'file-metadata') {
+                        // Начинаем получать файл
+                        fileChunks.set(data.fileId, {
+                            metadata: data,
+                            chunks: [],
+                            receivedSize: 0
+                        });
+                        
+                        addSystemMessage(`📥 Получение: ${data.name} (${formatFileSize(data.size)})`);
+                        
+                    } else if (data.type === 'file-chunk') {
+                        // Получаем кусок файла
+                        const fileData = fileChunks.get(data.fileId);
+                        if (fileData) {
+                            const chunk = base64ToArrayBuffer(data.chunk);
+                            fileData.chunks.push(chunk);
+                            fileData.receivedSize += chunk.byteLength;
+                            
+                            // Обновляем прогресс
+                            const progress = (fileData.receivedSize / fileData.metadata.size) * 100;
+                            
+                            if (fileData.receivedSize >= fileData.metadata.size) {
+                                // Файл получен полностью
+                                const blob = new Blob(fileData.chunks, { type: fileData.metadata.type });
+                                
+                                displayFileMessage({
+                                    user: fileData.metadata.from || peerId,
+                                    name: fileData.metadata.name,
+                                    size: fileData.metadata.size,
+                                    type: fileData.metadata.type,
+                                    blob: blob,
+                                    time: Date.now()
+                                });
+                                
+                                fileChunks.delete(data.fileId);
+                                addSystemMessage(`✅ Файл получен: ${fileData.metadata.name}`);
+                            }
+                        }
+                    } else {
+                        // Обычное сообщение
+                        displayMessage({
+                            ...data,
+                            user: data.user || peerId
+                        });
+                    }
+                } catch (err) {
+                    console.error('Message parse error:', err);
                 }
             };
         }
         
-        // HOST: Create offer — ⚡ БЫСТРО, без ожидания!
-        async function createOffer() {
-            try {
-                updateStatus('создание offer...', 'connecting');
-                document.getElementById('createOfferBtn').disabled = true;
-                
-                peerConnection = new RTCPeerConnection(configuration);
-                
-                dataChannel = peerConnection.createDataChannel('chat');
-                setupDataChannel(dataChannel);
-                
-                // ⚡ TRICKLE ICE — начинаем сбор, но не ждём!
-                setupICEGathering(peerConnection, 'offer');
-                
-                peerConnection.oniceconnectionstatechange = () => {
-                    const state = peerConnection.iceConnectionState;
-                    const states = {
-                        'new': '⏳ Ожидание...',
-                        'checking': '🔍 Поиск пути через NAT...',
-                        'connected': '✅ P2P соединение!',
-                        'completed': '✅ Готово!',
-                        'disconnected': '🔄 Переподключение...',
-                        'failed': '❌ Ошибка — обменяйтесь ICE кандидатами',
-                        'closed': '🔒 Закрыто'
-                    };
-                    updateStatus(states[state] || state, 
-                        state === 'failed' ? 'error' : state === 'checking' ? 'connecting' : state === 'connected' || state === 'completed' ? 'success' : 'normal');
-                };
-                
-                const offer = await peerConnection.createOffer();
-                await peerConnection.setLocalDescription(offer);
-                
-                // ⚡ СРАЗУ отдаём SDP, не ждём ICE!
-                const offerSDP = JSON.stringify({
-                    type: peerConnection.localDescription.type,
-                    sdp: peerConnection.localDescription.sdp
-                });                
-                document.getElementById('offerSDP').value = offerSDP;
-                document.getElementById('copyOfferBtn').disabled = false;
-                document.getElementById('setAnswerBtn').disabled = false;
-                
-                addSystemMessage('✅ Offer создан! Копируйте SDP сейчас');
-                updateStatus('SDP готов — копируйте и отправьте другу', 'success');
-                
-                // ICE кандидаты будут появляться в фоне
-                addSystemMessage('⏳ ICE кандидаты собираются в фоне (скопируйте через 5-10 сек для разных сетей)');
-                
-            } catch (error) {
-                console.error('Offer error:', error);
-                updateStatus('ошибка: ' + error.message, 'error');
-                alert('Ошибка: ' + error.message);
-                document.getElementById('createOfferBtn').disabled = false;
+        // ===== CREATE ROOM =====
+        function createRoom() {
+            roomName = document.getElementById('roomName').value.trim();
+            if (!roomName) {
+                alert('Введите название комнаты');
+                return;
             }
+            
+            addSystemMessage(`🏠 Комната создана: ${roomName}`);
+            addSystemMessage(`📋 Ваш ID: ${myPeerId}`);
+            addSystemMessage('🔄 Отправьте свой ID друзьям для подключения');
+            
+            document.getElementById('usersList').style.display = 'block';
+            switchMainTab('chat');
+            updateUsersList();
         }
         
-        // JOIN: Create answer — ⚡ БЫСТРО, без ожидания!
-        async function createAnswer() {
-            try {
-                const offerText = document.getElementById('remoteOfferSDP').value.trim();
-                if (!offerText) { alert('Вставьте SDP offer от хоста'); return; }
-                
-                updateStatus('создание answer...', 'connecting');
-                document.getElementById('createAnswerBtn').disabled = true;
-                
-                const offer = JSON.parse(offerText);
-                peerConnection = new RTCPeerConnection(configuration);
-                
-                peerConnection.ondatachannel = (event) => setupDataChannel(event.channel);
-                
-                // ⚡ TRICKLE ICE
-                setupICEGathering(peerConnection, 'answer');
-                
-                peerConnection.oniceconnectionstatechange = () => {
-                    const state = peerConnection.iceConnectionState;
-                    const states = {
-                        'connected': '✅ P2P соединение!',
-                        'completed': '✅ Готово!',
-                        'failed': '❌ Ошибка NAT — обменяйтесь ICE кандидатами',
-                        'checking': '🔍 Поиск пути...'
-                    };
-                    updateStatus(states[state] || state,
-                        state === 'failed' ? 'error' : state === 'checking' ? 'connecting' : state === 'connected' || state === 'completed' ? 'success' : 'normal');
-                };
-                
-                await peerConnection.setRemoteDescription(offer);
-                                // 🔥 Добавляем ICE кандидаты из offer если есть
-                const offerCandidatesText = document.getElementById('remoteOfferCandidates').value.trim();
-                if (offerCandidatesText) {
-                    try {
-                        const offerCandidates = JSON.parse(offerCandidatesText);
-                        for (const candidate of offerCandidates) {
-                            try {
-                                await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
-                            } catch (e) {
-                                console.warn('Failed to add candidate:', e);
-                            }
-                        }
-                        addSystemMessage('✅ Добавлено ' + offerCandidates.length + ' ICE кандидатов от хоста');
-                    } catch (e) {
-                        console.warn('Failed to parse offer candidates:', e);
-                    }
+        // ===== CONNECT TO PEER =====
+        function connectToPeer() {
+            const targetId = document.getElementById('peerIdInput').value.trim();
+            if (!targetId) {
+                alert('Введите ID участника');
+                return;
+            }
+            
+            if (targetId === myPeerId) {
+                alert('Нельзя подключиться к себе');
+                return;
+            }
+            
+            if (peerConnections.has(targetId)) {
+                alert('Уже подключены');
+                return;
+            }
+            
+            createOffer(targetId);
+            document.getElementById('peerIdInput').value = '';
+            switchMainTab('chat');
+        }
+        
+        // ===== UPDATE USERS LIST =====
+        function updateUsersList() {
+            const usersContainer = document.getElementById('usersContainer');
+            const chatUsersContainer = document.getElementById('chatUsersContainer');
+            const usersList = document.getElementById('usersList');
+            const chatUsersList = document.getElementById('chatUsersList');
+            
+            let html = `<div class="user-item">
+                <span class="user-status" style="background: #00ff9d;"></span>
+                <span class="user-name"><strong>${username} (вы)</strong></span>
+            </div>`;
+            
+            for (let [peerId, conn] of peerConnections) {
+                if (conn.dataChannel && conn.dataChannel.readyState === 'open') {
+                    html += `<div class="user-item">
+                        <span class="user-status" style="background: #00ff9d;"></span>
+                        <span class="user-name">${conn.username || peerId}</span>
+                    </div>`;
                 }
-                
-                const answer = await peerConnection.createAnswer();
-                await peerConnection.setLocalDescription(answer);
-                
-                // ⚡ СРАЗУ отдаём SDP, не ждём ICE!
-                const answerSDP = JSON.stringify({
-                    type: peerConnection.localDescription.type,
-                    sdp: peerConnection.localDescription.sdp
-                });
-                
-                document.getElementById('localAnswerSDP').value = answerSDP;
-                document.getElementById('copyAnswerBtn').disabled = false;
-                
-                addSystemMessage('✅ Answer создан! Копируйте SDP сейчас');
-                updateStatus('SDP готов — копируйте и отправьте хосту', 'success');
-                
-                // ICE кандидаты будут появляться в фоне
-                addSystemMessage('⏳ ICE кандидаты собираются в фоне (скопируйте через 5-10 сек для разных сетей)');
-                
-            } catch (error) {
-                console.error('Answer error:', error);
-                updateStatus('ошибка: ' + error.message, 'error');
-                alert('Ошибка: ' + error.message);
-                document.getElementById('createAnswerBtn').disabled = false;
             }
+            
+            if (peerConnections.size > 0) {
+                usersList.style.display = 'block';
+                chatUsersList.style.display = 'block';
+            } else {
+                usersList.style.display = 'none';
+                chatUsersList.style.display = 'none';
+            }
+            
+            usersContainer.innerHTML = html;
+            chatUsersContainer.innerHTML = html;
         }
         
-        // HOST: Set answer
-        async function setAnswer() {
-            try {
-                const answerText = document.getElementById('answerSDP').value.trim();
-                if (!answerText) { alert('Вставьте SDP answer от друга'); return; }
-                                updateStatus('установка соединения...', 'connecting');
-                const answer = JSON.parse(answerText);
-                
-                await peerConnection.setRemoteDescription(answer);
-                
-                // 🔥 Добавляем ICE кандидаты из answer если есть
-                const answerCandidatesText = document.getElementById('answerCandidates').value.trim();
-                if (answerCandidatesText) {
-                    try {
-                        const answerCandidates = JSON.parse(answerCandidatesText);
-                        for (const candidate of answerCandidates) {
-                            try {
-                                await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
-                                console.log('Added ICE candidate from answer');
-                            } catch (e) {
-                                console.warn('Failed to add candidate:', e);
-                            }
-                        }
-                        addSystemMessage('✅ Добавлено ' + answerCandidates.length + ' ICE кандидатов от друга');
-                    } catch (e) {
-                        console.warn('Failed to parse answer candidates:', e);
-                    }
-                }
-                
-                addSystemMessage('✅ Answer принят — устанавливается соединение...');
-                
-            } catch (error) {
-                console.error('SetAnswer error:', error);
-                updateStatus('ошибка: ' + error.message, 'error');
-                alert('Ошибка: ' + error.message);
-            }
-        }
-        
-        // ===== MESSAGING =====
+        // ===== SEND MESSAGE =====
         function sendMessage() {
             const input = document.getElementById('messageInput');
             const text = input.value.trim();
             
-            if (!text || !dataChannel || dataChannel.readyState !== 'open') {
-                if (!isConnected) alert('Сначала подключитесь');
+            if (!text) return;
+            if (peerConnections.size === 0) {
+                alert('Нет подключенных участников');
                 return;
             }
             
-            const msg = { type: 'text', user: username, text: text, time: Date.now() };
-            dataChannel.send(JSON.stringify(msg));
+            const msg = {
+                type: 'text',
+                user: username,
+                text: text,
+                time: Date.now()
+            };
+            
+            // Отправляем всем
+            for (let [_, conn] of peerConnections) {
+                if (conn.dataChannel && conn.dataChannel.readyState === 'open') {
+                    try {
+                        conn.dataChannel.send(JSON.stringify(msg));
+                    } catch (err) {
+                        console.error('Send error:', err);
+                    }
+                }
+            }
+            
             displayMessage(msg);
             input.value = '';
-            input.focus();
-        }
-                function sendSystemMessage(text) {
-            if (!dataChannel || dataChannel.readyState !== 'open') return;
-            const msg = { type: 'system', text: text, time: Date.now() };
-            dataChannel.send(JSON.stringify(msg));
         }
         
+        // ===== FILE HANDLING =====
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            // Проверка размера (50MB max)
+            if (file.size > 50 * 1024 * 1024) {
+                alert('Файл слишком большой! Максимум 50MB');
+                return;
+            }
+            
+            selectedFile = file;
+            
+            // Определяем иконку
+            let icon = '📄';
+            if (file.type.startsWith('image/')) icon = '🖼️';
+            else if (file.type.startsWith('video/')) icon = '🎥';
+            else if (file.type.startsWith('audio/')) icon = '🎵';
+            else if (file.type.includes('pdf')) icon = '📕';
+            else if (file.type.includes('word') || file.name.endsWith('.doc') || file.name.endsWith('.docx')) icon = '📘';
+            else if (file.type.includes('excel') || file.name.endsWith('.xls') || file.name.endsWith('.xlsx')) icon = '📊';
+            else if (file.name.endsWith('.zip') || file.name.endsWith('.rar') || file.name.endsWith('.7z')) icon = '🗜️';
+            
+            document.getElementById('fileIcon').innerText = icon;
+            document.getElementById('fileName').innerText = file.name;
+            document.getElementById('fileSize').innerText = formatFileSize(file.size);
+            document.getElementById('filePreview').style.display = 'block';
+            document.getElementById('progressBar').style.display = 'none';
+        }
+        
+        function formatFileSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            if (bytes < 1024 * 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+            return (bytes / (1024 * 1024 * 1024)).toFixed(2) + ' GB';
+        }
+        
+        async function sendFile() {
+            if (!selectedFile) return;
+            if (peerConnections.size === 0) {
+                alert('Нет подключенных участников');
+                return;
+            }
+            
+            const fileId = Date.now() + '_' + Math.random().toString(36).substring(2);
+            const chunkSize = 16 * 1024; // 16KB chunks
+            
+            // Отправляем метаданные
+            const metadata = {
+                type: 'file-metadata',
+                fileId: fileId,
+                name: selectedFile.name,
+                size: selectedFile.size,
+                type: selectedFile.type,
+                from: username,
+                timestamp: Date.now()
+            };
+            
+            // Отправляем всем
+            for (let [_, conn] of peerConnections) {
+                if (conn.dataChannel && conn.dataChannel.readyState === 'open') {
+                    conn.dataChannel.send(JSON.stringify(metadata));
+                }
+            }
+            
+            // Читаем и отправляем кусками
+            const reader = new FileReader();
+            let offset = 0;
+            
+            reader.onload = (e) => {
+                const chunk = e.target.result.split(',')[1]; // base64 data
+                
+                const chunkMsg = {
+                    type: 'file-chunk',
+                    fileId: fileId,
+                    chunk: chunk,
+                    offset: offset,
+                    total: selectedFile.size
+                };
+                
+                // Отправляем всем
+                for (let [_, conn] of peerConnections) {
+                    if (conn.dataChannel && conn.dataChannel.readyState === 'open') {
+                        conn.dataChannel.send(JSON.stringify(chunkMsg));
+                    }
+                }
+                
+                offset += chunkSize;
+                
+                // Обновляем прогресс
+                const progress = (offset / selectedFile.size) * 100;
+                document.getElementById('progressBar').style.display = 'block';
+                document.getElementById('progressFill').style.width = progress + '%';
+                
+                if (offset < selectedFile.size) {
+                    // Читаем следующий кусок
+                    const blob = selectedFile.slice(offset, offset + chunkSize);
+                    reader.readAsDataURL(blob);
+                } else {
+                    // Файл отправлен
+                    setTimeout(() => {
+                        document.getElementById('filePreview').style.display = 'none';
+                        document.getElementById('fileInput').value = '';
+                        selectedFile = null;
+                        addSystemMessage(`✅ Файл отправлен: ${selectedFile?.name}`);
+                    }, 500);
+                }
+            };
+            
+            // Начинаем чтение
+            const firstChunk = selectedFile.slice(0, chunkSize);
+            reader.readAsDataURL(firstChunk);
+        }
+        
+        function cancelFile() {
+            selectedFile = null;
+            document.getElementById('fileInput').value = '';
+            document.getElementById('filePreview').style.display = 'none';
+        }
+        
+        function base64ToArrayBuffer(base64) {
+            const binaryString = atob(base64);
+            const bytes = new Uint8Array(binaryString.length);
+            for (let i = 0; i < binaryString.length; i++) {
+                bytes[i] = binaryString.charCodeAt(i);
+            }
+            return bytes.buffer;
+        }
+        
+        // ===== DISPLAY MESSAGE =====
         function displayMessage(msg) {
             const container = document.getElementById('messages');
             const div = document.createElement('div');
-            const time = new Date(msg.time).toLocaleTimeString('ru-RU', {hour:'2-digit',minute:'2-digit'});
+            const time = new Date(msg.time).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+            
+            const isOwn = msg.user === username;
             
             if (msg.type === 'system') {
                 div.className = 'system-message';
                 div.innerText = '➤ ' + msg.text;
-            } else if (msg.type === 'photo') {
-                div.className = 'message' + (msg.user === username ? ' own' : '');
-                div.innerHTML = `<strong>[${msg.user}]</strong> <small style="color:#666">${time}</small><br>
-                    <img src="${msg.photo}" class="photo-message" onclick="openModal('${msg.photo}')">`;
-            } else {
-                div.className = 'message' + (msg.user === username ? ' own' : '');
-                div.innerHTML = `<strong>[${msg.user}]</strong> <small style="color:#666">${time}</small><br>${escapeHtml(msg.text)}`;
+            } else if (msg.type === 'text') {
+                div.className = 'message' + (isOwn ? ' own' : '');
+                div.innerHTML = `
+                    <div class="message-header">
+                        <span class="message-user">${isOwn ? 'вы' : msg.user}</span>
+                        <span class="message-time">${time}</span>
+                    </div>
+                    <div>${escapeHtml(msg.text)}</div>
+                `;
+            } else if (msg.type === 'file') {
+                div.className = 'message' + (isOwn ? ' own' : '');
+                
+                let preview = '';
+                if (msg.fileType && msg.fileType.startsWith('image/')) {
+                    preview = `<img src="${URL.createObjectURL(msg.blob)}" class="photo-message" onclick="openFileModal('${URL.createObjectURL(msg.blob)}', 'image')">`;
+                } else if (msg.fileType && msg.fileType.startsWith('video/')) {
+                    preview = `<video src="${URL.createObjectURL(msg.blob)}" controls class="video-message"></video>`;
+                }
+                
+                div.innerHTML = `
+                    <div class="message-header">
+                        <span class="message-user">${isOwn ? 'вы' : msg.user}</span>
+                        <span class="message-time">${time}</span>
+                    </div>
+                    <div class="file-message">
+                        ${preview}
+                        <div class="file-info">
+                            <span class="file-icon">${getFileIcon(msg.fileName)}</span>
+                            <div class="file-details">
+                                <div class="file-name">${escapeHtml(msg.fileName)}</div>
+                                <div class="file-size">${formatFileSize(msg.fileSize)}</div>
+                            </div>
+                            <button class="download-btn" onclick="downloadFile('${msg.fileName}', ${msg.fileSize}, this)">💾 СКАЧАТЬ</button>
+                        </div>
+                    </div>
+                `;
+                
+                // Сохраняем blob в data-атрибуте
+                div.querySelector('.download-btn').dataset.blob = URL.createObjectURL(msg.blob);
             }
             
             container.appendChild(div);
             container.scrollTop = container.scrollHeight;
         }
         
-        function addSystemMessage(text) {
-            displayMessage({ type: 'system', text: text, time: Date.now() });
+        function displayFileMessage(msg) {
+            displayMessage({
+                type: 'file',
+                user: msg.user,
+                fileName: msg.name,
+                fileSize: msg.size,
+                fileType: msg.type,
+                blob: msg.blob,
+                time: msg.time
+            });
+        }
+        
+        function getFileIcon(filename) {
+            const ext = filename.split('.').pop().toLowerCase();
+            if (['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'].includes(ext)) return '🖼️';
+            if (['mp4', 'avi', 'mov', 'wmv', 'flv', 'mkv'].includes(ext)) return '🎥';
+            if (['mp3', 'wav', 'ogg', 'flac'].includes(ext)) return '🎵';
+            if (['pdf'].includes(ext)) return '📕';
+            if (['doc', 'docx'].includes(ext)) return '📘';
+            if (['xls', 'xlsx'].includes(ext)) return '📊';
+            if (['zip', 'rar', '7z', 'tar', 'gz'].includes(ext)) return '🗜️';
+            if (['exe', 'msi', 'app', 'dmg'].includes(ext)) return '⚙️';
+            return '📄';
+        }
+        
+        function downloadFile(filename, size, btn) {
+            const blobUrl = btn.dataset.blob;
+            const a = document.createElement('a');
+            a.href = blobUrl;
+            a.download = filename;
+            a.click();
+        }
+        
+        function openFileModal(src, type) {
+            const modal = document.getElementById('fileModal');
+            const content = document.getElementById('modalContent');
+            const info = document.getElementById('modalInfo');
+            
+            if (type === 'image') {
+                content.innerHTML = `<img src="${src}" style="max-width: 95%; max-height: 80%;">`;
+                info.innerText = '🖼️ Просмотр изображения';
+            } else if (type === 'video') {
+                content.innerHTML = `<video src="${src}" controls style="max-width: 95%; max-height: 80%;"></video>`;
+                info.innerText = '🎥 Просмотр видео';
+            }
+            
+            modal.classList.add('active');
+        }
+        
+        function closeModal(event) {
+            if (event.target.id === 'fileModal' || event.target.className === 'modal-close') {
+                document.getElementById('fileModal').classList.remove('active');
+            }
         }
         
         function escapeHtml(text) {
@@ -868,106 +1379,64 @@
             return div.innerHTML;
         }
         
-        // ===== COPY FUNCTIONS =====
-        function copyOffer() {
-            const text = document.getElementById('offerSDP').value;
-            navigator.clipboard.writeText(text).then(() => {
-                const btn = document.getElementById('copyOfferBtn');
-                const original = btn.innerText;
-                btn.innerText = '✅ СКОПИРОВАНО';
-                setTimeout(() => btn.innerText = original, 1500);
+        function addSystemMessage(text) {
+            displayMessage({
+                type: 'system',
+                text: text,
+                time: Date.now()
             });
         }
         
-        function copyOfferCandidates() {
-            const text = document.getElementById('offerCandidates').value;            if (!text) return alert('Подождите ICE кандидаты (5-10 сек)');
-            navigator.clipboard.writeText(text).then(() => {
-                const btn = document.getElementById('copyOfferCandBtn');
-                const original = btn.innerText;
-                btn.innerText = '✅ СКОПИРОВАНО';
-                setTimeout(() => btn.innerText = original, 1500);
-            });
-        }
-        
-        function copyAnswer() {
-            const text = document.getElementById('localAnswerSDP').value;
-            navigator.clipboard.writeText(text).then(() => {
-                const btn = document.getElementById('copyAnswerBtn');
-                const original = btn.innerText;
-                btn.innerText = '✅ СКОПИРОВАНО';
-                setTimeout(() => btn.innerText = original, 1500);
-            });
-        }
-        
-        function copyAnswerCandidates() {
-            const text = document.getElementById('localAnswerCandidates').value;
-            if (!text) return alert('Подождите ICE кандидаты (5-10 сек)');
-            navigator.clipboard.writeText(text).then(() => {
-                const btn = document.getElementById('copyAnswerCandBtn');
-                const original = btn.innerText;
-                btn.innerText = '✅ СКОПИРОВАНО';
-                setTimeout(() => btn.innerText = original, 1500);
-            });
-        }
-        
-        // ===== PHOTO FUNCTIONS =====
-        function handlePhotoSelect(event) {
-            const file = event.target.files[0];
-            if (!file) return;
+        // ===== UI FUNCTIONS =====
+        function switchMainTab(tab) {
+            document.getElementById('tabSetup').className = 'tab';
+            document.getElementById('tabChat').className = 'tab';
             
-            if (file.size > 4 * 1024 * 1024) {
-                alert('📷 Фото слишком большое! Максимум 4MB');
-                return;
+            if (tab === 'setup') {
+                document.getElementById('tabSetup').className = 'tab active';
+                document.getElementById('setupArea').style.display = 'block';
+                document.getElementById('chatArea').classList.remove('active');
+            } else {
+                document.getElementById('tabChat').className = 'tab active';
+                document.getElementById('setupArea').style.display = 'none';
+                document.getElementById('chatArea').classList.add('active');
             }
+        }
+        
+        function goBack() {
+            // Закрываем все соединения
+            for (let [_, conn] of peerConnections) {
+                if (conn.dataChannel) conn.dataChannel.close();
+                if (conn.pc) conn.pc.close();
+            }
+            peerConnections.clear();
             
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                selectedPhotoData = e.target.result;
-                document.getElementById('previewImage').src = selectedPhotoData;
-                document.getElementById('photoPreview').style.display = 'block';
-            };
-            reader.readAsDataURL(file);
-        }
-        
-        function sendPhoto() {            if (!selectedPhotoData || !dataChannel || dataChannel.readyState !== 'open') {
-                alert('Не подключено');
-                return;
-            }
+            document.getElementById('messages').innerHTML = '';
+            document.getElementById('setupArea').style.display = 'block';
+            document.getElementById('chatArea').classList.remove('active');
+            document.getElementById('tabSetup').className = 'tab active';
+            document.getElementById('tabChat').className = 'tab';
+            document.getElementById('usersList').style.display = 'none';
+            document.getElementById('backBtn').classList.remove('visible');
             
-            const msg = { type: 'photo', user: username, photo: selectedPhotoData, time: Date.now() };
-            dataChannel.send(JSON.stringify(msg));
-            displayMessage(msg);
-            cancelPhoto();
-        }
-        
-        function cancelPhoto() {
-            selectedPhotoData = null;
-            document.getElementById('photoInput').value = '';
-            document.getElementById('photoPreview').style.display = 'none';
-        }
-        
-        // ===== MODAL =====
-        function openModal(src) {
-            document.getElementById('modalImage').src = src;
-            document.getElementById('photoModal').classList.add('active');
-        }
-        
-        function closeModal(event) {
-            if (event.target.id === 'photoModal' || event.target.className === 'modal-close') {
-                document.getElementById('photoModal').classList.remove('active');
-            }
+            addSystemMessage('🔌 Все соединения закрыты');
         }
         
         // ===== INIT =====
+        init();
+        
+        // Enter to send
         document.getElementById('messageInput').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') sendMessage();
         });
         
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') closeModal({ target: { id: 'photoModal' } });
+        // Очистка при закрытии
+        window.addEventListener('beforeunload', () => {
+            for (let [_, conn] of peerConnections) {
+                if (conn.dataChannel) conn.dataChannel.close();
+                if (conn.pc) conn.pc.close();
+            }
         });
-        
-        updateStatus('готов к подключению');
     </script>
 </body>
 </html>
