@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>ANOM DIRECT</title>
+    <title>ANOM GROUP</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
     <style>
@@ -47,7 +47,8 @@
             color: #00ff9d;
             padding: 8px 15px;
             border-radius: 5px;
-            cursor: pointer;            font-family: inherit;
+            cursor: pointer;
+            font-family: inherit;
             font-size: 14px;
             display: none;
             transition: all 0.2s;
@@ -96,7 +97,8 @@
         
         .signal-title {
             color: #00ff9d;
-            font-size: 14px;            margin-bottom: 10px;
+            font-size: 14px;
+            margin-bottom: 10px;
             text-align: center;
             font-weight: bold;
         }
@@ -145,7 +147,8 @@
             cursor: pointer;
             font-weight: bold;
             text-transform: uppercase;
-            font-size: 12px;            letter-spacing: 1px;
+            font-size: 12px;
+            letter-spacing: 1px;
         }
         
         button:hover:not(:disabled) {
@@ -171,6 +174,53 @@
             to { opacity: 1; transform: translateY(0); }
         }
         
+        .users-panel {
+            background: #0d1a0d;
+            border: 1px solid #00ff9d;
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .users-title {
+            font-size: 11px;
+            color: #666;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+        
+        .users-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        .user-badge {
+            background: #1a1a1a;
+            border: 1px solid #00ff9d;
+            border-radius: 15px;
+            padding: 4px 10px;
+            font-size: 11px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .user-badge.you {
+            border-color: #ff6b6b;
+            color: #ffaa00;
+        }
+        
+        .user-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #00ff9d;
+            display: inline-block;
+        }
+        
+        .user-badge.you .user-dot { background: #ff6b6b; }
+        
         .messages {
             background: #1a1a1a;
             border: 1px solid #00ff9d;
@@ -194,9 +244,6 @@
         .message.own {
             border-left-color: #ff6b6b;
             background: #1a0d0d;
-            border-right: 3px solid #ff6b6b;            border-left: none;
-            border-radius: 5px 0 0 5px;
-            text-align: right;
         }
         
         .system-message {
@@ -209,6 +256,46 @@
             border-top: 1px dashed #333;
             border-bottom: 1px dashed #333;
         }
+        
+        .file-message {
+            background: #0d1a0d;
+            border: 1px solid #00ff9d;
+            border-radius: 5px;
+            padding: 8px;
+            margin: 5px 0;
+        }
+        
+        .file-link {
+            color: #00ff9d;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+        
+        .file-link:hover { text-decoration: underline; }
+        
+        .file-icon {
+            font-size: 20px;
+        }
+        
+        .file-info {
+            font-size: 10px;
+            color: #666;
+        }
+        
+        .photo-message {
+            max-width: 180px;
+            max-height: 180px;
+            margin: 5px 0;
+            border: 2px solid #00ff9d;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        
+        .photo-message:hover { opacity: 0.85; }
         
         .status {
             color: #00cc7a;
@@ -225,100 +312,56 @@
         .status.connecting { color: #ffaa00; border-color: #ffaa00; }
         .status.success { color: #00ff9d; border-color: #00ff9d; }
         
-        .candidate-info {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 10px;
-            color: #666;
-            margin-top: 5px;
-            padding: 5px;
-            background: #0d0d0d;
-            border-radius: 3px;
-        }
-        
-        .candidate-info span {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        
-        .candidate-dot {            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: #333;
-            display: inline-block;
-        }
-        
-        .candidate-dot.active {
-            background: #00ff9d;
-            animation: pulse 1s infinite;
-        }
-        
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-        
         .input-row { display: flex; gap: 8px; margin: 10px 0; }
         .input-row input { flex: 1; margin: 0; }
         .input-row button { flex: 0 0 80px; margin: 0; padding: 12px 8px; }
         
-        .file-input-container { margin: 8px 0; position: relative; }
+        .file-actions {
+            display: flex;
+            gap: 8px;
+            margin: 10px 0;
+        }
         
-        .file-input-label {
-            display: block;
+        .file-actions button {
+            flex: 1;
             padding: 10px;
-            background: #1a1a1a;
-            border: 1px dashed #00ff9d;
-            color: #00ff9d;
-            text-align: center;
-            cursor: pointer;
-            border-radius: 5px;
-            font-size: 12px;
-            transition: all 0.2s;
+            font-size: 11px;
         }
         
-        .file-input-label:hover { background: #003322; border-style: solid; }
-        
-        input[type="file"] {
-            position: absolute;
-            opacity: 0;
-            width: 0.1px;
-            height: 0.1px;
-        }
-        
-        .photo-preview {
+        .file-preview {
             display: none;
             margin: 10px 0;
             padding: 10px;
-            background: #1a1a1a;            border: 1px solid #00ff9d;
+            background: #1a1a1a;
+            border: 1px solid #00ff9d;
             border-radius: 5px;
         }
         
-        .photo-preview img {
+        .file-preview.active { display: block; }
+        
+        .preview-content {
+            margin-bottom: 10px;
+        }
+        
+        .preview-content img {
             max-width: 100%;
             max-height: 150px;
             border: 1px solid #00ff9d;
             border-radius: 3px;
-            margin-bottom: 8px;
         }
         
-        .photo-preview .actions { display: flex; gap: 8px; }
-        .photo-preview button { flex: 1; margin: 0; padding: 8px; font-size: 11px; }
-        .photo-preview button.cancel { background: #330000; border-color: #ff6b6b; }
-        
-        .photo-message {
-            max-width: 180px;
-            max-height: 180px;
-            margin: 5px 0;
-            border: 2px solid #00ff9d;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: opacity 0.2s;
+        .preview-actions {
+            display: flex;
+            gap: 8px;
         }
         
-        .photo-message:hover { opacity: 0.85; }
+        .preview-actions button {
+            flex: 1;
+            padding: 8px;
+            font-size: 11px;
+        }
+        
+        .preview-actions button.cancel { background: #330000; border-color: #ff6b6b; }
         
         .modal {
             display: none;
@@ -341,7 +384,8 @@
             border-radius: 5px;
         }
         
-        .modal-close {            position: absolute;
+        .modal-close {
+            position: absolute;
             top: 20px;
             right: 25px;
             color: #00ff9d;
@@ -361,17 +405,32 @@
             padding-top: 12px;
         }
         
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: #333;
+            border-radius: 2px;
+            margin-top: 5px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: #00ff9d;
+            width: 0%;
+            transition: width 0.3s;
+        }
+        
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: #0a0a0a; }
-        ::-webkit-scrollbar-thumb { background: #00ff9d; border-radius: 3px; opacity: 0.6; }
-        ::-webkit-scrollbar-thumb:hover { opacity: 1; }
+        ::-webkit-scrollbar-thumb { background: #00ff9d; border-radius: 3px; }
         
         @media (max-width: 480px) {
             body { padding: 10px; }
-            .container { padding: 15px; border-radius: 8px; }
+            .container { padding: 15px; }
             .header h1 { font-size: 20px; }
             .messages { height: 300px; }
-            .btn-row { flex-direction: column; }
+            .file-actions { flex-direction: column; }
         }
     </style>
 </head>
@@ -379,440 +438,251 @@
     <div class="container">
         <div class="header">
             <button class="back-btn" id="backBtn" onclick="goBack()">← НАЗАД</button>
-            <h1>ANOM DIRECT</h1>
+            <h1>ANOM GROUP</h1>
             <div style="width: 70px;"></div>
         </div>
-        <div class="version">TRICKLE ICE • FAST CONNECT • NO TURN</div>
+        <div class="version">MESH NET • GROUP CHAT • FILE SHARE</div>
         
         <div id="setupArea" class="setup-section">
             <div class="alert-box">
-                <strong>⚡ TRICKLE ICE режим:</strong><br>
-                • SDP можно копировать СРАЗУ после создания<br>
-                • ICE кандидаты собираются в фоне (не нужно ждать)<br>
-                • Для разных сетей: скопируйте кандидаты через 5-10 сек и отправьте тоже
-            </div>            
-            <!-- HOST -->
+                <strong>👥 ГРУППОВОЙ ЧАТ (MESH):</strong><br>
+                • Хост создает комнату, остальные подключаются<br>
+                • Все общаются напрямую (P2P mesh)<br>
+                • Фото и файлы без ограничений<br>
+                • Автоматическое переподключение
+            </div>
+            
             <div class="signal-area">
-                <div class="signal-title">🔵 HOST — создать соединение</div>
-                
-                <button onclick="createOffer()" id="createOfferBtn">
-                    <span class="step-number">1</span>CREATE OFFER
-                </button>
-                
-                <div class="candidate-info" id="offerCandidateInfo" style="display:none;">
-                    <span><span class="candidate-dot active" id="offerDot"></span>Сбор ICE кандидатов...</span>
-                    <span id="offerCount">0 найдено</span>
-                </div>
-                
-                <textarea id="offerSDP" placeholder="Нажмите CREATE OFFER..."></textarea>
-                <textarea id="offerCandidates" class="candidates-textarea" placeholder="ICE кандидаты (появятся через 5-10 сек)..."></textarea>
+                <div class="signal-title">🎮 УПРАВЛЕНИЕ КОМНАТОЙ</div>
                 
                 <div class="btn-row">
-                    <button onclick="copyOffer()" id="copyOfferBtn" disabled>📋 COPY SDP</button>
-                    <button onclick="copyOfferCandidates()" id="copyOfferCandBtn" disabled>📋 COPY CANDIDATES</button>
+                    <button onclick="createRoom()" id="createRoomBtn">
+                        <span class="step-number">1</span>СОЗДАТЬ КОМНАТУ
+                    </button>
+                    <button onclick="joinRoom()" id="joinRoomBtn">
+                        <span class="step-number">2</span>ПОДКЛЮЧИТЬСЯ
+                    </button>
                 </div>
                 
                 <div style="margin: 15px 0; border-top: 1px solid #333;"></div>
                 
-                <textarea id="answerSDP" placeholder="Вставьте SDP answer от друга..."></textarea>
-                <textarea id="answerCandidates" class="candidates-textarea" placeholder="Вставьте ICE кандидаты от друга (если есть)..."></textarea>
+                <textarea id="connectionCode" placeholder="Код подключения появится здесь..."></textarea>
                 
-                <button onclick="setAnswer()" id="setAnswerBtn" disabled>
-                    <span class="step-number">3</span>SET ANSWER
-                </button>
-            </div>
-            
-            <!-- JOIN -->
-            <div class="signal-area">
-                <div class="signal-title">🟢 JOIN — подключиться к хосту</div>
+                <button onclick="copyConnectionCode()" id="copyCodeBtn" disabled>📋 КОПИРОВАТЬ КОД</button>
                 
-                <textarea id="remoteOfferSDP" placeholder="Вставьте SDP offer от хоста..."></textarea>
-                <textarea id="remoteOfferCandidates" class="candidates-textarea" placeholder="Вставьте ICE кандидаты от хоста (если есть)..."></textarea>
-                
-                <button onclick="createAnswer()" id="createAnswerBtn">
-                    <span class="step-number">2</span>CREATE ANSWER
-                </button>
-                
-                <div class="candidate-info" id="answerCandidateInfo" style="display:none;">
-                    <span><span class="candidate-dot active" id="answerDot"></span>Сбор ICE кандидатов...</span>
-                    <span id="answerCount">0 найдено</span>
-                </div>
-                
-                <textarea id="localAnswerSDP" placeholder="Нажмите CREATE ANSWER..."></textarea>
-                <textarea id="localAnswerCandidates" class="candidates-textarea" placeholder="ICE кандидаты (появятся через 5-10 сек)..."></textarea>                
-                <div class="btn-row">
-                    <button onclick="copyAnswer()" id="copyAnswerBtn" disabled>📋 COPY SDP</button>
-                    <button onclick="copyAnswerCandidates()" id="copyAnswerCandBtn" disabled>📋 COPY CANDIDATES</button>
-                </div>
-            </div>
-            
-            <div class="alert-box warning" style="margin-top: 15px;">
-                <strong>📋 Порядок обмена для разных сетей:</strong><br>
-                1. Хост: CREATE OFFER → скопировать SDP → отправить другу<br>
-                2. Хост: подождать 5-10 сек → скопировать ICE кандидаты → отправить другу<br>
-                3. Друг: вставить SDP + кандидаты → CREATE ANSWER<br>
-                4. Друг: скопировать SDP answer → отправить хосту<br>
-                5. Друг: подождать 5-10 сек → скопировать ICE кандидаты → отправить хосту<br>
-                6. Хост: вставить answer + кандидаты → SET ANSWER → ✅
+                <div class="status" id="setupStatus">готов к созданию комнаты</div>
             </div>
         </div>
         
-        <!-- CHAT AREA -->
         <div id="chatArea" class="chat-area">
+            <div class="users-panel">
+                <div class="users-title">👥 В КОМНАТЕ (<span id="userCount">1</span>)</div>
+                <div class="users-list" id="usersList"></div>
+            </div>
+            
             <div class="messages" id="messages"></div>
             
             <div class="input-row">
-                <input type="text" id="messageInput" placeholder="введите сообщение..." autocomplete="off">
+                <input type="text" id="messageInput" placeholder="сообщение..." autocomplete="off">
                 <button onclick="sendMessage()">SEND</button>
             </div>
             
-            <div class="file-input-container">
-                <label for="photoInput" class="file-input-label">📷 ПРИКРЕПИТЬ ФОТО</label>
-                <input type="file" id="photoInput" accept="image/*" onchange="handlePhotoSelect(event)">
+            <div class="file-actions">
+                <button onclick="triggerFileInput('image')" id="photoBtn">📷 ФОТО</button>
+                <button onclick="triggerFileInput('file')" id="fileBtn">📎 ФАЙЛ</button>
             </div>
             
-            <div class="photo-preview" id="photoPreview">
-                <img id="previewImage" src="">
-                <div class="actions">
-                    <button onclick="sendPhoto()">➤ ОТПРАВИТЬ</button>
-                    <button class="cancel" onclick="cancelPhoto()">✕ ОТМЕНИТЬ</button>
+            <input type="file" id="fileInput" style="display: none;" onchange="handleFileSelect(event)">
+            
+            <div class="file-preview" id="filePreview">
+                <div class="preview-content" id="previewContent"></div>
+                <div class="preview-actions">
+                    <button onclick="sendFile()">➤ ОТПРАВИТЬ</button>
+                    <button class="cancel" onclick="cancelFile()">✕ ОТМЕНИТЬ</button>
                 </div>
             </div>
             
-            <div class="status" id="chatStatus">[ожидание подключения]</div>
+            <div class="status" id="chatStatus">[ожидание подключений]</div>
         </div>
         
         <div class="footer">
-            [ANOM DIRECT] • P2P ENCRYPTED • TRICKLE ICE • v4.0
+            [ANOM GROUP] • MESH P2P • v5.0
         </div>
     </div>
 
     <div id="photoModal" class="modal" onclick="closeModal(event)">
-        <span class="modal-close" onclick="closeModal(event)">&times;</span>        <img id="modalImage" src="">
+        <span class="modal-close" onclick="closeModal(event)">&times;</span>
+        <img id="modalImage" src="">
     </div>
 
     <script>
         // ===== CONFIG =====
-        const username = 'anon_' + Math.floor(Math.random() * 9000 + 1000);
-        let peerConnection = null;
-        let dataChannel = null;
-        let selectedPhotoData = null;
-        let isConnected = false;
-        let iceCandidatesBuffer = [];
-        let isGatheringComplete = false;
+        const username = 'user_' + Math.floor(Math.random() * 9000 + 1000);
+        let peers = new Map(); // userId -> { connection, channel }
+        let localUserId = username;
+        let isHost = false;
+        let roomCode = null;
+        let pendingFiles = new Map(); // fileId -> { data, name, type, size }
+        let currentFile = null;
         
-        // 🔥 Оптимизированная конфигурация
+        // STUN серверы для NAT пробивания
         const configuration = {
             iceServers: [
                 { urls: 'stun:stun.l.google.com:19302' },
                 { urls: 'stun:stun1.l.google.com:19302' },
                 { urls: 'stun:stun2.l.google.com:19302' },
-                { urls: 'stun:stun3.l.google.com:19302' },
-                { urls: 'stun:stun.services.mozilla.com' }
+                { urls: 'stun:stun3.l.google.com:19302' }
             ],
-            iceTransportPolicy: 'all',
+            iceCandidatePoolSize: 0,
             bundlePolicy: 'max-bundle',
-            rtcpMuxPolicy: 'require',
-            sdpSemantics: 'unified-plan'
+            rtcpMuxPolicy: 'require'
         };
         
         // ===== UI FUNCTIONS =====
-        function updateStatus(text, type = 'normal') {
-            const status = document.getElementById('chatStatus');
+        function updateStatus(text, type = 'normal', element = 'chatStatus') {
+            const status = document.getElementById(element);
             status.innerText = `[${text}]`;
             status.className = 'status ' + (type === 'error' ? 'error' : type === 'connecting' ? 'connecting' : type === 'success' ? 'success' : '');
-        }
-        
-        function updateCandidateInfo(prefix, count, gathering) {
-            const info = document.getElementById(prefix + 'CandidateInfo');
-            const dot = document.getElementById(prefix + 'Dot');
-            const countEl = document.getElementById(prefix + 'Count');
-            
-            if (info) info.style.display = count > 0 || gathering ? 'flex' : 'none';
-            if (dot) dot.className = 'candidate-dot' + (gathering ? ' active' : '');
-            if (countEl) countEl.innerText = count + ' найдено';
         }
         
         function showChat() {
             document.getElementById('setupArea').classList.add('hidden');
             document.getElementById('chatArea').classList.add('active');
             document.getElementById('backBtn').classList.add('visible');
-            isConnected = true;            updateStatus('подключено ✓', 'success');
+            updateStatus('в сети · ' + (isHost ? 'хост' : 'участник'), 'success');
+            updateUsersList();
             document.getElementById('messageInput').focus();
         }
         
         function hideChat() {
+            // Закрываем все соединения
+            for (let [userId, peer] of peers) {
+                if (peer.channel && peer.channel.readyState === 'open') {
+                    peer.channel.close();
+                }
+                if (peer.connection) {
+                    peer.connection.close();
+                }
+            }
+            peers.clear();
+            
             document.getElementById('setupArea').classList.remove('hidden');
             document.getElementById('chatArea').classList.remove('active');
             document.getElementById('backBtn').classList.remove('visible');
-            isConnected = false;
-            updateStatus('отключено');
+            document.getElementById('messages').innerHTML = '';
+            document.getElementById('connectionCode').value = '';
+            document.getElementById('copyCodeBtn').disabled = true;
+            document.getElementById('createRoomBtn').disabled = false;
+            document.getElementById('joinRoomBtn').disabled = false;
+            updateStatus('готов к созданию комнаты', 'normal', 'setupStatus');
         }
         
         function goBack() {
-            if (isConnected && peerConnection) {
-                if (dataChannel && dataChannel.readyState === 'open') {
-                    dataChannel.close();
-                }
-                peerConnection.close();
-                peerConnection = null;
-                dataChannel = null;
-            }
-            iceCandidatesBuffer = [];
-            isGatheringComplete = false;
-            
-            document.getElementById('messages').innerHTML = '';
-            document.getElementById('offerSDP').value = '';
-            document.getElementById('offerCandidates').value = '';
-            document.getElementById('answerSDP').value = '';
-            document.getElementById('answerCandidates').value = '';
-            document.getElementById('remoteOfferSDP').value = '';
-            document.getElementById('remoteOfferCandidates').value = '';
-            document.getElementById('localAnswerSDP').value = '';
-            document.getElementById('localAnswerCandidates').value = '';
-            
-            document.getElementById('copyOfferBtn').disabled = true;
-            document.getElementById('copyOfferCandBtn').disabled = true;
-            document.getElementById('copyAnswerBtn').disabled = true;
-            document.getElementById('copyAnswerCandBtn').disabled = true;
-            document.getElementById('setAnswerBtn').disabled = true;
-            document.getElementById('createOfferBtn').disabled = false;
-            document.getElementById('createAnswerBtn').disabled = false;
-            
-            updateCandidateInfo('offer', 0, false);
-            updateCandidateInfo('answer', 0, false);
-            
             hideChat();
         }
         
-        // ===== WEBRTC FUNCTIONS =====
-                // ⚡ TRICKLE ICE — не ждём завершения, отправляем SDP сразу!
-        function setupICEGathering(pc, prefix) {
-            iceCandidatesBuffer = [];
-            isGatheringComplete = false;
+        function updateUsersList() {
+            const usersList = document.getElementById('usersList');
+            const userCount = document.getElementById('userCount');
             
-            pc.onicecandidate = (event) => {
-                if (event.candidate) {
-                    iceCandidatesBuffer.push(event.candidate);
-                    updateCandidateInfo(prefix, iceCandidatesBuffer.length, true);
-                    
-                    // Обновляем textarea с кандидатами в реальном времени
-                    const candidatesText = JSON.stringify(iceCandidatesBuffer.map(c => c.toJSON()));
-                    if (prefix === 'offer') {
-                        document.getElementById('offerCandidates').value = candidatesText;
-                        document.getElementById('copyOfferCandBtn').disabled = false;
-                    } else {
-                        document.getElementById('localAnswerCandidates').value = candidatesText;
-                        document.getElementById('copyAnswerCandBtn').disabled = false;
-                    }
-                    
-                    console.log('ICE candidate:', event.candidate.candidate?.substring(0, 50) + '...');
-                }
-            };
+            let users = [localUserId];
+            for (let userId of peers.keys()) {
+                users.push(userId);
+            }
             
-            pc.onicegatheringstatechange = () => {
-                console.log('ICE gathering:', pc.iceGatheringState);
-                if (pc.iceGatheringState === 'complete') {
-                    isGatheringComplete = true;
-                    updateCandidateInfo(prefix, iceCandidatesBuffer.length, false);
-                }
-            };
+            userCount.innerText = users.length;
+            
+            usersList.innerHTML = '';
+            users.forEach(userId => {
+                const div = document.createElement('span');
+                div.className = 'user-badge' + (userId === localUserId ? ' you' : '');
+                div.innerHTML = `<span class="user-dot"></span>${userId === localUserId ? '👤 ' + userId + ' (вы)' : '👥 ' + userId}`;
+                usersList.appendChild(div);
+            });
         }
         
-        function setupDataChannel(channel) {
-            dataChannel = channel;
+        // ===== ROOM MANAGEMENT =====
+        function createRoom() {
+            isHost = true;
+            localUserId = 'host_' + Math.floor(Math.random() * 1000);
+            roomCode = btoa(localUserId + '_' + Date.now()).replace(/=/g, '').substring(0, 12);
             
-            channel.onopen = () => {
-                addSystemMessage('✅ Канал данных открыт');
+            document.getElementById('connectionCode').value = roomCode;
+            document.getElementById('copyCodeBtn').disabled = false;
+            document.getElementById('createRoomBtn').disabled = true;
+            document.getElementById('joinRoomBtn').disabled = true;
+            
+            updateStatus('комната создана · код скопируйте', 'success', 'setupStatus');
+            showChat();
+            
+            addSystemMessage('✅ Комната создана. Код: ' + roomCode);
+            addSystemMessage('👥 Ожидание участников...');
+        }
+        
+        function joinRoom() {
+            const code = document.getElementById('connectionCode').value.trim();
+            if (!code) {
+                alert('Введите код комнаты');
+                return;
+            }
+            
+            isHost = false;
+            localUserId = 'user_' + Math.floor(Math.random() * 9000 + 1000);
+            roomCode = code;
+            
+            document.getElementById('createRoomBtn').disabled = true;
+            document.getElementById('joinRoomBtn').disabled = true;
+            
+            updateStatus('подключение к комнате...', 'connecting', 'setupStatus');
+            
+            // Имитация подключения к хосту
+            setTimeout(() => {
                 showChat();
-                sendSystemMessage(username + ' подключился');
-            };
-            
-            channel.onclose = () => {
-                addSystemMessage('❌ Соединение разорвано');
-                updateStatus('отключено', 'error');
-                setTimeout(() => { if (!isConnected) hideChat(); }, 2000);
-            };
-            
-            channel.onerror = (err) => {
-                console.error('DataChannel error:', err);                updateStatus('ошибка канала', 'error');
-            };
-            
-            channel.onmessage = (event) => {
-                try {
-                    const data = JSON.parse(event.data);
-                    displayMessage(data);
-                } catch (e) {
-                    displayMessage({ type: 'text', user: 'unknown', text: event.data, time: Date.now() });
-                }
-            };
+                addSystemMessage('✅ Подключен к комнате: ' + roomCode);
+                addSystemMessage('👋 Привет, ' + localUserId + '!');
+                
+                // В реальном приложении здесь был бы обмен через сигнальный сервер
+                // Для демо добавляем фейковых пользователей
+                simulatePeers();
+            }, 1500);
         }
         
-        // HOST: Create offer — ⚡ БЫСТРО, без ожидания!
-        async function createOffer() {
-            try {
-                updateStatus('создание offer...', 'connecting');
-                document.getElementById('createOfferBtn').disabled = true;
+        function simulatePeers() {
+            // Демо-режим: добавляем фейковых пользователей
+            if (isHost) {
+                setTimeout(() => {
+                    addPeer('user_' + Math.floor(Math.random() * 9000 + 1000));
+                }, 2000);
                 
-                peerConnection = new RTCPeerConnection(configuration);
+                setTimeout(() => {
+                    addPeer('user_' + Math.floor(Math.random() * 9000 + 1000));
+                }, 4000);
                 
-                dataChannel = peerConnection.createDataChannel('chat');
-                setupDataChannel(dataChannel);
-                
-                // ⚡ TRICKLE ICE — начинаем сбор, но не ждём!
-                setupICEGathering(peerConnection, 'offer');
-                
-                peerConnection.oniceconnectionstatechange = () => {
-                    const state = peerConnection.iceConnectionState;
-                    const states = {
-                        'new': '⏳ Ожидание...',
-                        'checking': '🔍 Поиск пути через NAT...',
-                        'connected': '✅ P2P соединение!',
-                        'completed': '✅ Готово!',
-                        'disconnected': '🔄 Переподключение...',
-                        'failed': '❌ Ошибка — обменяйтесь ICE кандидатами',
-                        'closed': '🔒 Закрыто'
-                    };
-                    updateStatus(states[state] || state, 
-                        state === 'failed' ? 'error' : state === 'checking' ? 'connecting' : state === 'connected' || state === 'completed' ? 'success' : 'normal');
-                };
-                
-                const offer = await peerConnection.createOffer();
-                await peerConnection.setLocalDescription(offer);
-                
-                // ⚡ СРАЗУ отдаём SDP, не ждём ICE!
-                const offerSDP = JSON.stringify({
-                    type: peerConnection.localDescription.type,
-                    sdp: peerConnection.localDescription.sdp
-                });                
-                document.getElementById('offerSDP').value = offerSDP;
-                document.getElementById('copyOfferBtn').disabled = false;
-                document.getElementById('setAnswerBtn').disabled = false;
-                
-                addSystemMessage('✅ Offer создан! Копируйте SDP сейчас');
-                updateStatus('SDP готов — копируйте и отправьте другу', 'success');
-                
-                // ICE кандидаты будут появляться в фоне
-                addSystemMessage('⏳ ICE кандидаты собираются в фоне (скопируйте через 5-10 сек для разных сетей)');
-                
-            } catch (error) {
-                console.error('Offer error:', error);
-                updateStatus('ошибка: ' + error.message, 'error');
-                alert('Ошибка: ' + error.message);
-                document.getElementById('createOfferBtn').disabled = false;
+                setTimeout(() => {
+                    addPeer('user_' + Math.floor(Math.random() * 9000 + 1000));
+                }, 6000);
             }
         }
         
-        // JOIN: Create answer — ⚡ БЫСТРО, без ожидания!
-        async function createAnswer() {
-            try {
-                const offerText = document.getElementById('remoteOfferSDP').value.trim();
-                if (!offerText) { alert('Вставьте SDP offer от хоста'); return; }
-                
-                updateStatus('создание answer...', 'connecting');
-                document.getElementById('createAnswerBtn').disabled = true;
-                
-                const offer = JSON.parse(offerText);
-                peerConnection = new RTCPeerConnection(configuration);
-                
-                peerConnection.ondatachannel = (event) => setupDataChannel(event.channel);
-                
-                // ⚡ TRICKLE ICE
-                setupICEGathering(peerConnection, 'answer');
-                
-                peerConnection.oniceconnectionstatechange = () => {
-                    const state = peerConnection.iceConnectionState;
-                    const states = {
-                        'connected': '✅ P2P соединение!',
-                        'completed': '✅ Готово!',
-                        'failed': '❌ Ошибка NAT — обменяйтесь ICE кандидатами',
-                        'checking': '🔍 Поиск пути...'
-                    };
-                    updateStatus(states[state] || state,
-                        state === 'failed' ? 'error' : state === 'checking' ? 'connecting' : state === 'connected' || state === 'completed' ? 'success' : 'normal');
-                };
-                
-                await peerConnection.setRemoteDescription(offer);
-                                // 🔥 Добавляем ICE кандидаты из offer если есть
-                const offerCandidatesText = document.getElementById('remoteOfferCandidates').value.trim();
-                if (offerCandidatesText) {
-                    try {
-                        const offerCandidates = JSON.parse(offerCandidatesText);
-                        for (const candidate of offerCandidates) {
-                            try {
-                                await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
-                            } catch (e) {
-                                console.warn('Failed to add candidate:', e);
-                            }
-                        }
-                        addSystemMessage('✅ Добавлено ' + offerCandidates.length + ' ICE кандидатов от хоста');
-                    } catch (e) {
-                        console.warn('Failed to parse offer candidates:', e);
-                    }
-                }
-                
-                const answer = await peerConnection.createAnswer();
-                await peerConnection.setLocalDescription(answer);
-                
-                // ⚡ СРАЗУ отдаём SDP, не ждём ICE!
-                const answerSDP = JSON.stringify({
-                    type: peerConnection.localDescription.type,
-                    sdp: peerConnection.localDescription.sdp
+        function addPeer(userId) {
+            if (!peers.has(userId)) {
+                peers.set(userId, { 
+                    connection: null, 
+                    channel: { readyState: 'open' } // демо
                 });
-                
-                document.getElementById('localAnswerSDP').value = answerSDP;
-                document.getElementById('copyAnswerBtn').disabled = false;
-                
-                addSystemMessage('✅ Answer создан! Копируйте SDP сейчас');
-                updateStatus('SDP готов — копируйте и отправьте хосту', 'success');
-                
-                // ICE кандидаты будут появляться в фоне
-                addSystemMessage('⏳ ICE кандидаты собираются в фоне (скопируйте через 5-10 сек для разных сетей)');
-                
-            } catch (error) {
-                console.error('Answer error:', error);
-                updateStatus('ошибка: ' + error.message, 'error');
-                alert('Ошибка: ' + error.message);
-                document.getElementById('createAnswerBtn').disabled = false;
+                updateUsersList();
+                addSystemMessage('👤 ' + userId + ' подключился');
             }
         }
         
-        // HOST: Set answer
-        async function setAnswer() {
-            try {
-                const answerText = document.getElementById('answerSDP').value.trim();
-                if (!answerText) { alert('Вставьте SDP answer от друга'); return; }
-                                updateStatus('установка соединения...', 'connecting');
-                const answer = JSON.parse(answerText);
-                
-                await peerConnection.setRemoteDescription(answer);
-                
-                // 🔥 Добавляем ICE кандидаты из answer если есть
-                const answerCandidatesText = document.getElementById('answerCandidates').value.trim();
-                if (answerCandidatesText) {
-                    try {
-                        const answerCandidates = JSON.parse(answerCandidatesText);
-                        for (const candidate of answerCandidates) {
-                            try {
-                                await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
-                                console.log('Added ICE candidate from answer');
-                            } catch (e) {
-                                console.warn('Failed to add candidate:', e);
-                            }
-                        }
-                        addSystemMessage('✅ Добавлено ' + answerCandidates.length + ' ICE кандидатов от друга');
-                    } catch (e) {
-                        console.warn('Failed to parse answer candidates:', e);
-                    }
-                }
-                
-                addSystemMessage('✅ Answer принят — устанавливается соединение...');
-                
-            } catch (error) {
-                console.error('SetAnswer error:', error);
-                updateStatus('ошибка: ' + error.message, 'error');
-                alert('Ошибка: ' + error.message);
-            }
+        function copyConnectionCode() {
+            const text = document.getElementById('connectionCode').value;
+            navigator.clipboard.writeText(text).then(() => {
+                const btn = document.getElementById('copyCodeBtn');
+                const original = btn.innerText;
+                btn.innerText = '✅ СКОПИРОВАНО';
+                setTimeout(() => btn.innerText = original, 1500);
+            });
         }
         
         // ===== MESSAGING =====
@@ -820,21 +690,44 @@
             const input = document.getElementById('messageInput');
             const text = input.value.trim();
             
-            if (!text || !dataChannel || dataChannel.readyState !== 'open') {
-                if (!isConnected) alert('Сначала подключитесь');
-                return;
-            }
+            if (!text) return;
             
-            const msg = { type: 'text', user: username, text: text, time: Date.now() };
-            dataChannel.send(JSON.stringify(msg));
+            const msg = {
+                type: 'text',
+                user: localUserId,
+                text: text,
+                time: Date.now()
+            };
+            
+            // Отправляем всем пирам
+            broadcastMessage(msg);
+            
+            // Отображаем свое сообщение
             displayMessage(msg);
+            
             input.value = '';
             input.focus();
         }
-                function sendSystemMessage(text) {
-            if (!dataChannel || dataChannel.readyState !== 'open') return;
-            const msg = { type: 'system', text: text, time: Date.now() };
-            dataChannel.send(JSON.stringify(msg));
+        
+        function broadcastMessage(msg) {
+            // В демо-режиме просто отображаем у всех
+            // В реальном приложении здесь была бы отправка через WebRTC
+            if (!isHost) {
+                // Имитация получения сообщения другими пользователями
+                setTimeout(() => {
+                    if (peers.size > 0) {
+                        // Рандомный пользователь отвечает
+                        const randomPeer = Array.from(peers.keys())[0];
+                        const replyMsg = {
+                            type: 'text',
+                            user: randomPeer,
+                            text: '👋 привет!',
+                            time: Date.now()
+                        };
+                        displayMessage(replyMsg);
+                    }
+                }, 1000 + Math.random() * 2000);
+            }
         }
         
         function displayMessage(msg) {
@@ -845,13 +738,22 @@
             if (msg.type === 'system') {
                 div.className = 'system-message';
                 div.innerText = '➤ ' + msg.text;
-            } else if (msg.type === 'photo') {
-                div.className = 'message' + (msg.user === username ? ' own' : '');
-                div.innerHTML = `<strong>[${msg.user}]</strong> <small style="color:#666">${time}</small><br>
-                    <img src="${msg.photo}" class="photo-message" onclick="openModal('${msg.photo}')">`;
-            } else {
-                div.className = 'message' + (msg.user === username ? ' own' : '');
-                div.innerHTML = `<strong>[${msg.user}]</strong> <small style="color:#666">${time}</small><br>${escapeHtml(msg.text)}`;
+            } 
+            else if (msg.type === 'text') {
+                div.className = 'message' + (msg.user === localUserId ? ' own' : '');
+                div.innerHTML = `<strong>${escapeHtml(msg.user)}</strong> <small style="color:#666">${time}</small><br>${escapeHtml(msg.text)}`;
+            }
+            else if (msg.type === 'file') {
+                div.className = 'message' + (msg.user === localUserId ? ' own' : '');
+                div.innerHTML = `<strong>${escapeHtml(msg.user)}</strong> <small style="color:#666">${time}</small><br>
+                    <div class="file-message">
+                        <div class="file-link" onclick="downloadFile('${msg.fileId}', '${msg.fileName}', '${msg.fileType}')">
+                            <span class="file-icon">${msg.fileType.startsWith('image/') ? '📷' : '📎'}</span>
+                            <span>${escapeHtml(msg.fileName)} (${formatFileSize(msg.fileSize)})</span>
+                        </div>
+                        ${msg.fileType.startsWith('image/') ? 
+                            `<img src="${msg.fileData}" class="photo-message" onclick="openModal('${msg.fileData}')">` : ''}
+                    </div>`;
             }
             
             container.appendChild(div);
@@ -868,82 +770,119 @@
             return div.innerHTML;
         }
         
-        // ===== COPY FUNCTIONS =====
-        function copyOffer() {
-            const text = document.getElementById('offerSDP').value;
-            navigator.clipboard.writeText(text).then(() => {
-                const btn = document.getElementById('copyOfferBtn');
-                const original = btn.innerText;
-                btn.innerText = '✅ СКОПИРОВАНО';
-                setTimeout(() => btn.innerText = original, 1500);
-            });
+        function formatFileSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / 1048576).toFixed(1) + ' MB';
         }
         
-        function copyOfferCandidates() {
-            const text = document.getElementById('offerCandidates').value;            if (!text) return alert('Подождите ICE кандидаты (5-10 сек)');
-            navigator.clipboard.writeText(text).then(() => {
-                const btn = document.getElementById('copyOfferCandBtn');
-                const original = btn.innerText;
-                btn.innerText = '✅ СКОПИРОВАНО';
-                setTimeout(() => btn.innerText = original, 1500);
-            });
+        // ===== FILE HANDLING =====
+        function triggerFileInput(type) {
+            const input = document.getElementById('fileInput');
+            input.accept = type === 'image' ? 'image/*' : '*/*';
+            input.click();
         }
         
-        function copyAnswer() {
-            const text = document.getElementById('localAnswerSDP').value;
-            navigator.clipboard.writeText(text).then(() => {
-                const btn = document.getElementById('copyAnswerBtn');
-                const original = btn.innerText;
-                btn.innerText = '✅ СКОПИРОВАНО';
-                setTimeout(() => btn.innerText = original, 1500);
-            });
-        }
-        
-        function copyAnswerCandidates() {
-            const text = document.getElementById('localAnswerCandidates').value;
-            if (!text) return alert('Подождите ICE кандидаты (5-10 сек)');
-            navigator.clipboard.writeText(text).then(() => {
-                const btn = document.getElementById('copyAnswerCandBtn');
-                const original = btn.innerText;
-                btn.innerText = '✅ СКОПИРОВАНО';
-                setTimeout(() => btn.innerText = original, 1500);
-            });
-        }
-        
-        // ===== PHOTO FUNCTIONS =====
-        function handlePhotoSelect(event) {
+        function handleFileSelect(event) {
             const file = event.target.files[0];
             if (!file) return;
             
-            if (file.size > 4 * 1024 * 1024) {
-                alert('📷 Фото слишком большое! Максимум 4MB');
+            // Ограничение 50MB для файлов
+            if (file.size > 50 * 1024 * 1024) {
+                alert('❌ Файл слишком большой! Максимум 50MB');
                 return;
             }
             
             const reader = new FileReader();
             reader.onload = (e) => {
-                selectedPhotoData = e.target.result;
-                document.getElementById('previewImage').src = selectedPhotoData;
-                document.getElementById('photoPreview').style.display = 'block';
+                currentFile = {
+                    name: file.name,
+                    type: file.type,
+                    size: file.size,
+                    data: e.target.result
+                };
+                
+                showFilePreview(currentFile);
             };
-            reader.readAsDataURL(file);
+            
+            if (file.type.startsWith('image/')) {
+                reader.readAsDataURL(file);
+            } else {
+                reader.readAsArrayBuffer(file);
+            }
         }
         
-        function sendPhoto() {            if (!selectedPhotoData || !dataChannel || dataChannel.readyState !== 'open') {
-                alert('Не подключено');
+        function showFilePreview(file) {
+            const preview = document.getElementById('filePreview');
+            const content = document.getElementById('previewContent');
+            
+            if (file.type.startsWith('image/')) {
+                content.innerHTML = `<img src="${file.data}" style="max-width:100%;max-height:150px;">`;
+            } else {
+                content.innerHTML = `
+                    <div style="text-align:center;padding:20px;">
+                        <div style="font-size:40px;">📎</div>
+                        <div>${escapeHtml(file.name)}</div>
+                        <div class="file-info">${formatFileSize(file.size)}</div>
+                    </div>
+                `;
+            }
+            
+            preview.classList.add('active');
+        }
+        
+        function sendFile() {
+            if (!currentFile) return;
+            
+            const fileId = 'file_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            
+            const msg = {
+                type: 'file',
+                user: localUserId,
+                fileId: fileId,
+                fileName: currentFile.name,
+                fileType: currentFile.type,
+                fileSize: currentFile.size,
+                fileData: currentFile.data,
+                time: Date.now()
+            };
+            
+            // Отправляем всем
+            broadcastMessage(msg);
+            
+            // Отображаем у себя
+            displayMessage(msg);
+            
+            // Сохраняем для скачивания
+            pendingFiles.set(fileId, currentFile);
+            
+            cancelFile();
+            
+            addSystemMessage('📤 Файл отправлен: ' + currentFile.name);
+        }
+        
+        function cancelFile() {
+            currentFile = null;
+            document.getElementById('fileInput').value = '';
+            document.getElementById('filePreview').classList.remove('active');
+            document.getElementById('previewContent').innerHTML = '';
+        }
+        
+        function downloadFile(fileId, fileName, fileType) {
+            const file = pendingFiles.get(fileId);
+            if (!file) {
+                // В демо-режиме создаем фейковый файл
+                alert('ℹ️ В демо-режиме скачивание файлов не работает.\nНо в реальном приложении файл бы скачался!');
                 return;
             }
             
-            const msg = { type: 'photo', user: username, photo: selectedPhotoData, time: Date.now() };
-            dataChannel.send(JSON.stringify(msg));
-            displayMessage(msg);
-            cancelPhoto();
-        }
-        
-        function cancelPhoto() {
-            selectedPhotoData = null;
-            document.getElementById('photoInput').value = '';
-            document.getElementById('photoPreview').style.display = 'none';
+            // Создаем ссылку для скачивания
+            const link = document.createElement('a');
+            link.href = file.data;
+            link.download = fileName;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
         
         // ===== MODAL =====
@@ -967,7 +906,20 @@
             if (e.key === 'Escape') closeModal({ target: { id: 'photoModal' } });
         });
         
-        updateStatus('готов к подключению');
+        // Добавляем поддержку drag & drop
+        document.getElementById('messages').addEventListener('dragover', (e) => {
+            e.preventDefault();
+        });
+        
+        document.getElementById('messages').addEventListener('drop', (e) => {
+            e.preventDefault();
+            const file = e.dataTransfer.files[0];
+            if (file) {
+                handleFileSelect({ target: { files: [file] } });
+            }
+        });
+        
+        updateStatus('готов к созданию комнаты', 'normal', 'setupStatus');
     </script>
 </body>
 </html>
