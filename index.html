@@ -16,16 +16,14 @@
         }
         
         .container {
-            max-width: 600px;
+            max-width: 650px;
             margin: 0 auto;
             background: #111;
             border: 2px solid #00ff9d;
             border-radius: 10px;
             padding: 20px;
-            transition: all 0.3s ease;
         }
         
-        /* HEADER */
         .header {
             display: flex;
             align-items: center;
@@ -47,22 +45,16 @@
             background: transparent;
             border: 1px solid #00ff9d;
             color: #00ff9d;
-            padding: 8px 15px;            border-radius: 5px;
-            cursor: pointer;
-            font-family: inherit;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;            font-family: inherit;
             font-size: 14px;
-            display: none; /* Скрыта по умолчанию */
+            display: none;
             transition: all 0.2s;
         }
         
-        .back-btn:hover {
-            background: #00ff9d;
-            color: #0a0a0a;
-        }
-        
-        .back-btn.visible {
-            display: block;
-        }
+        .back-btn:hover { background: #00ff9d; color: #0a0a0a; }
+        .back-btn.visible { display: block; }
         
         .version {
             font-size: 10px;
@@ -72,22 +64,21 @@
             margin-top: 5px;
         }
         
-        /* SETUP SECTIONS */
-        .setup-section {
-            transition: opacity 0.3s ease, max-height 0.3s ease;
-        }
+        .setup-section { transition: opacity 0.3s ease; }
+        .setup-section.hidden { display: none; }
         
-        .setup-section.hidden {
-            display: none;
-        }
-        
-        .small-note {
-            font-size: 11px;
-            color: #666;
-            text-align: center;
+        .alert-box {
+            background: #1a0d0d;
+            border: 1px solid #ff6b6b;
+            color: #ffaa00;
+            padding: 12px;
             margin: 10px 0 20px;
-            line-height: 1.4;
+            border-radius: 5px;
+            font-size: 11px;
+            line-height: 1.5;
         }
+        
+        .alert-box strong { color: #ff6b6b; }
         
         .signal-area {
             background: #1a1a1a;
@@ -96,7 +87,8 @@
             margin: 15px 0;
             border-radius: 5px;
         }
-                .signal-title {
+        
+        .signal-title {
             color: #00ff9d;
             font-size: 14px;
             margin-bottom: 10px;
@@ -104,7 +96,19 @@
             font-weight: bold;
         }
         
-        /* INPUTS & BUTTONS */
+        .step-number {            display: inline-block;
+            background: #00ff9d;
+            color: #0a0a0a;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+        
         input, button, textarea {
             width: 100%;
             padding: 12px;
@@ -113,16 +117,22 @@
             border: 1px solid #00ff9d;
             color: #00ff9d;
             font-family: 'Courier New', monospace;
-            font-size: 14px;
+            font-size: 13px;
             border-radius: 5px;
             transition: all 0.2s;
         }
         
         textarea {
             resize: vertical;
-            min-height: 80px;
-            font-size: 11px;
+            min-height: 100px;
+            font-size: 10px;
             word-break: break-all;
+        }
+        
+        .candidates-textarea {
+            min-height: 60px;
+            font-size: 9px;
+            color: #666;
         }
         
         button {
@@ -135,22 +145,20 @@
         
         button:hover:not(:disabled) {
             background: #00ff9d;
-            color: #0a0a0a;
+            color: #0a0a0a;        }
+        
+        button:disabled { opacity: 0.4; cursor: not-allowed; }
+        
+        .btn-row {
+            display: flex;
+            gap: 8px;
+            margin: 5px 0;
         }
         
-        button:disabled {
-            opacity: 0.4;
-            cursor: not-allowed;
-        }
+        .btn-row button { flex: 1; }
         
-        /* CHAT AREA */
-        .chat-area {
-            display: none;            animation: fadeIn 0.3s ease;
-        }
-        
-        .chat-area.active {
-            display: block;
-        }
+        .chat-area { display: none; animation: fadeIn 0.3s ease; }
+        .chat-area.active { display: block; }
         
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
@@ -177,10 +185,6 @@
             word-wrap: break-word;
         }
         
-        .message strong {
-            color: #00cc7a;
-        }
-        
         .message.own {
             border-left-color: #ff6b6b;
             background: #1a0d0d;
@@ -190,11 +194,11 @@
             text-align: right;
         }
         
-        .system-message {
-            color: #ffaa00;
+        .system-message {            color: #ffaa00;
             text-align: center;
             font-style: italic;
-            margin: 8px 0;            font-size: 11px;
+            margin: 8px 0;
+            font-size: 11px;
             padding: 5px;
             border-top: 1px dashed #333;
             border-bottom: 1px dashed #333;
@@ -205,54 +209,51 @@
             font-size: 11px;
             text-align: center;
             margin: 10px 0;
-            padding: 5px;
+            padding: 8px;
             background: #0d0d0d;
             border-radius: 3px;
+            border: 1px solid #333;
         }
         
-        .status.error { color: #ff6b6b; }
-        .status.connecting { color: #ffaa00; }
+        .status.error { color: #ff6b6b; border-color: #ff6b6b; }
+        .status.connecting { color: #ffaa00; border-color: #ffaa00; }
+        .status.success { color: #00ff9d; border-color: #00ff9d; }
         
-        /* MESSAGE INPUT */
-        .input-row {
-            display: flex;
-            gap: 8px;
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: #333;
+            border-radius: 2px;
             margin: 10px 0;
+            overflow: hidden;
         }
         
-        .input-row input {
-            flex: 1;
-            margin: 0;
+        .progress-fill {
+            height: 100%;
+            background: #00ff9d;
+            width: 0%;
+            transition: width 0.3s ease;
         }
         
-        .input-row button {
-            flex: 0 0 80px;
-            margin: 0;
-            padding: 12px 8px;
-        }
+        .input-row { display: flex; gap: 8px; margin: 10px 0; }
+        .input-row input { flex: 1; margin: 0; }
+        .input-row button { flex: 0 0 80px; margin: 0; padding: 12px 8px; }
         
-        /* FILE UPLOAD */
-        .file-input-container {
-            margin: 8px 0;
-            position: relative;
-        }
+        .file-input-container { margin: 8px 0; position: relative; }
         
         .file-input-label {
             display: block;
-            padding: 10px;
-            background: #1a1a1a;
+            padding: 10px;            background: #1a1a1a;
             border: 1px dashed #00ff9d;
             color: #00ff9d;
-            text-align: center;            cursor: pointer;
+            text-align: center;
+            cursor: pointer;
             border-radius: 5px;
             font-size: 12px;
             transition: all 0.2s;
         }
         
-        .file-input-label:hover {
-            background: #003322;
-            border-style: solid;
-        }
+        .file-input-label:hover { background: #003322; border-style: solid; }
         
         input[type="file"] {
             position: absolute;
@@ -261,7 +262,6 @@
             height: 0.1px;
         }
         
-        /* PHOTO PREVIEW */
         .photo-preview {
             display: none;
             margin: 10px 0;
@@ -279,23 +279,10 @@
             margin-bottom: 8px;
         }
         
-        .photo-preview .actions {
-            display: flex;
-            gap: 8px;
-        }
+        .photo-preview .actions { display: flex; gap: 8px; }
+        .photo-preview button { flex: 1; margin: 0; padding: 8px; font-size: 11px; }
+        .photo-preview button.cancel { background: #330000; border-color: #ff6b6b; }
         
-        .photo-preview button {
-            flex: 1;
-            margin: 0;
-            padding: 8px;
-            font-size: 11px;
-        }
-        
-        .photo-preview button.cancel {
-            background: #330000;            border-color: #ff6b6b;
-        }
-        
-        /* PHOTO IN CHAT */
         .photo-message {
             max-width: 180px;
             max-height: 180px;
@@ -305,10 +292,8 @@
             cursor: pointer;
             transition: opacity 0.2s;
         }
+                .photo-message:hover { opacity: 0.85; }
         
-        .photo-message:hover { opacity: 0.85; }
-        
-        /* MODAL */
         .modal {
             display: none;
             position: fixed;
@@ -341,87 +326,133 @@
         }
         
         .modal-close:hover { color: #fff; }
-                .modal-caption {
+        
+        .info-box {
+            background: #0d1a1a;
+            border: 1px solid #00ff9d;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-size: 10px;
             color: #666;
-            font-size: 11px;
-            margin-top: 15px;
-            text-align: center;
         }
         
-        /* FOOTER */
+        .info-box strong { color: #00ff9d; }
+        
         .footer {
             margin-top: 25px;
-            text-align: center;
-            font-size: 9px;
+            text-align: center;            font-size: 9px;
             color: #333;
             border-top: 1px solid #1a1a1a;
             padding-top: 12px;
         }
         
-        /* SCROLLBAR */
+        .candidate-count {
+            font-size: 10px;
+            color: #666;
+            text-align: right;
+            margin-top: 5px;
+        }
+        
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: #0a0a0a; }
-        ::-webkit-scrollbar-thumb { 
-            background: #00ff9d; 
-            border-radius: 3px;
-            opacity: 0.6;
-        }
+        ::-webkit-scrollbar-thumb { background: #00ff9d; border-radius: 3px; opacity: 0.6; }
         ::-webkit-scrollbar-thumb:hover { opacity: 1; }
         
-        /* MOBILE OPTIMIZATION */
         @media (max-width: 480px) {
             body { padding: 10px; }
             .container { padding: 15px; border-radius: 8px; }
             .header h1 { font-size: 20px; }
             .messages { height: 300px; }
-            input, textarea, button { font-size: 13px; padding: 10px; }
+            .btn-row { flex-direction: column; }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- HEADER -->
         <div class="header">
             <button class="back-btn" id="backBtn" onclick="goBack()">← НАЗАД</button>
             <h1>ANOM DIRECT</h1>
-            <div style="width: 70px;"></div> <!-- Spacer for centering -->
+            <div style="width: 70px;"></div>
         </div>
-        <div class="version">copy/paste signaling • no server</div>
+        <div class="version">P2P • CROSS-NETWORK • NO THIRD-PARTY</div>
         
-        <!-- SETUP AREA (скрывается после подключения) -->
         <div id="setupArea" class="setup-section">
-            <div class="small-note">                ⚡ <strong>HOST:</strong> создать offer → отправить другу → вставить answer<br>
-                ⚡ <strong>JOIN:</strong> вставить offer → создать answer → отправить хосту
+            <div class="alert-box">
+                <strong>⚠️ ВАЖНО для разных сетей:</strong><br>
+                1. После создания offer/answer подождите <strong>15-30 секунд</strong><br>
+                2. Скопируйте ВСЁ (SDP + ICE кандидаты)<br>
+                3. Если не подключается — попробуйте обменяться ICE кандидатами отдельно
             </div>
             
             <!-- HOST -->
             <div class="signal-area">
                 <div class="signal-title">🔵 HOST — создать соединение</div>
-                <button onclick="createOffer()" id="createOfferBtn">① CREATE OFFER</button>
-                <textarea id="offerSDP" placeholder="Offer появится здесь... скопируйте и отправьте"></textarea>
-                <button onclick="copyOffer()" id="copyOfferBtn" disabled>📋 COPY OFFER</button>
+                
+                <button onclick="createOffer()" id="createOfferBtn">
+                    <span class="step-number">1</span>CREATE OFFER                </button>
+                
+                <div class="progress-bar" id="offerProgress" style="display:none;">
+                    <div class="progress-fill" id="offerProgressFill"></div>
+                </div>
+                <div class="candidate-count" id="offerCandidateCount">ICE кандидаты: 0</div>
+                
+                <textarea id="offerSDP" placeholder="SDP offer (скопируйте это)..."></textarea>
+                <textarea id="offerCandidates" class="candidates-textarea" placeholder="ICE кандидаты (скопируйте это тоже, если есть)..."></textarea>
+                
+                <div class="btn-row">
+                    <button onclick="copyOffer()" id="copyOfferBtn" disabled>📋 COPY SDP</button>
+                    <button onclick="copyOfferCandidates()" id="copyOfferCandBtn" disabled>📋 COPY CANDIDATES</button>
+                </div>
                 
                 <div style="margin: 15px 0; border-top: 1px solid #333;"></div>
                 
-                <textarea id="answerSDP" placeholder="Вставьте answer от друга..."></textarea>
-                <button onclick="setAnswer()" id="setAnswerBtn" disabled>③ SET ANSWER</button>
+                <textarea id="answerSDP" placeholder="Вставьте SDP answer от друга..."></textarea>
+                <textarea id="answerCandidates" class="candidates-textarea" placeholder="Вставьте ICE кандидаты от друга (если есть)..."></textarea>
+                
+                <button onclick="setAnswer()" id="setAnswerBtn" disabled>
+                    <span class="step-number">3</span>SET ANSWER
+                </button>
             </div>
             
             <!-- JOIN -->
             <div class="signal-area">
                 <div class="signal-title">🟢 JOIN — подключиться к хосту</div>
-                <textarea id="remoteOfferSDP" placeholder="Вставьте offer от хоста..."></textarea>
-                <button onclick="createAnswer()" id="createAnswerBtn">② CREATE ANSWER</button>
-                <textarea id="localAnswerSDP" placeholder="Answer появится здесь... скопируйте и отправьте"></textarea>
-                <button onclick="copyAnswer()" id="copyAnswerBtn" disabled>📋 COPY ANSWER</button>
+                
+                <textarea id="remoteOfferSDP" placeholder="Вставьте SDP offer от хоста..."></textarea>
+                <textarea id="remoteOfferCandidates" class="candidates-textarea" placeholder="Вставьте ICE кандидаты от хоста (если есть)..."></textarea>
+                
+                <button onclick="createAnswer()" id="createAnswerBtn">
+                    <span class="step-number">2</span>CREATE ANSWER
+                </button>
+                
+                <div class="progress-bar" id="answerProgress" style="display:none;">
+                    <div class="progress-fill" id="answerProgressFill"></div>
+                </div>
+                <div class="candidate-count" id="answerCandidateCount">ICE кандидаты: 0</div>
+                
+                <textarea id="localAnswerSDP" placeholder="SDP answer (скопируйте это)..."></textarea>
+                <textarea id="localAnswerCandidates" class="candidates-textarea" placeholder="ICE кандидаты (скопируйте это тоже, если есть)..."></textarea>
+                
+                <div class="btn-row">
+                    <button onclick="copyAnswer()" id="copyAnswerBtn" disabled>📋 COPY SDP</button>
+                    <button onclick="copyAnswerCandidates()" id="copyAnswerCandBtn" disabled>📋 COPY CANDIDATES</button>
+                </div>
+            </div>
+                        <div class="info-box">
+                <strong>💡 Почему два поля?</strong><br>
+                • SDP — основная информация о соединении<br>
+                • ICE кандидаты — сетевые адреса для обхода NAT<br>
+                • В разных сетях кандидаты КРИТИЧНО важны!
             </div>
             
-            <div class="small-note" style="margin-top: 15px; color: #444;">
-                💡 Совет: используйте TURN серверы для работы за строгими NAT
+            <div class="alert-box" style="margin-top: 15px; background: #0d1a0d; border-color: #00ff9d;">
+                <strong>✅ Если оба устройства в одной Wi-Fi</strong> — достаточно SDP<br>
+                <strong>⚠️ Если в разных сетях</strong> — нужны и SDP, и ICE кандидаты
             </div>
         </div>
         
-        <!-- CHAT AREA (показывается после подключения) -->
+        <!-- CHAT AREA -->
         <div id="chatArea" class="chat-area">
             <div class="messages" id="messages"></div>
             
@@ -439,62 +470,78 @@
                 <img id="previewImage" src="">
                 <div class="actions">
                     <button onclick="sendPhoto()">➤ ОТПРАВИТЬ</button>
-                    <button class="cancel" onclick="cancelPhoto()">✕ ОТМЕНИТЬ</button>                </div>
+                    <button class="cancel" onclick="cancelPhoto()">✕ ОТМЕНИТЬ</button>
+                </div>
             </div>
             
             <div class="status" id="chatStatus">[ожидание подключения]</div>
         </div>
         
         <div class="footer">
-            [ANOM DIRECT] • P2P ENCRYPTED • NO LOGS • v1.2
+            [ANOM DIRECT] • P2P ENCRYPTED • NO LOGS • CROSS-NETWORK v3.0
         </div>
     </div>
 
-    <!-- PHOTO MODAL -->
     <div id="photoModal" class="modal" onclick="closeModal(event)">
         <span class="modal-close" onclick="closeModal(event)">&times;</span>
         <img id="modalImage" src="">
-        <div class="modal-caption">нажмите × или вне изображения для закрытия</div>
     </div>
 
     <script>
-        // ===== CONFIG =====
-        const username = 'anon_' + Math.floor(Math.random() * 9000 + 1000);
+        // ===== CONFIG =====        const username = 'anon_' + Math.floor(Math.random() * 9000 + 1000);
         let peerConnection = null;
         let dataChannel = null;
         let selectedPhotoData = null;
         let isConnected = false;
+        let iceCandidatesBuffer = [];
+        let iceGatheringComplete = false;
+        let gatheringStartTime = 0;
         
-        // ICE Servers с TURN для надёжного соединения
+        // 🔥 МАКСИМУМ STUN СЕРВЕРОВ (публичные, бесплатные)
         const configuration = {
             iceServers: [
+                // Google
                 { urls: 'stun:stun.l.google.com:19302' },
                 { urls: 'stun:stun1.l.google.com:19302' },
                 { urls: 'stun:stun2.l.google.com:19302' },
-                // Бесплатный TURN (Open Relay Project)
-                {
-                    urls: 'turn:openrelay.metered.ca:80',
-                    username: 'openrelayproject',
-                    credential: 'openrelayproject'
-                },
-                {
-                    urls: 'turn:openrelay.metered.ca:443',
-                    username: 'openrelayproject',
-                    credential: 'openrelayproject'
-                },
-                {
-                    urls: 'turns:openrelay.metered.ca:443?transport=tcp',
-                    username: 'openrelayproject',
-                    credential: 'openrelayproject'
-                }
+                { urls: 'stun:stun3.l.google.com:19302' },
+                { urls: 'stun:stun4.l.google.com:19302' },
+                // Mozilla
+                { urls: 'stun:stun.services.mozilla.com' },
+                // Microsoft
+                { urls: 'stun:stun.hotspot.com.au:3478' },
+                // VoipStunt
+                { urls: 'stun:stun.voipstunt.com:3478' },
+                // VoipBuster
+                { urls: 'stun:stun.voipbuster.com:3478' },
+                // Twilio (публичный)
+                { urls: 'stun:global.stun.twilio.com:3478' }
             ],
-            iceTransportPolicy: 'all'        };
+            iceTransportPolicy: 'all',
+            bundlePolicy: 'max-bundle',
+            rtcpMuxPolicy: 'require',
+            sdpSemantics: 'unified-plan',
+            iceCandidatePoolSize: 10
+        };
         
         // ===== UI FUNCTIONS =====
         function updateStatus(text, type = 'normal') {
             const status = document.getElementById('chatStatus');
             status.innerText = `[${text}]`;
-            status.className = 'status' + (type === 'error' ? ' error' : type === 'connecting' ? ' connecting' : '');
+            status.className = 'status ' + (type === 'error' ? 'error' : type === 'connecting' ? 'connecting' : type === 'success' ? 'success' : '');
+        }
+        
+        function updateProgress(elementId, percent) {
+            const bar = document.getElementById(elementId);
+            const fill = document.getElementById(elementId + 'Fill');
+            if (bar && fill) {
+                bar.style.display = 'block';
+                fill.style.width = percent + '%';
+            }        }
+        
+        function updateCandidateCount(elementId, count) {
+            const el = document.getElementById(elementId);
+            if (el) el.innerText = 'ICE кандидаты: ' + count;
         }
         
         function showChat() {
@@ -502,7 +549,7 @@
             document.getElementById('chatArea').classList.add('active');
             document.getElementById('backBtn').classList.add('visible');
             isConnected = true;
-            updateStatus('подключено ✓');
+            updateStatus('подключено ✓', 'success');
             document.getElementById('messageInput').focus();
         }
         
@@ -523,37 +570,78 @@
                 peerConnection = null;
                 dataChannel = null;
             }
-            // Очистка чата
+            iceCandidatesBuffer = [];
+            iceGatheringComplete = false;
+            
+            // Reset UI
             document.getElementById('messages').innerHTML = '';
             document.getElementById('offerSDP').value = '';
+            document.getElementById('offerCandidates').value = '';
             document.getElementById('answerSDP').value = '';
+            document.getElementById('answerCandidates').value = '';
             document.getElementById('remoteOfferSDP').value = '';
+            document.getElementById('remoteOfferCandidates').value = '';
             document.getElementById('localAnswerSDP').value = '';
+            document.getElementById('localAnswerCandidates').value = '';
+            
             document.getElementById('copyOfferBtn').disabled = true;
-            document.getElementById('copyAnswerBtn').disabled = true;
+            document.getElementById('copyOfferCandBtn').disabled = true;
+            document.getElementById('copyAnswerBtn').disabled = true;            document.getElementById('copyAnswerCandBtn').disabled = true;
             document.getElementById('setAnswerBtn').disabled = true;
+            document.getElementById('createOfferBtn').disabled = false;
+            document.getElementById('createAnswerBtn').disabled = false;
+            
+            document.getElementById('offerProgress').style.display = 'none';
+            document.getElementById('answerProgress').style.display = 'none';
+            
             hideChat();
         }
         
         // ===== WEBRTC FUNCTIONS =====
-        async function waitForICE(pc, timeout = 12000) {
-            return Promise.race([                new Promise((resolve) => {
-                    if (pc.iceGatheringState === 'complete') {
+        
+        // 🔥 Увеличенный таймаут (60 секунд для разных сетей)
+        function waitForICE(pc, timeout = 60000) {
+            return new Promise((resolve) => {
+                if (pc.iceGatheringState === 'complete') {
+                    resolve();
+                    return;
+                }
+                
+                let resolved = false;
+                
+                const check = () => {
+                    if (pc.iceGatheringState === 'complete' && !resolved) {
+                        resolved = true;
+                        clearTimeout(timer);
+                        pc.removeEventListener('icegatheringstatechange', check);
                         resolve();
-                    } else {
-                        const check = () => {
-                            if (pc.iceGatheringState === 'complete') {
-                                pc.removeEventListener('icegatheringstatechange', check);
-                                resolve();
-                            }
-                        };
-                        pc.addEventListener('icegatheringstatechange', check);
                     }
-                }),
-                new Promise((_, reject) => 
-                    setTimeout(() => reject(new Error('ICE timeout')), timeout)
-                )
-            ]);
+                };
+                
+                pc.addEventListener('icegatheringstatechange', check);
+                
+                // Прогресс бар
+                const startTime = Date.now();
+                const progressInterval = setInterval(() => {
+                    const elapsed = Date.now() - startTime;
+                    const percent = Math.min(90, (elapsed / timeout) * 100);
+                    if (pc.iceGatheringState !== 'complete') {
+                        // Обновляем прогресс для активного элемента
+                        const isOffer = document.getElementById('offerProgress').style.display === 'block';
+                        const isAnswer = document.getElementById('answerProgress').style.display === 'block';
+                        if (isOffer) updateProgress('offerProgress', percent);
+                        if (isAnswer) updateProgress('answerProgress', percent);
+                    }
+                }, 500);
+                
+                const timer = setTimeout(() => {
+                    if (!resolved) {                        resolved = true;
+                        clearInterval(progressInterval);
+                        console.warn('ICE gathering timeout — продолжаем с ' + iceCandidatesBuffer.length + ' кандидатами');
+                        resolve();
+                    }
+                }, timeout);
+            });
         }
         
         function setupDataChannel(channel) {
@@ -567,7 +655,7 @@
             
             channel.onclose = () => {
                 addSystemMessage('❌ Соединение разорвано');
-                updateStatus('ошибка', 'error');
+                updateStatus('отключено', 'error');
                 setTimeout(() => { if (!isConnected) hideChat(); }, 2000);
             };
             
@@ -581,51 +669,97 @@
                     const data = JSON.parse(event.data);
                     displayMessage(data);
                 } catch (e) {
-                    console.log('Raw:', event.data);
                     displayMessage({ type: 'text', user: 'unknown', text: event.data, time: Date.now() });
                 }
             };
         }
-                // HOST: Create offer
+        
+        // HOST: Create offer
         async function createOffer() {
             try {
-                updateStatus('создание offer...', 'connecting');
+                updateStatus('сбор ICE кандидатов...', 'connecting');
+                document.getElementById('createOfferBtn').disabled = true;
+                document.getElementById('offerProgress').style.display = 'block';
+                updateProgress('offerProgress', 0);
+                
                 peerConnection = new RTCPeerConnection(configuration);
+                iceCandidatesBuffer = [];
+                iceGatheringComplete = false;                gatheringStartTime = Date.now();
                 
                 dataChannel = peerConnection.createDataChannel('chat');
                 setupDataChannel(dataChannel);
                 
+                // 🔥 Собираем ВСЕ ICE кандидаты
+                peerConnection.onicecandidate = (event) => {
+                    if (event.candidate) {
+                        iceCandidatesBuffer.push(event.candidate);
+                        updateCandidateCount('offerCandidateCount', iceCandidatesBuffer.length);
+                        updateProgress('offerProgress', Math.min(90, (iceCandidatesBuffer.length / 20) * 100));
+                        console.log('ICE candidate:', event.candidate.candidate?.substring(0, 50) + '...');
+                    }
+                };
+                
+                peerConnection.onicegatheringstatechange = () => {
+                    console.log('ICE gathering:', peerConnection.iceGatheringState);
+                    if (peerConnection.iceGatheringState === 'complete') {
+                        iceGatheringComplete = true;
+                        updateProgress('offerProgress', 100);
+                    }
+                };
+                
                 peerConnection.oniceconnectionstatechange = () => {
                     const state = peerConnection.iceConnectionState;
-                    if (state === 'connected' || state === 'completed') {
-                        updateStatus('P2P соединение ✓');
-                    } else if (state === 'failed') {
-                        updateStatus('ошибка NAT — проверьте TURN', 'error');
-                    } else if (state === 'checking') {
-                        updateStatus('поиск пути...', 'connecting');
-                    }
+                    const states = {
+                        'new': '⏳ Ожидание...',
+                        'checking': '🔍 Поиск пути через NAT...',
+                        'connected': '✅ P2P соединение!',
+                        'completed': '✅ Готово!',
+                        'disconnected': '🔄 Переподключение...',
+                        'failed': '❌ Ошибка — попробуйте обменяться ICE кандидатами',
+                        'closed': '🔒 Закрыто'
+                    };
+                    updateStatus(states[state] || state, 
+                        state === 'failed' ? 'error' : state === 'checking' ? 'connecting' : state === 'connected' || state === 'completed' ? 'success' : 'normal');
                 };
                 
                 const offer = await peerConnection.createOffer();
                 await peerConnection.setLocalDescription(offer);
+                
+                // 🔥 Ждём ICE кандидаты (60 секунд для разных сетей)
                 await waitForICE(peerConnection);
                 
+                const elapsed = ((Date.now() - gatheringStartTime) / 1000).toFixed(1);
+                console.log('ICE gathering completed in ' + elapsed + 's with ' + iceCandidatesBuffer.length + ' candidates');
+                
+                // SDP
                 const offerSDP = JSON.stringify({
-                    type: peerConnection.localDescription.type,
-                    sdp: peerConnection.localDescription.sdp
+                    type: peerConnection.localDescription.type,                    sdp: peerConnection.localDescription.sdp
                 });
                 
+                // ICE кандидаты отдельно
+                const offerCandidates = iceCandidatesBuffer.length > 0 
+                    ? JSON.stringify(iceCandidatesBuffer.map(c => c.toJSON()))
+                    : '';
+                
                 document.getElementById('offerSDP').value = offerSDP;
+                document.getElementById('offerCandidates').value = offerCandidates;
                 document.getElementById('copyOfferBtn').disabled = false;
+                document.getElementById('copyOfferCandBtn').disabled = iceCandidatesBuffer.length === 0;
                 document.getElementById('setAnswerBtn').disabled = false;
                 
-                addSystemMessage('✅ Offer создан! Скопируйте и отправьте другу');
-                updateStatus('offer готов — ждём answer', 'connecting');
+                const candInfo = iceCandidatesBuffer.length > 0 
+                    ? ' + ' + iceCandidatesBuffer.length + ' ICE кандидатов'
+                    : ' (без ICE кандидатов)';
+                
+                addSystemMessage('✅ Offer создан' + candInfo + '! Копируйте SDP и кандидаты');
+                updateStatus('offer готов — отправьте другу оба поля', 'connecting');
                 
             } catch (error) {
                 console.error('Offer error:', error);
                 updateStatus('ошибка: ' + error.message, 'error');
-                alert('Ошибка создания offer: ' + error.message);
+                alert('Ошибка: ' + error.message);
+                document.getElementById('createOfferBtn').disabled = false;
+                document.getElementById('offerProgress').style.display = 'none';
             }
         }
         
@@ -633,49 +767,103 @@
         async function createAnswer() {
             try {
                 const offerText = document.getElementById('remoteOfferSDP').value.trim();
-                if (!offerText) {
-                    alert('Сначала вставьте offer от хоста');
-                    return;                }
+                if (!offerText) { alert('Вставьте SDP offer от хоста'); return; }
                 
-                updateStatus('создание answer...', 'connecting');
+                updateStatus('сбор ICE кандидатов...', 'connecting');
+                document.getElementById('createAnswerBtn').disabled = true;
+                document.getElementById('answerProgress').style.display = 'block';
+                updateProgress('answerProgress', 0);
+                
                 const offer = JSON.parse(offerText);
                 peerConnection = new RTCPeerConnection(configuration);
+                iceCandidatesBuffer = [];
+                iceGatheringComplete = false;
+                gatheringStartTime = Date.now();
                 
-                peerConnection.ondatachannel = (event) => {
-                    setupDataChannel(event.channel);
+                peerConnection.ondatachannel = (event) => setupDataChannel(event.channel);
+                
+                peerConnection.onicecandidate = (event) => {                    if (event.candidate) {
+                        iceCandidatesBuffer.push(event.candidate);
+                        updateCandidateCount('answerCandidateCount', iceCandidatesBuffer.length);
+                        updateProgress('answerProgress', Math.min(90, (iceCandidatesBuffer.length / 20) * 100));
+                        console.log('ICE candidate:', event.candidate.candidate?.substring(0, 50) + '...');
+                    }
+                };
+                
+                peerConnection.onicegatheringstatechange = () => {
+                    if (peerConnection.iceGatheringState === 'complete') {
+                        iceGatheringComplete = true;
+                        updateProgress('answerProgress', 100);
+                    }
                 };
                 
                 peerConnection.oniceconnectionstatechange = () => {
                     const state = peerConnection.iceConnectionState;
-                    if (state === 'connected' || state === 'completed') {
-                        updateStatus('P2P соединение ✓');
-                    } else if (state === 'failed') {
-                        updateStatus('ошибка NAT — проверьте TURN', 'error');
-                    } else if (state === 'checking') {
-                        updateStatus('поиск пути...', 'connecting');
-                    }
+                    const states = {
+                        'connected': '✅ P2P соединение!',
+                        'completed': '✅ Готово!',
+                        'failed': '❌ Ошибка NAT — обменяйтесь ICE кандидатами',
+                        'checking': '🔍 Поиск пути...'
+                    };
+                    updateStatus(states[state] || state,
+                        state === 'failed' ? 'error' : state === 'checking' ? 'connecting' : state === 'connected' || state === 'completed' ? 'success' : 'normal');
                 };
                 
                 await peerConnection.setRemoteDescription(offer);
+                
+                // 🔥 Добавляем ICE кандидаты из offer если есть
+                const offerCandidatesText = document.getElementById('remoteOfferCandidates').value.trim();
+                if (offerCandidatesText) {
+                    try {
+                        const offerCandidates = JSON.parse(offerCandidatesText);
+                        for (const candidate of offerCandidates) {
+                            try {
+                                await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+                            } catch (e) {
+                                console.warn('Failed to add candidate:', e);
+                            }
+                        }
+                        addSystemMessage('✅ Добавлено ' + offerCandidates.length + ' ICE кандидатов от хоста');
+                    } catch (e) {
+                        console.warn('Failed to parse offer candidates:', e);
+                    }
+                }
+                
                 const answer = await peerConnection.createAnswer();
                 await peerConnection.setLocalDescription(answer);
+                                // 🔥 Ждём ICE кандидаты
                 await waitForICE(peerConnection);
+                
+                const elapsed = ((Date.now() - gatheringStartTime) / 1000).toFixed(1);
+                console.log('ICE gathering completed in ' + elapsed + 's with ' + iceCandidatesBuffer.length + ' candidates');
                 
                 const answerSDP = JSON.stringify({
                     type: peerConnection.localDescription.type,
                     sdp: peerConnection.localDescription.sdp
                 });
                 
-                document.getElementById('localAnswerSDP').value = answerSDP;
-                document.getElementById('copyAnswerBtn').disabled = false;
+                const answerCandidates = iceCandidatesBuffer.length > 0
+                    ? JSON.stringify(iceCandidatesBuffer.map(c => c.toJSON()))
+                    : '';
                 
-                addSystemMessage('✅ Answer создан! Скопируйте и отправьте хосту');
-                updateStatus('answer готов — ждём подтверждения', 'connecting');
+                document.getElementById('localAnswerSDP').value = answerSDP;
+                document.getElementById('localAnswerCandidates').value = answerCandidates;
+                document.getElementById('copyAnswerBtn').disabled = false;
+                document.getElementById('copyAnswerCandBtn').disabled = iceCandidatesBuffer.length === 0;
+                
+                const candInfo = iceCandidatesBuffer.length > 0
+                    ? ' + ' + iceCandidatesBuffer.length + ' ICE кандидатов'
+                    : ' (без ICE кандидатов)';
+                
+                addSystemMessage('✅ Answer создан' + candInfo + '! Копируйте SDP и кандидаты');
+                updateStatus('answer готов — отправьте хосту оба поля', 'connecting');
                 
             } catch (error) {
                 console.error('Answer error:', error);
                 updateStatus('ошибка: ' + error.message, 'error');
-                alert('Ошибка создания answer: ' + error.message);
+                alert('Ошибка: ' + error.message);
+                document.getElementById('createAnswerBtn').disabled = false;
+                document.getElementById('answerProgress').style.display = 'none';
             }
         }
         
@@ -683,15 +871,31 @@
         async function setAnswer() {
             try {
                 const answerText = document.getElementById('answerSDP').value.trim();
-                if (!answerText) {
-                    alert('Вставьте answer от друга');                    return;
-                }
+                if (!answerText) { alert('Вставьте SDP answer от друга'); return; }
                 
                 updateStatus('установка соединения...', 'connecting');
                 const answer = JSON.parse(answerText);
+                
                 await peerConnection.setRemoteDescription(answer);
                 
-                // Соединение установится через onopen datachannel
+                // 🔥 Добавляем ICE кандидаты из answer если есть
+                const answerCandidatesText = document.getElementById('answerCandidates').value.trim();
+                if (answerCandidatesText) {                    try {
+                        const answerCandidates = JSON.parse(answerCandidatesText);
+                        for (const candidate of answerCandidates) {
+                            try {
+                                await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+                                console.log('Added ICE candidate from answer');
+                            } catch (e) {
+                                console.warn('Failed to add candidate:', e);
+                            }
+                        }
+                        addSystemMessage('✅ Добавлено ' + answerCandidates.length + ' ICE кандидатов от друга');
+                    } catch (e) {
+                        console.warn('Failed to parse answer candidates:', e);
+                    }
+                }
+                
                 addSystemMessage('✅ Answer принят — устанавливается соединение...');
                 
             } catch (error) {
@@ -711,13 +915,7 @@
                 return;
             }
             
-            const msg = {
-                type: 'text',
-                user: username,
-                text: text,
-                time: Date.now()
-            };
-            
+            const msg = { type: 'text', user: username, text: text, time: Date.now() };
             dataChannel.send(JSON.stringify(msg));
             displayMessage(msg);
             input.value = '';
@@ -731,9 +929,9 @@
         }
         
         function displayMessage(msg) {
-            const container = document.getElementById('messages');
-            const div = document.createElement('div');
-            const time = new Date(msg.time).toLocaleTimeString('ru-RU', {hour:'2-digit',minute:'2-digit'});            
+            const container = document.getElementById('messages');            const div = document.createElement('div');
+            const time = new Date(msg.time).toLocaleTimeString('ru-RU', {hour:'2-digit',minute:'2-digit'});
+            
             if (msg.type === 'system') {
                 div.className = 'system-message';
                 div.innerText = '➤ ' + msg.text;
@@ -771,6 +969,16 @@
             });
         }
         
+        function copyOfferCandidates() {
+            const text = document.getElementById('offerCandidates').value;
+            if (!text) return alert('Нет ICE кандидатов');
+            navigator.clipboard.writeText(text).then(() => {
+                const btn = document.getElementById('copyOfferCandBtn');
+                const original = btn.innerText;
+                btn.innerText = '✅ СКОПИРОВАНО';
+                setTimeout(() => btn.innerText = original, 1500);
+            });
+        }        
         function copyAnswer() {
             const text = document.getElementById('localAnswerSDP').value;
             navigator.clipboard.writeText(text).then(() => {
@@ -781,8 +989,20 @@
             });
         }
         
+        function copyAnswerCandidates() {
+            const text = document.getElementById('localAnswerCandidates').value;
+            if (!text) return alert('Нет ICE кандидатов');
+            navigator.clipboard.writeText(text).then(() => {
+                const btn = document.getElementById('copyAnswerCandBtn');
+                const original = btn.innerText;
+                btn.innerText = '✅ СКОПИРОВАНО';
+                setTimeout(() => btn.innerText = original, 1500);
+            });
+        }
+        
         // ===== PHOTO FUNCTIONS =====
-        function handlePhotoSelect(event) {            const file = event.target.files[0];
+        function handlePhotoSelect(event) {
+            const file = event.target.files[0];
             if (!file) return;
             
             if (file.size > 4 * 1024 * 1024) {
@@ -805,16 +1025,9 @@
                 return;
             }
             
-            const msg = {
-                type: 'photo',
-                user: username,
-                photo: selectedPhotoData,
-                time: Date.now()
-            };
-            
+            const msg = { type: 'photo', user: username, photo: selectedPhotoData, time: Date.now() };
             dataChannel.send(JSON.stringify(msg));
-            displayMessage(msg);
-            cancelPhoto();
+            displayMessage(msg);            cancelPhoto();
         }
         
         function cancelPhoto() {
@@ -831,7 +1044,8 @@
         
         function closeModal(event) {
             if (event.target.id === 'photoModal' || event.target.className === 'modal-close') {
-                document.getElementById('photoModal').classList.remove('active');            }
+                document.getElementById('photoModal').classList.remove('active');
+            }
         }
         
         // ===== INIT =====
@@ -839,12 +1053,10 @@
             if (e.key === 'Enter') sendMessage();
         });
         
-        // Закрыть модальное окно по Escape
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') closeModal({ target: { id: 'photoModal' } });
         });
         
-        // Показать статус при загрузке
         updateStatus('готов к подключению');
     </script>
 </body>
