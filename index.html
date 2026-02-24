@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>ANOM P2P</title>
+    <title>ANOM DIRECT</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
@@ -55,9 +55,10 @@
             padding: 10px;
             background: #000;
             border-radius: 5px;
+            font-size: 14px;
         }
         
-        input, button {
+        input, button, textarea {
             width: 100%;
             padding: 12px;
             margin: 5px 0;
@@ -67,6 +68,11 @@
             font-family: 'Courier New', monospace;
             font-size: 16px;
             border-radius: 5px;
+        }
+        
+        textarea {
+            resize: vertical;
+            min-height: 100px;
         }
         
         button {
@@ -203,99 +209,87 @@
             cursor: pointer;
         }
         
-        .tabs {
-            display: flex;
-            gap: 10px;
-            margin: 10px 0;
-        }
-        
-        .tab {
-            flex: 1;
-            text-align: center;
-            padding: 10px;
+        .signal-area {
+            background: #1a1a1a;
             border: 1px solid #00ff9d;
-            cursor: pointer;
+            padding: 15px;
+            margin: 15px 0;
         }
         
-        .tab.active {
-            background: #00ff9d;
-            color: #0a0a0a;
+        .signal-title {
+            color: #00ff9d;
+            font-size: 14px;
+            margin-bottom: 10px;
+            text-align: center;
         }
         
-        .tab-content {
-            display: none;
-        }
-        
-        .tab-content.active {
-            display: block;
+        .small-note {
+            font-size: 11px;
+            color: #666;
+            text-align: center;
+            margin: 5px 0;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>ANOM P2P</h1>
-            <div class="version">direct connection</div>
+            <h1>ANOM DIRECT</h1>
+            <div class="version">copy/paste signaling</div>
         </div>
         
-        <div class="tabs">
-            <div class="tab active" onclick="switchTab('host')" id="tabHost">🔵 HOST</div>
-            <div class="tab" onclick="switchTab('join')" id="tabJoin">🟢 JOIN</div>
+        <div class="small-note">
+            ⚡ HOST: create offer → send to friend → paste answer<br>
+            ⚡ JOIN: paste offer → create answer → send back to host
         </div>
         
-        <!-- HOST TAB -->
-        <div id="hostTab" class="tab-content active">
-            <div class="peer-info">
-                <div>🔵 YOUR PEER ID (SEND TO FRIEND):</div>
-                <div class="peer-id" id="hostId">GENERATING...</div>
-                <button onclick="copyHostId()">📋 COPY ID</button>
-            </div>
-            <div id="hostStatus" class="system-message">Waiting for connection...</div>
+        <!-- HOST SECTION -->
+        <div class="signal-area">
+            <div class="signal-title">🔵 HOST (create connection)</div>
+            <button onclick="createOffer()" id="createOfferBtn">1️⃣ CREATE OFFER</button>
+            <textarea id="offerSDP" placeholder="Your offer will appear here... copy and send to friend"></textarea>
+            <button onclick="copyOffer()" id="copyOfferBtn" disabled>📋 COPY OFFER</button>
+            
+            <div style="margin: 20px 0; border-top: 1px solid #333;"></div>
+            
+            <textarea id="answerSDP" placeholder="Paste friend's answer here..."></textarea>
+            <button onclick="setAnswer()" id="setAnswerBtn" disabled>3️⃣ SET ANSWER</button>
         </div>
         
-        <!-- JOIN TAB -->
-        <div id="joinTab" class="tab-content">
-            <div class="peer-info">
-                <div>🟢 ENTER FRIEND'S PEER ID:</div>
-                <input type="text" id="peerIdInput" placeholder="paste peer id here">
-                <button onclick="connectToPeer()">🔌 CONNECT</button>
-                <div id="joinStatus" class="system-message"></div>
-            </div>
+        <!-- JOIN SECTION -->
+        <div class="signal-area">
+            <div class="signal-title">🟢 JOIN (connect to host)</div>
+            <textarea id="remoteOfferSDP" placeholder="Paste host's offer here..."></textarea>
+            <button onclick="createAnswer()" id="createAnswerBtn">2️⃣ CREATE ANSWER</button>
+            <textarea id="localAnswerSDP" placeholder="Your answer will appear here... copy and send to host"></textarea>
+            <button onclick="copyAnswer()" id="copyAnswerBtn" disabled>📋 COPY ANSWER</button>
         </div>
         
-        <!-- CHAT AREA (shows when connected) -->
+        <!-- CHAT AREA -->
         <div id="chatArea" style="display: none;">
             <div class="messages" id="messages"></div>
             
-            <div class="tabs" style="margin: 10px 0;">
-                <div class="tab active" onclick="switchChatTab('text')" id="tabText">💬 TEXT</div>
-                <div class="tab" onclick="switchChatTab('photo')" id="tabPhoto">📷 PHOTO</div>
+            <div style="display: flex; gap: 10px;">
+                <input type="text" id="messageInput" placeholder="type message" style="flex: 3;">
+                <button onclick="sendMessage()" style="flex: 1;">SEND</button>
             </div>
             
-            <!-- TEXT TAB -->
-            <div id="textChatTab" class="tab-content active">
-                <input type="text" id="messageInput" placeholder="type message">
-                <button onclick="sendMessage()">> SEND _</button>
+            <div class="file-input-container">
+                <label for="photoInput" class="file-input-label">📷 SEND PHOTO</label>
+                <input type="file" id="photoInput" accept="image/*" onchange="handlePhotoSelect(event)">
             </div>
             
-            <!-- PHOTO TAB -->
-            <div id="photoChatTab" class="tab-content">
-                <div class="file-input-container">
-                    <label for="photoInput" class="file-input-label">📷 SELECT PHOTO</label>
-                    <input type="file" id="photoInput" accept="image/*" onchange="handlePhotoSelect(event)">
-                </div>
-                <div id="photoPreview" style="display: none; margin: 10px 0;">
-                    <img id="previewImage" style="max-width: 100%; max-height: 150px; border: 1px solid #00ff9d;">
-                    <button onclick="sendPhoto()">> SEND PHOTO _</button>
-                    <button onclick="cancelPhoto()" style="background: #330000;">✕ CANCEL</button>
-                </div>
+            <div id="photoPreview" style="display: none; margin: 10px 0;">
+                <img id="previewImage" style="max-width: 100%; max-height: 150px; border: 1px solid #00ff9d;">
+                <button onclick="sendPhoto()">> SEND PHOTO _</button>
+                <button onclick="cancelPhoto()" style="background: #330000;">✕ CANCEL</button>
             </div>
             
-            <div class="status" id="chatStatus">[connected]</div>
+            <div class="status" id="chatStatus">[disconnected]</div>
         </div>
         
         <div class="footer">
-            [ANOM P2P] // [DIRECT CONNECTION] // [NO STORAGE]
+            [ANOM DIRECT] // [COPY/PASTE SIGNALING] // [NO SERVER]
         </div>
     </div>
 
@@ -305,100 +299,172 @@
         <img id="modalImage">
     </div>
 
-    <!-- Include PeerJS -->
-    <script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.2/dist/peerjs.min.js"></script>
-    
     <script>
-        // Generate random username
+        // Configuration
         const username = 'user_' + Math.floor(Math.random() * 1000);
-        let peer = null;
-        let conn = null;
+        let peerConnection = null;
+        let dataChannel = null;
         let selectedPhotoData = null;
         
-        // Initialize Peer
-        function initPeer() {
-            peer = new Peer({
-                config: {
-                    'iceServers': [
-                        { urls: 'stun:stun.l.google.com:19302' },
-                        { urls: 'stun:global.stun.twilio.com:3478' }
-                    ]
-                }
-            });
-            
-            peer.on('open', (id) => {
-                document.getElementById('hostId').innerText = id;
-                document.getElementById('hostStatus').innerText = '✅ Your peer ID ready. Share with friend!';
-            });
-            
-            peer.on('connection', (connection) => {
-                conn = connection;
-                setupConnection();
-                document.getElementById('hostStatus').innerText = '✅ Friend connected!';
-                showChat();
-            });
-            
-            peer.on('error', (err) => {
-                console.log('Peer error:', err);
-                document.getElementById('hostStatus').innerText = '❌ Error: ' + err.type;
-            });
-        }
+        // STUN servers (free, for NAT traversal)
+        const configuration = {
+            iceServers: [
+                { urls: 'stun:stun.l.google.com:19302' },
+                { urls: 'stun:stun1.l.google.com:19302' },
+                { urls: 'stun:stun2.l.google.com:19302' }
+            ]
+        };
         
-        function connectToPeer() {
-            const peerId = document.getElementById('peerIdInput').value.trim();
-            if (!peerId) {
-                alert('Enter peer ID');
-                return;
+        // HOST: Create offer
+        async function createOffer() {
+            try {
+                peerConnection = new RTCPeerConnection(configuration);
+                
+                // Create data channel
+                dataChannel = peerConnection.createDataChannel('chat');
+                setupDataChannel();
+                
+                // Create offer
+                const offer = await peerConnection.createOffer();
+                await peerConnection.setLocalDescription(offer);
+                
+                // Wait for ICE gathering
+                await waitForICE(peerConnection);
+                
+                // Display offer
+                const offerSDP = JSON.stringify({
+                    type: peerConnection.localDescription.type,
+                    sdp: peerConnection.localDescription.sdp
+                });
+                
+                document.getElementById('offerSDP').value = offerSDP;
+                document.getElementById('copyOfferBtn').disabled = false;
+                document.getElementById('setAnswerBtn').disabled = false;
+                
+                addSystemMessage('✅ Offer created! Copy and send to friend');
+                
+            } catch (error) {
+                console.error('Error creating offer:', error);
+                alert('Error: ' + error.message);
             }
-            
-            document.getElementById('joinStatus').innerText = '🔄 Connecting...';
-            
-            conn = peer.connect(peerId);
-            setupConnection();
         }
         
-        function setupConnection() {
-            conn.on('open', () => {
-                document.getElementById('joinStatus').innerText = '✅ Connected!';
+        // JOIN: Create answer from offer
+        async function createAnswer() {
+            try {
+                const offerText = document.getElementById('remoteOfferSDP').value.trim();
+                if (!offerText) {
+                    alert('Paste host offer first');
+                    return;
+                }
+                
+                const offer = JSON.parse(offerText);
+                
+                peerConnection = new RTCPeerConnection(configuration);
+                
+                // Handle incoming data channel
+                peerConnection.ondatachannel = (event) => {
+                    dataChannel = event.channel;
+                    setupDataChannel();
+                };
+                
+                // Set remote description
+                await peerConnection.setRemoteDescription(offer);
+                
+                // Create answer
+                const answer = await peerConnection.createAnswer();
+                await peerConnection.setLocalDescription(answer);
+                
+                // Wait for ICE gathering
+                await waitForICE(peerConnection);
+                
+                // Display answer
+                const answerSDP = JSON.stringify({
+                    type: peerConnection.localDescription.type,
+                    sdp: peerConnection.localDescription.sdp
+                });
+                
+                document.getElementById('localAnswerSDP').value = answerSDP;
+                document.getElementById('copyAnswerBtn').disabled = false;
+                
+                addSystemMessage('✅ Answer created! Copy and send to host');
+                
+            } catch (error) {
+                console.error('Error creating answer:', error);
+                alert('Error: ' + error.message);
+            }
+        }
+        
+        // HOST: Set answer from join
+        async function setAnswer() {
+            try {
+                const answerText = document.getElementById('answerSDP').value.trim();
+                if (!answerText) {
+                    alert('Paste friend answer first');
+                    return;
+                }
+                
+                const answer = JSON.parse(answerText);
+                await peerConnection.setRemoteDescription(answer);
+                
+                addSystemMessage('✅ Connection established!');
                 showChat();
                 
-                // Send username
-                conn.send({
-                    type: 'system',
-                    text: username + ' connected'
-                });
-            });
+            } catch (error) {
+                console.error('Error setting answer:', error);
+                alert('Error: ' + error.message);
+            }
+        }
+        
+        // Setup data channel
+        function setupDataChannel() {
+            dataChannel.onopen = () => {
+                addSystemMessage('✅ Data channel open!');
+                showChat();
+                
+                // Send join message
+                sendSystemMessage(username + ' connected');
+            };
             
-            conn.on('data', (data) => {
-                displayMessage(data);
-            });
-            
-            conn.on('close', () => {
-                addSystemMessage('Connection closed');
+            dataChannel.onclose = () => {
+                addSystemMessage('❌ Connection closed');
                 hideChat();
-            });
+            };
             
-            conn.on('error', (err) => {
-                addSystemMessage('Connection error');
-                console.log(err);
+            dataChannel.onmessage = (event) => {
+                try {
+                    const data = JSON.parse(event.data);
+                    displayMessage(data);
+                } catch (e) {
+                    console.log('Raw message:', event.data);
+                }
+            };
+        }
+        
+        // Wait for ICE gathering
+        function waitForICE(pc) {
+            return new Promise((resolve) => {
+                if (pc.iceGatheringState === 'complete') {
+                    resolve();
+                } else {
+                    pc.addEventListener('icegatheringstatechange', () => {
+                        if (pc.iceGatheringState === 'complete') {
+                            resolve();
+                        }
+                    });
+                }
             });
         }
         
-        function showChat() {
-            document.getElementById('chatArea').style.display = 'block';
-            document.getElementById('chatStatus').innerText = '[connected to: ' + conn.peer + ']';
-            addSystemMessage('✅ Connected! You can now chat');
-        }
-        
-        function hideChat() {
-            document.getElementById('chatArea').style.display = 'none';
-        }
-        
+        // Send message
         function sendMessage() {
             const input = document.getElementById('messageInput');
             const text = input.value.trim();
             
-            if (!text || !conn) return;
+            if (!text || !dataChannel || dataChannel.readyState !== 'open') {
+                alert('Not connected');
+                return;
+            }
             
             const msg = {
                 type: 'text',
@@ -407,11 +473,25 @@
                 time: Date.now()
             };
             
-            conn.send(msg);
+            dataChannel.send(JSON.stringify(msg));
             displayMessage(msg);
             input.value = '';
         }
         
+        // Send system message
+        function sendSystemMessage(text) {
+            if (!dataChannel || dataChannel.readyState !== 'open') return;
+            
+            const msg = {
+                type: 'system',
+                text: text,
+                time: Date.now()
+            };
+            
+            dataChannel.send(JSON.stringify(msg));
+        }
+        
+        // Handle photo selection
         function handlePhotoSelect(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -431,8 +511,12 @@
             reader.readAsDataURL(file);
         }
         
+        // Send photo
         function sendPhoto() {
-            if (!selectedPhotoData || !conn) return;
+            if (!selectedPhotoData || !dataChannel || dataChannel.readyState !== 'open') {
+                alert('Not connected');
+                return;
+            }
             
             const msg = {
                 type: 'photo',
@@ -441,25 +525,26 @@
                 time: Date.now()
             };
             
-            conn.send(msg);
+            dataChannel.send(JSON.stringify(msg));
             displayMessage(msg);
             cancelPhoto();
-            switchChatTab('text');
         }
         
+        // Cancel photo
         function cancelPhoto() {
             selectedPhotoData = null;
             document.getElementById('photoInput').value = '';
             document.getElementById('photoPreview').style.display = 'none';
         }
         
+        // Display message
         function displayMessage(msg) {
             const messagesDiv = document.getElementById('messages');
             const msgDiv = document.createElement('div');
             
             if (msg.type === 'system') {
                 msgDiv.className = 'system-message';
-                msgDiv.innerText = '➤ ' + (msg.text || msg.user + ' connected');
+                msgDiv.innerText = '➤ ' + msg.text;
             } else if (msg.type === 'photo') {
                 msgDiv.className = 'message';
                 const time = new Date(msg.time).toLocaleTimeString();
@@ -475,6 +560,7 @@
             messagesDiv.scrollTop = messagesDiv.scrollHeight;
         }
         
+        // Add system message
         function addSystemMessage(text) {
             displayMessage({
                 type: 'system',
@@ -483,48 +569,37 @@
             });
         }
         
+        // Escape HTML
         function escapeHtml(text) {
             const div = document.createElement('div');
             div.textContent = text;
             return div.innerHTML;
         }
         
-        // UI functions
-        function switchTab(tab) {
-            document.getElementById('tabHost').className = 'tab';
-            document.getElementById('tabJoin').className = 'tab';
-            document.getElementById('hostTab').className = 'tab-content';
-            document.getElementById('joinTab').className = 'tab-content';
-            
-            if (tab === 'host') {
-                document.getElementById('tabHost').className = 'tab active';
-                document.getElementById('hostTab').className = 'tab-content active';
-            } else {
-                document.getElementById('tabJoin').className = 'tab active';
-                document.getElementById('joinTab').className = 'tab-content active';
-            }
-        }
-        
-        function switchChatTab(tab) {
-            document.getElementById('tabText').className = 'tab';
-            document.getElementById('tabPhoto').className = 'tab';
-            document.getElementById('textChatTab').className = 'tab-content';
-            document.getElementById('photoChatTab').className = 'tab-content';
-            
-            if (tab === 'text') {
-                document.getElementById('tabText').className = 'tab active';
-                document.getElementById('textChatTab').className = 'tab-content active';
-            } else {
-                document.getElementById('tabPhoto').className = 'tab active';
-                document.getElementById('photoChatTab').className = 'tab-content active';
-            }
-        }
-        
-        function copyHostId() {
-            const id = document.getElementById('hostId').innerText;
-            navigator.clipboard.writeText(id).then(() => {
-                alert('Peer ID copied!');
+        // Copy functions
+        function copyOffer() {
+            const text = document.getElementById('offerSDP').value;
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Offer copied!');
             });
+        }
+        
+        function copyAnswer() {
+            const text = document.getElementById('localAnswerSDP').value;
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Answer copied!');
+            });
+        }
+        
+        // UI functions
+        function showChat() {
+            document.getElementById('chatArea').style.display = 'block';
+            document.getElementById('chatStatus').innerText = '[connected]';
+        }
+        
+        function hideChat() {
+            document.getElementById('chatArea').style.display = 'none';
+            document.getElementById('chatStatus').innerText = '[disconnected]';
         }
         
         // Modal functions
@@ -541,9 +616,6 @@
         document.getElementById('messageInput').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') sendMessage();
         });
-        
-        // Initialize
-        initPeer();
     </script>
 </body>
 </html>
