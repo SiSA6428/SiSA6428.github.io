@@ -68,9 +68,9 @@
         .setup-section.hidden { display: none; }
         
         .alert-box {
-            background: #1a0d0d;
-            border: 1px solid #ff6b6b;
-            color: #ffaa00;
+            background: #0d1a0d;
+            border: 1px solid #00ff9d;
+            color: #00ff9d;
             padding: 12px;
             margin: 10px 0 20px;
             border-radius: 5px;
@@ -78,7 +78,13 @@
             line-height: 1.5;
         }
         
-        .alert-box strong { color: #ff6b6b; }
+        .alert-box.warning {
+            background: #1a0d0d;
+            border-color: #ff6b6b;
+            color: #ffaa00;
+        }
+        
+        .alert-box strong { color: inherit; }
         
         .signal-area {
             background: #1a1a1a;
@@ -90,13 +96,13 @@
         
         .signal-title {
             color: #00ff9d;
-            font-size: 14px;
-            margin-bottom: 10px;
+            font-size: 14px;            margin-bottom: 10px;
             text-align: center;
             font-weight: bold;
         }
         
-        .step-number {            display: inline-block;
+        .step-number {
+            display: inline-block;
             background: #00ff9d;
             color: #0a0a0a;
             width: 20px;
@@ -139,13 +145,13 @@
             cursor: pointer;
             font-weight: bold;
             text-transform: uppercase;
-            font-size: 12px;
-            letter-spacing: 1px;
+            font-size: 12px;            letter-spacing: 1px;
         }
         
         button:hover:not(:disabled) {
             background: #00ff9d;
-            color: #0a0a0a;        }
+            color: #0a0a0a;
+        }
         
         button:disabled { opacity: 0.4; cursor: not-allowed; }
         
@@ -188,13 +194,13 @@
         .message.own {
             border-left-color: #ff6b6b;
             background: #1a0d0d;
-            border-right: 3px solid #ff6b6b;
-            border-left: none;
+            border-right: 3px solid #ff6b6b;            border-left: none;
             border-radius: 5px 0 0 5px;
             text-align: right;
         }
         
-        .system-message {            color: #ffaa00;
+        .system-message {
+            color: #ffaa00;
             text-align: center;
             font-style: italic;
             margin: 8px 0;
@@ -219,20 +225,39 @@
         .status.connecting { color: #ffaa00; border-color: #ffaa00; }
         .status.success { color: #00ff9d; border-color: #00ff9d; }
         
-        .progress-bar {
-            width: 100%;
-            height: 4px;
-            background: #333;
-            border-radius: 2px;
-            margin: 10px 0;
-            overflow: hidden;
+        .candidate-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 10px;
+            color: #666;
+            margin-top: 5px;
+            padding: 5px;
+            background: #0d0d0d;
+            border-radius: 3px;
         }
         
-        .progress-fill {
-            height: 100%;
+        .candidate-info span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .candidate-dot {            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #333;
+            display: inline-block;
+        }
+        
+        .candidate-dot.active {
             background: #00ff9d;
-            width: 0%;
-            transition: width 0.3s ease;
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
         }
         
         .input-row { display: flex; gap: 8px; margin: 10px 0; }
@@ -243,7 +268,8 @@
         
         .file-input-label {
             display: block;
-            padding: 10px;            background: #1a1a1a;
+            padding: 10px;
+            background: #1a1a1a;
             border: 1px dashed #00ff9d;
             color: #00ff9d;
             text-align: center;
@@ -266,8 +292,7 @@
             display: none;
             margin: 10px 0;
             padding: 10px;
-            background: #1a1a1a;
-            border: 1px solid #00ff9d;
+            background: #1a1a1a;            border: 1px solid #00ff9d;
             border-radius: 5px;
         }
         
@@ -292,7 +317,8 @@
             cursor: pointer;
             transition: opacity 0.2s;
         }
-                .photo-message:hover { opacity: 0.85; }
+        
+        .photo-message:hover { opacity: 0.85; }
         
         .modal {
             display: none;
@@ -315,8 +341,7 @@
             border-radius: 5px;
         }
         
-        .modal-close {
-            position: absolute;
+        .modal-close {            position: absolute;
             top: 20px;
             right: 25px;
             color: #00ff9d;
@@ -327,31 +352,13 @@
         
         .modal-close:hover { color: #fff; }
         
-        .info-box {
-            background: #0d1a1a;
-            border: 1px solid #00ff9d;
-            padding: 10px;
-            margin: 10px 0;
-            border-radius: 5px;
-            font-size: 10px;
-            color: #666;
-        }
-        
-        .info-box strong { color: #00ff9d; }
-        
         .footer {
             margin-top: 25px;
-            text-align: center;            font-size: 9px;
+            text-align: center;
+            font-size: 9px;
             color: #333;
             border-top: 1px solid #1a1a1a;
             padding-top: 12px;
-        }
-        
-        .candidate-count {
-            font-size: 10px;
-            color: #666;
-            text-align: right;
-            margin-top: 5px;
         }
         
         ::-webkit-scrollbar { width: 6px; }
@@ -375,30 +382,30 @@
             <h1>ANOM DIRECT</h1>
             <div style="width: 70px;"></div>
         </div>
-        <div class="version">P2P • CROSS-NETWORK • NO THIRD-PARTY</div>
+        <div class="version">TRICKLE ICE • FAST CONNECT • NO TURN</div>
         
         <div id="setupArea" class="setup-section">
             <div class="alert-box">
-                <strong>⚠️ ВАЖНО для разных сетей:</strong><br>
-                1. После создания offer/answer подождите <strong>15-30 секунд</strong><br>
-                2. Скопируйте ВСЁ (SDP + ICE кандидаты)<br>
-                3. Если не подключается — попробуйте обменяться ICE кандидатами отдельно
-            </div>
-            
+                <strong>⚡ TRICKLE ICE режим:</strong><br>
+                • SDP можно копировать СРАЗУ после создания<br>
+                • ICE кандидаты собираются в фоне (не нужно ждать)<br>
+                • Для разных сетей: скопируйте кандидаты через 5-10 сек и отправьте тоже
+            </div>            
             <!-- HOST -->
             <div class="signal-area">
                 <div class="signal-title">🔵 HOST — создать соединение</div>
                 
                 <button onclick="createOffer()" id="createOfferBtn">
-                    <span class="step-number">1</span>CREATE OFFER                </button>
+                    <span class="step-number">1</span>CREATE OFFER
+                </button>
                 
-                <div class="progress-bar" id="offerProgress" style="display:none;">
-                    <div class="progress-fill" id="offerProgressFill"></div>
+                <div class="candidate-info" id="offerCandidateInfo" style="display:none;">
+                    <span><span class="candidate-dot active" id="offerDot"></span>Сбор ICE кандидатов...</span>
+                    <span id="offerCount">0 найдено</span>
                 </div>
-                <div class="candidate-count" id="offerCandidateCount">ICE кандидаты: 0</div>
                 
-                <textarea id="offerSDP" placeholder="SDP offer (скопируйте это)..."></textarea>
-                <textarea id="offerCandidates" class="candidates-textarea" placeholder="ICE кандидаты (скопируйте это тоже, если есть)..."></textarea>
+                <textarea id="offerSDP" placeholder="Нажмите CREATE OFFER..."></textarea>
+                <textarea id="offerCandidates" class="candidates-textarea" placeholder="ICE кандидаты (появятся через 5-10 сек)..."></textarea>
                 
                 <div class="btn-row">
                     <button onclick="copyOffer()" id="copyOfferBtn" disabled>📋 COPY SDP</button>
@@ -426,29 +433,27 @@
                     <span class="step-number">2</span>CREATE ANSWER
                 </button>
                 
-                <div class="progress-bar" id="answerProgress" style="display:none;">
-                    <div class="progress-fill" id="answerProgressFill"></div>
+                <div class="candidate-info" id="answerCandidateInfo" style="display:none;">
+                    <span><span class="candidate-dot active" id="answerDot"></span>Сбор ICE кандидатов...</span>
+                    <span id="answerCount">0 найдено</span>
                 </div>
-                <div class="candidate-count" id="answerCandidateCount">ICE кандидаты: 0</div>
                 
-                <textarea id="localAnswerSDP" placeholder="SDP answer (скопируйте это)..."></textarea>
-                <textarea id="localAnswerCandidates" class="candidates-textarea" placeholder="ICE кандидаты (скопируйте это тоже, если есть)..."></textarea>
-                
+                <textarea id="localAnswerSDP" placeholder="Нажмите CREATE ANSWER..."></textarea>
+                <textarea id="localAnswerCandidates" class="candidates-textarea" placeholder="ICE кандидаты (появятся через 5-10 сек)..."></textarea>                
                 <div class="btn-row">
                     <button onclick="copyAnswer()" id="copyAnswerBtn" disabled>📋 COPY SDP</button>
                     <button onclick="copyAnswerCandidates()" id="copyAnswerCandBtn" disabled>📋 COPY CANDIDATES</button>
                 </div>
             </div>
-                        <div class="info-box">
-                <strong>💡 Почему два поля?</strong><br>
-                • SDP — основная информация о соединении<br>
-                • ICE кандидаты — сетевые адреса для обхода NAT<br>
-                • В разных сетях кандидаты КРИТИЧНО важны!
-            </div>
             
-            <div class="alert-box" style="margin-top: 15px; background: #0d1a0d; border-color: #00ff9d;">
-                <strong>✅ Если оба устройства в одной Wi-Fi</strong> — достаточно SDP<br>
-                <strong>⚠️ Если в разных сетях</strong> — нужны и SDP, и ICE кандидаты
+            <div class="alert-box warning" style="margin-top: 15px;">
+                <strong>📋 Порядок обмена для разных сетей:</strong><br>
+                1. Хост: CREATE OFFER → скопировать SDP → отправить другу<br>
+                2. Хост: подождать 5-10 сек → скопировать ICE кандидаты → отправить другу<br>
+                3. Друг: вставить SDP + кандидаты → CREATE ANSWER<br>
+                4. Друг: скопировать SDP answer → отправить хосту<br>
+                5. Друг: подождать 5-10 сек → скопировать ICE кандидаты → отправить хосту<br>
+                6. Хост: вставить answer + кандидаты → SET ANSWER → ✅
             </div>
         </div>
         
@@ -478,50 +483,37 @@
         </div>
         
         <div class="footer">
-            [ANOM DIRECT] • P2P ENCRYPTED • NO LOGS • CROSS-NETWORK v3.0
+            [ANOM DIRECT] • P2P ENCRYPTED • TRICKLE ICE • v4.0
         </div>
     </div>
 
     <div id="photoModal" class="modal" onclick="closeModal(event)">
-        <span class="modal-close" onclick="closeModal(event)">&times;</span>
-        <img id="modalImage" src="">
+        <span class="modal-close" onclick="closeModal(event)">&times;</span>        <img id="modalImage" src="">
     </div>
 
     <script>
-        // ===== CONFIG =====        const username = 'anon_' + Math.floor(Math.random() * 9000 + 1000);
+        // ===== CONFIG =====
+        const username = 'anon_' + Math.floor(Math.random() * 9000 + 1000);
         let peerConnection = null;
         let dataChannel = null;
         let selectedPhotoData = null;
         let isConnected = false;
         let iceCandidatesBuffer = [];
-        let iceGatheringComplete = false;
-        let gatheringStartTime = 0;
+        let isGatheringComplete = false;
         
-        // 🔥 МАКСИМУМ STUN СЕРВЕРОВ (публичные, бесплатные)
+        // 🔥 Оптимизированная конфигурация
         const configuration = {
             iceServers: [
-                // Google
                 { urls: 'stun:stun.l.google.com:19302' },
                 { urls: 'stun:stun1.l.google.com:19302' },
                 { urls: 'stun:stun2.l.google.com:19302' },
                 { urls: 'stun:stun3.l.google.com:19302' },
-                { urls: 'stun:stun4.l.google.com:19302' },
-                // Mozilla
-                { urls: 'stun:stun.services.mozilla.com' },
-                // Microsoft
-                { urls: 'stun:stun.hotspot.com.au:3478' },
-                // VoipStunt
-                { urls: 'stun:stun.voipstunt.com:3478' },
-                // VoipBuster
-                { urls: 'stun:stun.voipbuster.com:3478' },
-                // Twilio (публичный)
-                { urls: 'stun:global.stun.twilio.com:3478' }
+                { urls: 'stun:stun.services.mozilla.com' }
             ],
             iceTransportPolicy: 'all',
             bundlePolicy: 'max-bundle',
             rtcpMuxPolicy: 'require',
-            sdpSemantics: 'unified-plan',
-            iceCandidatePoolSize: 10
+            sdpSemantics: 'unified-plan'
         };
         
         // ===== UI FUNCTIONS =====
@@ -531,25 +523,21 @@
             status.className = 'status ' + (type === 'error' ? 'error' : type === 'connecting' ? 'connecting' : type === 'success' ? 'success' : '');
         }
         
-        function updateProgress(elementId, percent) {
-            const bar = document.getElementById(elementId);
-            const fill = document.getElementById(elementId + 'Fill');
-            if (bar && fill) {
-                bar.style.display = 'block';
-                fill.style.width = percent + '%';
-            }        }
-        
-        function updateCandidateCount(elementId, count) {
-            const el = document.getElementById(elementId);
-            if (el) el.innerText = 'ICE кандидаты: ' + count;
+        function updateCandidateInfo(prefix, count, gathering) {
+            const info = document.getElementById(prefix + 'CandidateInfo');
+            const dot = document.getElementById(prefix + 'Dot');
+            const countEl = document.getElementById(prefix + 'Count');
+            
+            if (info) info.style.display = count > 0 || gathering ? 'flex' : 'none';
+            if (dot) dot.className = 'candidate-dot' + (gathering ? ' active' : '');
+            if (countEl) countEl.innerText = count + ' найдено';
         }
         
         function showChat() {
             document.getElementById('setupArea').classList.add('hidden');
             document.getElementById('chatArea').classList.add('active');
             document.getElementById('backBtn').classList.add('visible');
-            isConnected = true;
-            updateStatus('подключено ✓', 'success');
+            isConnected = true;            updateStatus('подключено ✓', 'success');
             document.getElementById('messageInput').focus();
         }
         
@@ -571,9 +559,8 @@
                 dataChannel = null;
             }
             iceCandidatesBuffer = [];
-            iceGatheringComplete = false;
+            isGatheringComplete = false;
             
-            // Reset UI
             document.getElementById('messages').innerHTML = '';
             document.getElementById('offerSDP').value = '';
             document.getElementById('offerCandidates').value = '';
@@ -586,62 +573,50 @@
             
             document.getElementById('copyOfferBtn').disabled = true;
             document.getElementById('copyOfferCandBtn').disabled = true;
-            document.getElementById('copyAnswerBtn').disabled = true;            document.getElementById('copyAnswerCandBtn').disabled = true;
+            document.getElementById('copyAnswerBtn').disabled = true;
+            document.getElementById('copyAnswerCandBtn').disabled = true;
             document.getElementById('setAnswerBtn').disabled = true;
             document.getElementById('createOfferBtn').disabled = false;
             document.getElementById('createAnswerBtn').disabled = false;
             
-            document.getElementById('offerProgress').style.display = 'none';
-            document.getElementById('answerProgress').style.display = 'none';
+            updateCandidateInfo('offer', 0, false);
+            updateCandidateInfo('answer', 0, false);
             
             hideChat();
         }
         
         // ===== WEBRTC FUNCTIONS =====
-        
-        // 🔥 Увеличенный таймаут (60 секунд для разных сетей)
-        function waitForICE(pc, timeout = 60000) {
-            return new Promise((resolve) => {
-                if (pc.iceGatheringState === 'complete') {
-                    resolve();
-                    return;
+                // ⚡ TRICKLE ICE — не ждём завершения, отправляем SDP сразу!
+        function setupICEGathering(pc, prefix) {
+            iceCandidatesBuffer = [];
+            isGatheringComplete = false;
+            
+            pc.onicecandidate = (event) => {
+                if (event.candidate) {
+                    iceCandidatesBuffer.push(event.candidate);
+                    updateCandidateInfo(prefix, iceCandidatesBuffer.length, true);
+                    
+                    // Обновляем textarea с кандидатами в реальном времени
+                    const candidatesText = JSON.stringify(iceCandidatesBuffer.map(c => c.toJSON()));
+                    if (prefix === 'offer') {
+                        document.getElementById('offerCandidates').value = candidatesText;
+                        document.getElementById('copyOfferCandBtn').disabled = false;
+                    } else {
+                        document.getElementById('localAnswerCandidates').value = candidatesText;
+                        document.getElementById('copyAnswerCandBtn').disabled = false;
+                    }
+                    
+                    console.log('ICE candidate:', event.candidate.candidate?.substring(0, 50) + '...');
                 }
-                
-                let resolved = false;
-                
-                const check = () => {
-                    if (pc.iceGatheringState === 'complete' && !resolved) {
-                        resolved = true;
-                        clearTimeout(timer);
-                        pc.removeEventListener('icegatheringstatechange', check);
-                        resolve();
-                    }
-                };
-                
-                pc.addEventListener('icegatheringstatechange', check);
-                
-                // Прогресс бар
-                const startTime = Date.now();
-                const progressInterval = setInterval(() => {
-                    const elapsed = Date.now() - startTime;
-                    const percent = Math.min(90, (elapsed / timeout) * 100);
-                    if (pc.iceGatheringState !== 'complete') {
-                        // Обновляем прогресс для активного элемента
-                        const isOffer = document.getElementById('offerProgress').style.display === 'block';
-                        const isAnswer = document.getElementById('answerProgress').style.display === 'block';
-                        if (isOffer) updateProgress('offerProgress', percent);
-                        if (isAnswer) updateProgress('answerProgress', percent);
-                    }
-                }, 500);
-                
-                const timer = setTimeout(() => {
-                    if (!resolved) {                        resolved = true;
-                        clearInterval(progressInterval);
-                        console.warn('ICE gathering timeout — продолжаем с ' + iceCandidatesBuffer.length + ' кандидатами');
-                        resolve();
-                    }
-                }, timeout);
-            });
+            };
+            
+            pc.onicegatheringstatechange = () => {
+                console.log('ICE gathering:', pc.iceGatheringState);
+                if (pc.iceGatheringState === 'complete') {
+                    isGatheringComplete = true;
+                    updateCandidateInfo(prefix, iceCandidatesBuffer.length, false);
+                }
+            };
         }
         
         function setupDataChannel(channel) {
@@ -660,8 +635,7 @@
             };
             
             channel.onerror = (err) => {
-                console.error('DataChannel error:', err);
-                updateStatus('ошибка канала', 'error');
+                console.error('DataChannel error:', err);                updateStatus('ошибка канала', 'error');
             };
             
             channel.onmessage = (event) => {
@@ -674,38 +648,19 @@
             };
         }
         
-        // HOST: Create offer
+        // HOST: Create offer — ⚡ БЫСТРО, без ожидания!
         async function createOffer() {
             try {
-                updateStatus('сбор ICE кандидатов...', 'connecting');
+                updateStatus('создание offer...', 'connecting');
                 document.getElementById('createOfferBtn').disabled = true;
-                document.getElementById('offerProgress').style.display = 'block';
-                updateProgress('offerProgress', 0);
                 
                 peerConnection = new RTCPeerConnection(configuration);
-                iceCandidatesBuffer = [];
-                iceGatheringComplete = false;                gatheringStartTime = Date.now();
                 
                 dataChannel = peerConnection.createDataChannel('chat');
                 setupDataChannel(dataChannel);
                 
-                // 🔥 Собираем ВСЕ ICE кандидаты
-                peerConnection.onicecandidate = (event) => {
-                    if (event.candidate) {
-                        iceCandidatesBuffer.push(event.candidate);
-                        updateCandidateCount('offerCandidateCount', iceCandidatesBuffer.length);
-                        updateProgress('offerProgress', Math.min(90, (iceCandidatesBuffer.length / 20) * 100));
-                        console.log('ICE candidate:', event.candidate.candidate?.substring(0, 50) + '...');
-                    }
-                };
-                
-                peerConnection.onicegatheringstatechange = () => {
-                    console.log('ICE gathering:', peerConnection.iceGatheringState);
-                    if (peerConnection.iceGatheringState === 'complete') {
-                        iceGatheringComplete = true;
-                        updateProgress('offerProgress', 100);
-                    }
-                };
+                // ⚡ TRICKLE ICE — начинаем сбор, но не ждём!
+                setupICEGathering(peerConnection, 'offer');
                 
                 peerConnection.oniceconnectionstatechange = () => {
                     const state = peerConnection.iceConnectionState;
@@ -715,7 +670,7 @@
                         'connected': '✅ P2P соединение!',
                         'completed': '✅ Готово!',
                         'disconnected': '🔄 Переподключение...',
-                        'failed': '❌ Ошибка — попробуйте обменяться ICE кандидатами',
+                        'failed': '❌ Ошибка — обменяйтесь ICE кандидатами',
                         'closed': '🔒 Закрыто'
                     };
                     updateStatus(states[state] || state, 
@@ -725,77 +680,45 @@
                 const offer = await peerConnection.createOffer();
                 await peerConnection.setLocalDescription(offer);
                 
-                // 🔥 Ждём ICE кандидаты (60 секунд для разных сетей)
-                await waitForICE(peerConnection);
-                
-                const elapsed = ((Date.now() - gatheringStartTime) / 1000).toFixed(1);
-                console.log('ICE gathering completed in ' + elapsed + 's with ' + iceCandidatesBuffer.length + ' candidates');
-                
-                // SDP
+                // ⚡ СРАЗУ отдаём SDP, не ждём ICE!
                 const offerSDP = JSON.stringify({
-                    type: peerConnection.localDescription.type,                    sdp: peerConnection.localDescription.sdp
-                });
-                
-                // ICE кандидаты отдельно
-                const offerCandidates = iceCandidatesBuffer.length > 0 
-                    ? JSON.stringify(iceCandidatesBuffer.map(c => c.toJSON()))
-                    : '';
-                
+                    type: peerConnection.localDescription.type,
+                    sdp: peerConnection.localDescription.sdp
+                });                
                 document.getElementById('offerSDP').value = offerSDP;
-                document.getElementById('offerCandidates').value = offerCandidates;
                 document.getElementById('copyOfferBtn').disabled = false;
-                document.getElementById('copyOfferCandBtn').disabled = iceCandidatesBuffer.length === 0;
                 document.getElementById('setAnswerBtn').disabled = false;
                 
-                const candInfo = iceCandidatesBuffer.length > 0 
-                    ? ' + ' + iceCandidatesBuffer.length + ' ICE кандидатов'
-                    : ' (без ICE кандидатов)';
+                addSystemMessage('✅ Offer создан! Копируйте SDP сейчас');
+                updateStatus('SDP готов — копируйте и отправьте другу', 'success');
                 
-                addSystemMessage('✅ Offer создан' + candInfo + '! Копируйте SDP и кандидаты');
-                updateStatus('offer готов — отправьте другу оба поля', 'connecting');
+                // ICE кандидаты будут появляться в фоне
+                addSystemMessage('⏳ ICE кандидаты собираются в фоне (скопируйте через 5-10 сек для разных сетей)');
                 
             } catch (error) {
                 console.error('Offer error:', error);
                 updateStatus('ошибка: ' + error.message, 'error');
                 alert('Ошибка: ' + error.message);
                 document.getElementById('createOfferBtn').disabled = false;
-                document.getElementById('offerProgress').style.display = 'none';
             }
         }
         
-        // JOIN: Create answer
+        // JOIN: Create answer — ⚡ БЫСТРО, без ожидания!
         async function createAnswer() {
             try {
                 const offerText = document.getElementById('remoteOfferSDP').value.trim();
                 if (!offerText) { alert('Вставьте SDP offer от хоста'); return; }
                 
-                updateStatus('сбор ICE кандидатов...', 'connecting');
+                updateStatus('создание answer...', 'connecting');
                 document.getElementById('createAnswerBtn').disabled = true;
-                document.getElementById('answerProgress').style.display = 'block';
-                updateProgress('answerProgress', 0);
                 
                 const offer = JSON.parse(offerText);
                 peerConnection = new RTCPeerConnection(configuration);
-                iceCandidatesBuffer = [];
-                iceGatheringComplete = false;
-                gatheringStartTime = Date.now();
                 
                 peerConnection.ondatachannel = (event) => setupDataChannel(event.channel);
                 
-                peerConnection.onicecandidate = (event) => {                    if (event.candidate) {
-                        iceCandidatesBuffer.push(event.candidate);
-                        updateCandidateCount('answerCandidateCount', iceCandidatesBuffer.length);
-                        updateProgress('answerProgress', Math.min(90, (iceCandidatesBuffer.length / 20) * 100));
-                        console.log('ICE candidate:', event.candidate.candidate?.substring(0, 50) + '...');
-                    }
-                };
-                
-                peerConnection.onicegatheringstatechange = () => {
-                    if (peerConnection.iceGatheringState === 'complete') {
-                        iceGatheringComplete = true;
-                        updateProgress('answerProgress', 100);
-                    }
-                };
+                // ⚡ TRICKLE ICE
+                setupICEGathering(peerConnection, 'answer');
                 
                 peerConnection.oniceconnectionstatechange = () => {
                     const state = peerConnection.iceConnectionState;
@@ -810,8 +733,7 @@
                 };
                 
                 await peerConnection.setRemoteDescription(offer);
-                
-                // 🔥 Добавляем ICE кандидаты из offer если есть
+                                // 🔥 Добавляем ICE кандидаты из offer если есть
                 const offerCandidatesText = document.getElementById('remoteOfferCandidates').value.trim();
                 if (offerCandidatesText) {
                     try {
@@ -831,39 +753,27 @@
                 
                 const answer = await peerConnection.createAnswer();
                 await peerConnection.setLocalDescription(answer);
-                                // 🔥 Ждём ICE кандидаты
-                await waitForICE(peerConnection);
                 
-                const elapsed = ((Date.now() - gatheringStartTime) / 1000).toFixed(1);
-                console.log('ICE gathering completed in ' + elapsed + 's with ' + iceCandidatesBuffer.length + ' candidates');
-                
+                // ⚡ СРАЗУ отдаём SDP, не ждём ICE!
                 const answerSDP = JSON.stringify({
                     type: peerConnection.localDescription.type,
                     sdp: peerConnection.localDescription.sdp
                 });
                 
-                const answerCandidates = iceCandidatesBuffer.length > 0
-                    ? JSON.stringify(iceCandidatesBuffer.map(c => c.toJSON()))
-                    : '';
-                
                 document.getElementById('localAnswerSDP').value = answerSDP;
-                document.getElementById('localAnswerCandidates').value = answerCandidates;
                 document.getElementById('copyAnswerBtn').disabled = false;
-                document.getElementById('copyAnswerCandBtn').disabled = iceCandidatesBuffer.length === 0;
                 
-                const candInfo = iceCandidatesBuffer.length > 0
-                    ? ' + ' + iceCandidatesBuffer.length + ' ICE кандидатов'
-                    : ' (без ICE кандидатов)';
+                addSystemMessage('✅ Answer создан! Копируйте SDP сейчас');
+                updateStatus('SDP готов — копируйте и отправьте хосту', 'success');
                 
-                addSystemMessage('✅ Answer создан' + candInfo + '! Копируйте SDP и кандидаты');
-                updateStatus('answer готов — отправьте хосту оба поля', 'connecting');
+                // ICE кандидаты будут появляться в фоне
+                addSystemMessage('⏳ ICE кандидаты собираются в фоне (скопируйте через 5-10 сек для разных сетей)');
                 
             } catch (error) {
                 console.error('Answer error:', error);
                 updateStatus('ошибка: ' + error.message, 'error');
                 alert('Ошибка: ' + error.message);
                 document.getElementById('createAnswerBtn').disabled = false;
-                document.getElementById('answerProgress').style.display = 'none';
             }
         }
         
@@ -872,15 +782,15 @@
             try {
                 const answerText = document.getElementById('answerSDP').value.trim();
                 if (!answerText) { alert('Вставьте SDP answer от друга'); return; }
-                
-                updateStatus('установка соединения...', 'connecting');
+                                updateStatus('установка соединения...', 'connecting');
                 const answer = JSON.parse(answerText);
                 
                 await peerConnection.setRemoteDescription(answer);
                 
                 // 🔥 Добавляем ICE кандидаты из answer если есть
                 const answerCandidatesText = document.getElementById('answerCandidates').value.trim();
-                if (answerCandidatesText) {                    try {
+                if (answerCandidatesText) {
+                    try {
                         const answerCandidates = JSON.parse(answerCandidatesText);
                         for (const candidate of answerCandidates) {
                             try {
@@ -921,15 +831,15 @@
             input.value = '';
             input.focus();
         }
-        
-        function sendSystemMessage(text) {
+                function sendSystemMessage(text) {
             if (!dataChannel || dataChannel.readyState !== 'open') return;
             const msg = { type: 'system', text: text, time: Date.now() };
             dataChannel.send(JSON.stringify(msg));
         }
         
         function displayMessage(msg) {
-            const container = document.getElementById('messages');            const div = document.createElement('div');
+            const container = document.getElementById('messages');
+            const div = document.createElement('div');
             const time = new Date(msg.time).toLocaleTimeString('ru-RU', {hour:'2-digit',minute:'2-digit'});
             
             if (msg.type === 'system') {
@@ -970,15 +880,15 @@
         }
         
         function copyOfferCandidates() {
-            const text = document.getElementById('offerCandidates').value;
-            if (!text) return alert('Нет ICE кандидатов');
+            const text = document.getElementById('offerCandidates').value;            if (!text) return alert('Подождите ICE кандидаты (5-10 сек)');
             navigator.clipboard.writeText(text).then(() => {
                 const btn = document.getElementById('copyOfferCandBtn');
                 const original = btn.innerText;
                 btn.innerText = '✅ СКОПИРОВАНО';
                 setTimeout(() => btn.innerText = original, 1500);
             });
-        }        
+        }
+        
         function copyAnswer() {
             const text = document.getElementById('localAnswerSDP').value;
             navigator.clipboard.writeText(text).then(() => {
@@ -991,7 +901,7 @@
         
         function copyAnswerCandidates() {
             const text = document.getElementById('localAnswerCandidates').value;
-            if (!text) return alert('Нет ICE кандидатов');
+            if (!text) return alert('Подождите ICE кандидаты (5-10 сек)');
             navigator.clipboard.writeText(text).then(() => {
                 const btn = document.getElementById('copyAnswerCandBtn');
                 const original = btn.innerText;
@@ -1019,15 +929,15 @@
             reader.readAsDataURL(file);
         }
         
-        function sendPhoto() {
-            if (!selectedPhotoData || !dataChannel || dataChannel.readyState !== 'open') {
+        function sendPhoto() {            if (!selectedPhotoData || !dataChannel || dataChannel.readyState !== 'open') {
                 alert('Не подключено');
                 return;
             }
             
             const msg = { type: 'photo', user: username, photo: selectedPhotoData, time: Date.now() };
             dataChannel.send(JSON.stringify(msg));
-            displayMessage(msg);            cancelPhoto();
+            displayMessage(msg);
+            cancelPhoto();
         }
         
         function cancelPhoto() {
