@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>ANOM 1.5</title>
+    <title>ANOM P2P</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
@@ -39,13 +39,22 @@
             letter-spacing: 4px;
         }
         
-        .user-info {
+        .peer-info {
             background: #1a1a1a;
             border: 1px dashed #00ff9d;
-            padding: 10px;
+            padding: 15px;
             margin: 10px 0;
-            display: flex;
-            justify-content: space-between;
+            font-size: 12px;
+            word-break: break-all;
+        }
+        
+        .peer-id {
+            color: #00ff9d;
+            font-weight: bold;
+            margin: 10px 0;
+            padding: 10px;
+            background: #000;
+            border-radius: 5px;
         }
         
         input, button {
@@ -68,6 +77,11 @@
         button:hover {
             background: #00ff9d;
             color: #0a0a0a;
+        }
+        
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
         
         .chat-area {
@@ -96,11 +110,12 @@
             color: #00cc7a;
         }
         
-        .join-message {
+        .system-message {
             color: #ffaa00;
             text-align: center;
             font-style: italic;
             margin: 5px 0;
+            font-size: 12px;
         }
         
         .status {
@@ -117,16 +132,6 @@
             color: #333;
             border-top: 1px solid #1a1a1a;
             padding-top: 10px;
-        }
-        
-        .simple-note {
-            background: #1a1a1a;
-            border: 1px solid #00ff9d;
-            padding: 15px;
-            margin: 15px 0;
-            font-size: 12px;
-            color: #888;
-            text-align: center;
         }
         
         .file-input-container {
@@ -170,10 +175,6 @@
             opacity: 0.8;
         }
         
-        .message-content {
-            margin-top: 5px;
-        }
-        
         .modal {
             display: none;
             position: fixed;
@@ -202,56 +203,83 @@
             cursor: pointer;
         }
         
-        .action-buttons {
+        .tabs {
             display: flex;
             gap: 10px;
-            margin: 5px 0;
+            margin: 10px 0;
         }
         
-        .action-buttons button {
+        .tab {
             flex: 1;
-            padding: 8px;
+            text-align: center;
+            padding: 10px;
+            border: 1px solid #00ff9d;
+            cursor: pointer;
+        }
+        
+        .tab.active {
+            background: #00ff9d;
+            color: #0a0a0a;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>ANOM 1.5</h1>
-            <div class="version">with photo support</div>
+            <h1>ANOM P2P</h1>
+            <div class="version">direct connection</div>
         </div>
         
-        <div class="user-info">
-            <span>👤 you:</span>
-            <span class="user-tag" id="userDisplay"></span>
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('host')" id="tabHost">🔵 HOST</div>
+            <div class="tab" onclick="switchTab('join')" id="tabJoin">🟢 JOIN</div>
         </div>
         
-        <div class="simple-note" id="note">
-            ⚡ 1. Enter room name ⚡<br>
-            ⚡ 2. Start chatting ⚡<br>
-            ⚡ 3. Click 📷 to send photos ⚡<br>
-            ⚡ 4. Messages disappear on refresh ⚡
+        <!-- HOST TAB -->
+        <div id="hostTab" class="tab-content active">
+            <div class="peer-info">
+                <div>🔵 YOUR PEER ID (SEND TO FRIEND):</div>
+                <div class="peer-id" id="hostId">GENERATING...</div>
+                <button onclick="copyHostId()">📋 COPY ID</button>
+            </div>
+            <div id="hostStatus" class="system-message">Waiting for connection...</div>
         </div>
         
-        <!-- Room input -->
-        <input type="text" id="roomInput" placeholder="room name (any word)" maxlength="30">
-        <button onclick="joinRoom()">> JOIN ROOM _</button>
+        <!-- JOIN TAB -->
+        <div id="joinTab" class="tab-content">
+            <div class="peer-info">
+                <div>🟢 ENTER FRIEND'S PEER ID:</div>
+                <input type="text" id="peerIdInput" placeholder="paste peer id here">
+                <button onclick="connectToPeer()">🔌 CONNECT</button>
+                <div id="joinStatus" class="system-message"></div>
+            </div>
+        </div>
         
-        <!-- Chat area -->
-        <div id="chatArea" class="chat-area">
+        <!-- CHAT AREA (shows when connected) -->
+        <div id="chatArea" style="display: none;">
             <div class="messages" id="messages"></div>
             
-            <div class="action-buttons">
-                <button onclick="showFileInput()">📷 PHOTO</button>
-                <button onclick="toggleTextInput()">💬 TEXT</button>
+            <div class="tabs" style="margin: 10px 0;">
+                <div class="tab active" onclick="switchChatTab('text')" id="tabText">💬 TEXT</div>
+                <div class="tab" onclick="switchChatTab('photo')" id="tabPhoto">📷 PHOTO</div>
             </div>
             
-            <div id="textInputContainer" style="display: block;">
+            <!-- TEXT TAB -->
+            <div id="textChatTab" class="tab-content active">
                 <input type="text" id="messageInput" placeholder="type message">
                 <button onclick="sendMessage()">> SEND _</button>
             </div>
             
-            <div id="photoInputContainer" style="display: none;">
+            <!-- PHOTO TAB -->
+            <div id="photoChatTab" class="tab-content">
                 <div class="file-input-container">
                     <label for="photoInput" class="file-input-label">📷 SELECT PHOTO</label>
                     <input type="file" id="photoInput" accept="image/*" onchange="handlePhotoSelect(event)">
@@ -263,11 +291,11 @@
                 </div>
             </div>
             
-            <div class="status" id="status">[connected to room]</div>
+            <div class="status" id="chatStatus">[connected]</div>
         </div>
         
         <div class="footer">
-            [ANOM 1.5] // [REFRESH TO ERASE]
+            [ANOM P2P] // [DIRECT CONNECTION] // [NO STORAGE]
         </div>
     </div>
 
@@ -277,107 +305,122 @@
         <img id="modalImage">
     </div>
 
+    <!-- Include PeerJS -->
+    <script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    
     <script>
         // Generate random username
         const username = 'user_' + Math.floor(Math.random() * 1000);
-        document.getElementById('userDisplay').innerText = username;
-        
-        let currentRoom = null;
-        let messages = [];
+        let peer = null;
+        let conn = null;
         let selectedPhotoData = null;
-        let pollInterval = null;
         
-        function joinRoom() {
-            const room = document.getElementById('roomInput').value.trim();
-            if (!room) {
-                alert('enter room name');
+        // Initialize Peer
+        function initPeer() {
+            peer = new Peer({
+                config: {
+                    'iceServers': [
+                        { urls: 'stun:stun.l.google.com:19302' },
+                        { urls: 'stun:global.stun.twilio.com:3478' }
+                    ]
+                }
+            });
+            
+            peer.on('open', (id) => {
+                document.getElementById('hostId').innerText = id;
+                document.getElementById('hostStatus').innerText = '✅ Your peer ID ready. Share with friend!';
+            });
+            
+            peer.on('connection', (connection) => {
+                conn = connection;
+                setupConnection();
+                document.getElementById('hostStatus').innerText = '✅ Friend connected!';
+                showChat();
+            });
+            
+            peer.on('error', (err) => {
+                console.log('Peer error:', err);
+                document.getElementById('hostStatus').innerText = '❌ Error: ' + err.type;
+            });
+        }
+        
+        function connectToPeer() {
+            const peerId = document.getElementById('peerIdInput').value.trim();
+            if (!peerId) {
+                alert('Enter peer ID');
                 return;
             }
             
-            currentRoom = room;
+            document.getElementById('joinStatus').innerText = '🔄 Connecting...';
             
-            // Hide note, show chat
-            document.getElementById('note').style.display = 'none';
-            document.getElementById('chatArea').style.display = 'block';
-            
-            // Clear messages
-            document.getElementById('messages').innerHTML = '';
-            messages = [];
-            
-            // Add system message
-            addMessage('system', 'joined room: ' + room);
-            addMessage('join', username + ' joined');
-            
-            // Clear any existing interval
-            if (pollInterval) {
-                clearInterval(pollInterval);
-            }
-            
-            // Start checking for messages
-            startPolling();
+            conn = peer.connect(peerId);
+            setupConnection();
         }
         
-        function startPolling() {
-            pollInterval = setInterval(() => {
-                if (!currentRoom) return;
+        function setupConnection() {
+            conn.on('open', () => {
+                document.getElementById('joinStatus').innerText = '✅ Connected!';
+                showChat();
                 
-                // Get messages from localStorage
-                const stored = localStorage.getItem('room_' + currentRoom);
-                if (stored) {
-                    try {
-                        const roomMessages = JSON.parse(stored);
-                        
-                        // Show new messages
-                        roomMessages.forEach(msg => {
-                            if (!messages.find(m => m.id === msg.id)) {
-                                messages.push(msg);
-                                displayMessage(msg);
-                            }
-                        });
-                    } catch (e) {}
-                }
-            }, 2000);
+                // Send username
+                conn.send({
+                    type: 'system',
+                    text: username + ' connected'
+                });
+            });
+            
+            conn.on('data', (data) => {
+                displayMessage(data);
+            });
+            
+            conn.on('close', () => {
+                addSystemMessage('Connection closed');
+                hideChat();
+            });
+            
+            conn.on('error', (err) => {
+                addSystemMessage('Connection error');
+                console.log(err);
+            });
+        }
+        
+        function showChat() {
+            document.getElementById('chatArea').style.display = 'block';
+            document.getElementById('chatStatus').innerText = '[connected to: ' + conn.peer + ']';
+            addSystemMessage('✅ Connected! You can now chat');
+        }
+        
+        function hideChat() {
+            document.getElementById('chatArea').style.display = 'none';
         }
         
         function sendMessage() {
             const input = document.getElementById('messageInput');
             const text = input.value.trim();
             
-            if (!text || !currentRoom) return;
+            if (!text || !conn) return;
             
-            // Create message
             const msg = {
-                id: Date.now() + '_' + Math.random(),
+                type: 'text',
                 user: username,
                 text: text,
-                time: Date.now(),
-                type: 'message'
+                time: Date.now()
             };
             
-            // Save to localStorage
-            saveMessage(msg);
-            
-            // Display
-            messages.push(msg);
+            conn.send(msg);
             displayMessage(msg);
-            
             input.value = '';
-        }
-        
-        function showFileInput() {
-            document.getElementById('textInputContainer').style.display = 'none';
-            document.getElementById('photoInputContainer').style.display = 'block';
-        }
-        
-        function toggleTextInput() {
-            document.getElementById('textInputContainer').style.display = 'block';
-            document.getElementById('photoInputContainer').style.display = 'none';
-            cancelPhoto();
         }
         
         function handlePhotoSelect(event) {
             const file = event.target.files[0];
             if (!file) return;
+            
+            // Check file size (max 5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                alert('Photo too big! Max 5MB');
+                return;
+            }
             
             const reader = new FileReader();
             reader.onload = function(e) {
@@ -389,27 +432,19 @@
         }
         
         function sendPhoto() {
-            if (!selectedPhotoData || !currentRoom) return;
+            if (!selectedPhotoData || !conn) return;
             
-            // Create message with photo
             const msg = {
-                id: Date.now() + '_' + Math.random(),
+                type: 'photo',
                 user: username,
                 photo: selectedPhotoData,
-                time: Date.now(),
-                type: 'photo'
+                time: Date.now()
             };
             
-            // Save to localStorage
-            saveMessage(msg);
-            
-            // Display
-            messages.push(msg);
+            conn.send(msg);
             displayMessage(msg);
-            
-            // Reset photo input
             cancelPhoto();
-            toggleTextInput();
+            switchChatTab('text');
         }
         
         function cancelPhoto() {
@@ -418,80 +453,78 @@
             document.getElementById('photoPreview').style.display = 'none';
         }
         
-        function saveMessage(msg) {
-            // Get existing messages for this room
-            const key = 'room_' + currentRoom;
-            const stored = localStorage.getItem(key);
-            let roomMessages = [];
-            
-            if (stored) {
-                try {
-                    roomMessages = JSON.parse(stored);
-                } catch (e) {}
-            }
-            
-            // Add new message
-            roomMessages.push(msg);
-            
-            // Keep only last 30 messages (reduced because photos are large)
-            if (roomMessages.length > 30) {
-                roomMessages = roomMessages.slice(-30);
-            }
-            
-            // Save back
-            localStorage.setItem(key, JSON.stringify(roomMessages));
-        }
-        
         function displayMessage(msg) {
             const messagesDiv = document.getElementById('messages');
             const msgDiv = document.createElement('div');
             
-            if (msg.type === 'join') {
-                msgDiv.className = 'join-message';
-                msgDiv.innerText = '➤ ' + (msg.text || msg.user + ' joined');
-            } else if (msg.type === 'system') {
-                msgDiv.className = 'join-message';
-                msgDiv.style.color = '#666';
-                msgDiv.innerText = '>>> ' + msg.text + ' <<<';
+            if (msg.type === 'system') {
+                msgDiv.className = 'system-message';
+                msgDiv.innerText = '➤ ' + (msg.text || msg.user + ' connected');
             } else if (msg.type === 'photo') {
                 msgDiv.className = 'message';
                 const time = new Date(msg.time).toLocaleTimeString();
                 msgDiv.innerHTML = `<strong>[${msg.user}]</strong> ${time}<br>
-                    <div class="message-content">
-                        <img src="${msg.photo}" class="photo-message" onclick="openModal('${msg.photo}')">
-                    </div>`;
+                    <img src="${msg.photo}" class="photo-message" onclick="openModal('${msg.photo}')">`;
             } else {
                 msgDiv.className = 'message';
                 const time = new Date(msg.time).toLocaleTimeString();
-                msgDiv.innerHTML = `<strong>[${msg.user}]</strong> ${time}<br>
-                    <div class="message-content">${escapeHtml(msg.text)}</div>`;
+                msgDiv.innerHTML = `<strong>[${msg.user}]</strong> ${time}<br>${escapeHtml(msg.text)}`;
             }
             
             messagesDiv.appendChild(msgDiv);
             messagesDiv.scrollTop = messagesDiv.scrollHeight;
         }
         
-        function addMessage(type, text) {
-            const msg = {
-                id: Date.now() + '_' + Math.random(),
-                type: type,
+        function addSystemMessage(text) {
+            displayMessage({
+                type: 'system',
                 text: text,
-                user: type === 'message' ? username : 'system',
                 time: Date.now()
-            };
-            
-            messages.push(msg);
-            displayMessage(msg);
-            
-            if (type === 'join') {
-                saveMessage(msg);
-            }
+            });
         }
         
         function escapeHtml(text) {
             const div = document.createElement('div');
             div.textContent = text;
             return div.innerHTML;
+        }
+        
+        // UI functions
+        function switchTab(tab) {
+            document.getElementById('tabHost').className = 'tab';
+            document.getElementById('tabJoin').className = 'tab';
+            document.getElementById('hostTab').className = 'tab-content';
+            document.getElementById('joinTab').className = 'tab-content';
+            
+            if (tab === 'host') {
+                document.getElementById('tabHost').className = 'tab active';
+                document.getElementById('hostTab').className = 'tab-content active';
+            } else {
+                document.getElementById('tabJoin').className = 'tab active';
+                document.getElementById('joinTab').className = 'tab-content active';
+            }
+        }
+        
+        function switchChatTab(tab) {
+            document.getElementById('tabText').className = 'tab';
+            document.getElementById('tabPhoto').className = 'tab';
+            document.getElementById('textChatTab').className = 'tab-content';
+            document.getElementById('photoChatTab').className = 'tab-content';
+            
+            if (tab === 'text') {
+                document.getElementById('tabText').className = 'tab active';
+                document.getElementById('textChatTab').className = 'tab-content active';
+            } else {
+                document.getElementById('tabPhoto').className = 'tab active';
+                document.getElementById('photoChatTab').className = 'tab-content active';
+            }
+        }
+        
+        function copyHostId() {
+            const id = document.getElementById('hostId').innerText;
+            navigator.clipboard.writeText(id).then(() => {
+                alert('Peer ID copied!');
+            });
         }
         
         // Modal functions
@@ -509,12 +542,8 @@
             if (e.key === 'Enter') sendMessage();
         });
         
-        // Clean up on page unload
-        window.addEventListener('beforeunload', () => {
-            if (pollInterval) {
-                clearInterval(pollInterval);
-            }
-        });
+        // Initialize
+        initPeer();
     </script>
 </body>
 </html>
