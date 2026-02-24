@@ -3,19 +3,16 @@
 <head>
     <title>ANOM DIRECT</title>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         
         body {
             background: #0a0a0a;
             font-family: 'Courier New', monospace;
             color: #00ff9d;
             padding: 15px;
+            min-height: 100vh;
         }
         
         .container {
@@ -25,39 +22,89 @@
             border: 2px solid #00ff9d;
             border-radius: 10px;
             padding: 20px;
+            transition: all 0.3s ease;
         }
         
+        /* HEADER */
         .header {
-            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
             margin-bottom: 20px;
             border-bottom: 1px solid #00ff9d;
             padding-bottom: 10px;
+            gap: 10px;
         }
         
         .header h1 {
-            font-size: 32px;
-            letter-spacing: 4px;
+            font-size: 24px;
+            letter-spacing: 3px;
+            flex: 1;
+            text-align: center;
         }
         
-        .peer-info {
-            background: #1a1a1a;
-            border: 1px dashed #00ff9d;
-            padding: 15px;
-            margin: 10px 0;
-            font-size: 12px;
-            word-break: break-all;
-        }
-        
-        .peer-id {
+        .back-btn {
+            background: transparent;
+            border: 1px solid #00ff9d;
             color: #00ff9d;
-            font-weight: bold;
-            margin: 10px 0;
-            padding: 10px;
-            background: #000;
-            border-radius: 5px;
+            padding: 8px 15px;            border-radius: 5px;
+            cursor: pointer;
+            font-family: inherit;
             font-size: 14px;
+            display: none; /* Скрыта по умолчанию */
+            transition: all 0.2s;
         }
         
+        .back-btn:hover {
+            background: #00ff9d;
+            color: #0a0a0a;
+        }
+        
+        .back-btn.visible {
+            display: block;
+        }
+        
+        .version {
+            font-size: 10px;
+            color: #666;
+            text-align: center;
+            width: 100%;
+            margin-top: 5px;
+        }
+        
+        /* SETUP SECTIONS */
+        .setup-section {
+            transition: opacity 0.3s ease, max-height 0.3s ease;
+        }
+        
+        .setup-section.hidden {
+            display: none;
+        }
+        
+        .small-note {
+            font-size: 11px;
+            color: #666;
+            text-align: center;
+            margin: 10px 0 20px;
+            line-height: 1.4;
+        }
+        
+        .signal-area {
+            background: #1a1a1a;
+            border: 1px solid #00ff9d;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+        }
+                .signal-title {
+            color: #00ff9d;
+            font-size: 14px;
+            margin-bottom: 10px;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        /* INPUTS & BUTTONS */
         input, button, textarea {
             width: 100%;
             padding: 12px;
@@ -66,49 +113,67 @@
             border: 1px solid #00ff9d;
             color: #00ff9d;
             font-family: 'Courier New', monospace;
-            font-size: 16px;
+            font-size: 14px;
             border-radius: 5px;
+            transition: all 0.2s;
         }
         
         textarea {
             resize: vertical;
-            min-height: 100px;
+            min-height: 80px;
+            font-size: 11px;
+            word-break: break-all;
         }
         
         button {
             cursor: pointer;
             font-weight: bold;
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 1px;
         }
         
-        button:hover {
+        button:hover:not(:disabled) {
             background: #00ff9d;
             color: #0a0a0a;
         }
         
         button:disabled {
-            opacity: 0.5;
+            opacity: 0.4;
             cursor: not-allowed;
         }
         
+        /* CHAT AREA */
         .chat-area {
-            display: none;
-            margin-top: 20px;
+            display: none;            animation: fadeIn 0.3s ease;
+        }
+        
+        .chat-area.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         
         .messages {
             background: #1a1a1a;
             border: 1px solid #00ff9d;
-            height: 300px;
+            height: 350px;
             overflow-y: auto;
-            padding: 10px;
-            margin: 10px 0;
-            font-size: 14px;
+            padding: 12px;
+            margin: 15px 0;
+            font-size: 13px;
+            border-radius: 5px;
         }
         
         .message {
-            margin: 5px 0;
-            padding: 8px;
-            border-bottom: 1px solid #333;
+            margin: 6px 0;
+            padding: 10px;
+            border-left: 3px solid #00ff9d;
+            background: #0d0d0d;
+            border-radius: 0 5px 5px 0;
             word-wrap: break-word;
         }
         
@@ -116,32 +181,59 @@
             color: #00cc7a;
         }
         
+        .message.own {
+            border-left-color: #ff6b6b;
+            background: #1a0d0d;
+            border-right: 3px solid #ff6b6b;
+            border-left: none;
+            border-radius: 5px 0 0 5px;
+            text-align: right;
+        }
+        
         .system-message {
             color: #ffaa00;
             text-align: center;
             font-style: italic;
-            margin: 5px 0;
-            font-size: 12px;
+            margin: 8px 0;            font-size: 11px;
+            padding: 5px;
+            border-top: 1px dashed #333;
+            border-bottom: 1px dashed #333;
         }
         
         .status {
             color: #00cc7a;
-            font-size: 12px;
-            text-align: right;
-            margin-top: 5px;
-        }
-        
-        .footer {
-            margin-top: 20px;
+            font-size: 11px;
             text-align: center;
-            font-size: 10px;
-            color: #333;
-            border-top: 1px solid #1a1a1a;
-            padding-top: 10px;
+            margin: 10px 0;
+            padding: 5px;
+            background: #0d0d0d;
+            border-radius: 3px;
         }
         
+        .status.error { color: #ff6b6b; }
+        .status.connecting { color: #ffaa00; }
+        
+        /* MESSAGE INPUT */
+        .input-row {
+            display: flex;
+            gap: 8px;
+            margin: 10px 0;
+        }
+        
+        .input-row input {
+            flex: 1;
+            margin: 0;
+        }
+        
+        .input-row button {
+            flex: 0 0 80px;
+            margin: 0;
+            padding: 12px 8px;
+        }
+        
+        /* FILE UPLOAD */
         .file-input-container {
-            margin: 5px 0;
+            margin: 8px 0;
             position: relative;
         }
         
@@ -149,16 +241,17 @@
             display: block;
             padding: 10px;
             background: #1a1a1a;
-            border: 1px solid #00ff9d;
+            border: 1px dashed #00ff9d;
             color: #00ff9d;
-            text-align: center;
-            cursor: pointer;
+            text-align: center;            cursor: pointer;
             border-radius: 5px;
+            font-size: 12px;
+            transition: all 0.2s;
         }
         
         .file-input-label:hover {
-            background: #00ff9d;
-            color: #0a0a0a;
+            background: #003322;
+            border-style: solid;
         }
         
         input[type="file"] {
@@ -168,170 +261,355 @@
             height: 0.1px;
         }
         
-        .photo-message {
-            max-width: 200px;
-            max-height: 200px;
-            margin: 5px 0;
+        /* PHOTO PREVIEW */
+        .photo-preview {
+            display: none;
+            margin: 10px 0;
+            padding: 10px;
+            background: #1a1a1a;
+            border: 1px solid #00ff9d;
+            border-radius: 5px;
+        }
+        
+        .photo-preview img {
+            max-width: 100%;
+            max-height: 150px;
             border: 1px solid #00ff9d;
             border-radius: 3px;
+            margin-bottom: 8px;
+        }
+        
+        .photo-preview .actions {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .photo-preview button {
+            flex: 1;
+            margin: 0;
+            padding: 8px;
+            font-size: 11px;
+        }
+        
+        .photo-preview button.cancel {
+            background: #330000;            border-color: #ff6b6b;
+        }
+        
+        /* PHOTO IN CHAT */
+        .photo-message {
+            max-width: 180px;
+            max-height: 180px;
+            margin: 5px 0;
+            border: 2px solid #00ff9d;
+            border-radius: 5px;
             cursor: pointer;
+            transition: opacity 0.2s;
         }
         
-        .photo-message:hover {
-            opacity: 0.8;
-        }
+        .photo-message:hover { opacity: 0.85; }
         
+        /* MODAL */
         .modal {
             display: none;
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.9);
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95);
             z-index: 1000;
             justify-content: center;
             align-items: center;
+            flex-direction: column;
         }
         
+        .modal.active { display: flex; }
+        
         .modal img {
-            max-width: 90%;
-            max-height: 90%;
+            max-width: 95%;
+            max-height: 80%;
             border: 3px solid #00ff9d;
+            border-radius: 5px;
         }
         
         .modal-close {
             position: absolute;
-            top: 15px;
-            right: 15px;
+            top: 20px;
+            right: 25px;
             color: #00ff9d;
-            font-size: 30px;
+            font-size: 35px;
             cursor: pointer;
+            font-weight: bold;
         }
         
-        .signal-area {
-            background: #1a1a1a;
-            border: 1px solid #00ff9d;
-            padding: 15px;
-            margin: 15px 0;
-        }
-        
-        .signal-title {
-            color: #00ff9d;
-            font-size: 14px;
-            margin-bottom: 10px;
-            text-align: center;
-        }
-        
-        .small-note {
-            font-size: 11px;
+        .modal-close:hover { color: #fff; }
+                .modal-caption {
             color: #666;
+            font-size: 11px;
+            margin-top: 15px;
             text-align: center;
-            margin: 5px 0;
+        }
+        
+        /* FOOTER */
+        .footer {
+            margin-top: 25px;
+            text-align: center;
+            font-size: 9px;
+            color: #333;
+            border-top: 1px solid #1a1a1a;
+            padding-top: 12px;
+        }
+        
+        /* SCROLLBAR */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0a0a0a; }
+        ::-webkit-scrollbar-thumb { 
+            background: #00ff9d; 
+            border-radius: 3px;
+            opacity: 0.6;
+        }
+        ::-webkit-scrollbar-thumb:hover { opacity: 1; }
+        
+        /* MOBILE OPTIMIZATION */
+        @media (max-width: 480px) {
+            body { padding: 10px; }
+            .container { padding: 15px; border-radius: 8px; }
+            .header h1 { font-size: 20px; }
+            .messages { height: 300px; }
+            input, textarea, button { font-size: 13px; padding: 10px; }
         }
     </style>
 </head>
 <body>
     <div class="container">
+        <!-- HEADER -->
         <div class="header">
+            <button class="back-btn" id="backBtn" onclick="goBack()">← НАЗАД</button>
             <h1>ANOM DIRECT</h1>
-            <div class="version">copy/paste signaling</div>
+            <div style="width: 70px;"></div> <!-- Spacer for centering -->
         </div>
+        <div class="version">copy/paste signaling • no server</div>
         
-        <div class="small-note">
-            ⚡ HOST: create offer → send to friend → paste answer<br>
-            ⚡ JOIN: paste offer → create answer → send back to host
-        </div>
-        
-        <!-- HOST SECTION -->
-        <div class="signal-area">
-            <div class="signal-title">🔵 HOST (create connection)</div>
-            <button onclick="createOffer()" id="createOfferBtn">1️⃣ CREATE OFFER</button>
-            <textarea id="offerSDP" placeholder="Your offer will appear here... copy and send to friend"></textarea>
-            <button onclick="copyOffer()" id="copyOfferBtn" disabled>📋 COPY OFFER</button>
+        <!-- SETUP AREA (скрывается после подключения) -->
+        <div id="setupArea" class="setup-section">
+            <div class="small-note">                ⚡ <strong>HOST:</strong> создать offer → отправить другу → вставить answer<br>
+                ⚡ <strong>JOIN:</strong> вставить offer → создать answer → отправить хосту
+            </div>
             
-            <div style="margin: 20px 0; border-top: 1px solid #333;"></div>
+            <!-- HOST -->
+            <div class="signal-area">
+                <div class="signal-title">🔵 HOST — создать соединение</div>
+                <button onclick="createOffer()" id="createOfferBtn">① CREATE OFFER</button>
+                <textarea id="offerSDP" placeholder="Offer появится здесь... скопируйте и отправьте"></textarea>
+                <button onclick="copyOffer()" id="copyOfferBtn" disabled>📋 COPY OFFER</button>
+                
+                <div style="margin: 15px 0; border-top: 1px solid #333;"></div>
+                
+                <textarea id="answerSDP" placeholder="Вставьте answer от друга..."></textarea>
+                <button onclick="setAnswer()" id="setAnswerBtn" disabled>③ SET ANSWER</button>
+            </div>
             
-            <textarea id="answerSDP" placeholder="Paste friend's answer here..."></textarea>
-            <button onclick="setAnswer()" id="setAnswerBtn" disabled>3️⃣ SET ANSWER</button>
+            <!-- JOIN -->
+            <div class="signal-area">
+                <div class="signal-title">🟢 JOIN — подключиться к хосту</div>
+                <textarea id="remoteOfferSDP" placeholder="Вставьте offer от хоста..."></textarea>
+                <button onclick="createAnswer()" id="createAnswerBtn">② CREATE ANSWER</button>
+                <textarea id="localAnswerSDP" placeholder="Answer появится здесь... скопируйте и отправьте"></textarea>
+                <button onclick="copyAnswer()" id="copyAnswerBtn" disabled>📋 COPY ANSWER</button>
+            </div>
+            
+            <div class="small-note" style="margin-top: 15px; color: #444;">
+                💡 Совет: используйте TURN серверы для работы за строгими NAT
+            </div>
         </div>
         
-        <!-- JOIN SECTION -->
-        <div class="signal-area">
-            <div class="signal-title">🟢 JOIN (connect to host)</div>
-            <textarea id="remoteOfferSDP" placeholder="Paste host's offer here..."></textarea>
-            <button onclick="createAnswer()" id="createAnswerBtn">2️⃣ CREATE ANSWER</button>
-            <textarea id="localAnswerSDP" placeholder="Your answer will appear here... copy and send to host"></textarea>
-            <button onclick="copyAnswer()" id="copyAnswerBtn" disabled>📋 COPY ANSWER</button>
-        </div>
-        
-        <!-- CHAT AREA -->
-        <div id="chatArea" style="display: none;">
+        <!-- CHAT AREA (показывается после подключения) -->
+        <div id="chatArea" class="chat-area">
             <div class="messages" id="messages"></div>
             
-            <div style="display: flex; gap: 10px;">
-                <input type="text" id="messageInput" placeholder="type message" style="flex: 3;">
-                <button onclick="sendMessage()" style="flex: 1;">SEND</button>
+            <div class="input-row">
+                <input type="text" id="messageInput" placeholder="введите сообщение..." autocomplete="off">
+                <button onclick="sendMessage()">SEND</button>
             </div>
             
             <div class="file-input-container">
-                <label for="photoInput" class="file-input-label">📷 SEND PHOTO</label>
+                <label for="photoInput" class="file-input-label">📷 ПРИКРЕПИТЬ ФОТО</label>
                 <input type="file" id="photoInput" accept="image/*" onchange="handlePhotoSelect(event)">
             </div>
             
-            <div id="photoPreview" style="display: none; margin: 10px 0;">
-                <img id="previewImage" style="max-width: 100%; max-height: 150px; border: 1px solid #00ff9d;">
-                <button onclick="sendPhoto()">> SEND PHOTO _</button>
-                <button onclick="cancelPhoto()" style="background: #330000;">✕ CANCEL</button>
+            <div class="photo-preview" id="photoPreview">
+                <img id="previewImage" src="">
+                <div class="actions">
+                    <button onclick="sendPhoto()">➤ ОТПРАВИТЬ</button>
+                    <button class="cancel" onclick="cancelPhoto()">✕ ОТМЕНИТЬ</button>                </div>
             </div>
             
-            <div class="status" id="chatStatus">[disconnected]</div>
+            <div class="status" id="chatStatus">[ожидание подключения]</div>
         </div>
         
         <div class="footer">
-            [ANOM DIRECT] // [COPY/PASTE SIGNALING] // [NO SERVER]
+            [ANOM DIRECT] • P2P ENCRYPTED • NO LOGS • v1.2
         </div>
     </div>
 
-    <!-- Modal for full-size photo -->
-    <div id="photoModal" class="modal" onclick="closeModal()">
-        <span class="modal-close">&times;</span>
-        <img id="modalImage">
+    <!-- PHOTO MODAL -->
+    <div id="photoModal" class="modal" onclick="closeModal(event)">
+        <span class="modal-close" onclick="closeModal(event)">&times;</span>
+        <img id="modalImage" src="">
+        <div class="modal-caption">нажмите × или вне изображения для закрытия</div>
     </div>
 
     <script>
-        // Configuration
-        const username = 'user_' + Math.floor(Math.random() * 1000);
+        // ===== CONFIG =====
+        const username = 'anon_' + Math.floor(Math.random() * 9000 + 1000);
         let peerConnection = null;
         let dataChannel = null;
         let selectedPhotoData = null;
+        let isConnected = false;
         
-        // STUN servers (free, for NAT traversal)
+        // ICE Servers с TURN для надёжного соединения
         const configuration = {
             iceServers: [
                 { urls: 'stun:stun.l.google.com:19302' },
                 { urls: 'stun:stun1.l.google.com:19302' },
-                { urls: 'stun:stun2.l.google.com:19302' }
-            ]
-        };
+                { urls: 'stun:stun2.l.google.com:19302' },
+                // Бесплатный TURN (Open Relay Project)
+                {
+                    urls: 'turn:openrelay.metered.ca:80',
+                    username: 'openrelayproject',
+                    credential: 'openrelayproject'
+                },
+                {
+                    urls: 'turn:openrelay.metered.ca:443',
+                    username: 'openrelayproject',
+                    credential: 'openrelayproject'
+                },
+                {
+                    urls: 'turns:openrelay.metered.ca:443?transport=tcp',
+                    username: 'openrelayproject',
+                    credential: 'openrelayproject'
+                }
+            ],
+            iceTransportPolicy: 'all'        };
         
-        // HOST: Create offer
+        // ===== UI FUNCTIONS =====
+        function updateStatus(text, type = 'normal') {
+            const status = document.getElementById('chatStatus');
+            status.innerText = `[${text}]`;
+            status.className = 'status' + (type === 'error' ? ' error' : type === 'connecting' ? ' connecting' : '');
+        }
+        
+        function showChat() {
+            document.getElementById('setupArea').classList.add('hidden');
+            document.getElementById('chatArea').classList.add('active');
+            document.getElementById('backBtn').classList.add('visible');
+            isConnected = true;
+            updateStatus('подключено ✓');
+            document.getElementById('messageInput').focus();
+        }
+        
+        function hideChat() {
+            document.getElementById('setupArea').classList.remove('hidden');
+            document.getElementById('chatArea').classList.remove('active');
+            document.getElementById('backBtn').classList.remove('visible');
+            isConnected = false;
+            updateStatus('отключено');
+        }
+        
+        function goBack() {
+            if (isConnected && peerConnection) {
+                if (dataChannel && dataChannel.readyState === 'open') {
+                    dataChannel.close();
+                }
+                peerConnection.close();
+                peerConnection = null;
+                dataChannel = null;
+            }
+            // Очистка чата
+            document.getElementById('messages').innerHTML = '';
+            document.getElementById('offerSDP').value = '';
+            document.getElementById('answerSDP').value = '';
+            document.getElementById('remoteOfferSDP').value = '';
+            document.getElementById('localAnswerSDP').value = '';
+            document.getElementById('copyOfferBtn').disabled = true;
+            document.getElementById('copyAnswerBtn').disabled = true;
+            document.getElementById('setAnswerBtn').disabled = true;
+            hideChat();
+        }
+        
+        // ===== WEBRTC FUNCTIONS =====
+        async function waitForICE(pc, timeout = 12000) {
+            return Promise.race([                new Promise((resolve) => {
+                    if (pc.iceGatheringState === 'complete') {
+                        resolve();
+                    } else {
+                        const check = () => {
+                            if (pc.iceGatheringState === 'complete') {
+                                pc.removeEventListener('icegatheringstatechange', check);
+                                resolve();
+                            }
+                        };
+                        pc.addEventListener('icegatheringstatechange', check);
+                    }
+                }),
+                new Promise((_, reject) => 
+                    setTimeout(() => reject(new Error('ICE timeout')), timeout)
+                )
+            ]);
+        }
+        
+        function setupDataChannel(channel) {
+            dataChannel = channel;
+            
+            channel.onopen = () => {
+                addSystemMessage('✅ Канал данных открыт');
+                showChat();
+                sendSystemMessage(username + ' подключился');
+            };
+            
+            channel.onclose = () => {
+                addSystemMessage('❌ Соединение разорвано');
+                updateStatus('ошибка', 'error');
+                setTimeout(() => { if (!isConnected) hideChat(); }, 2000);
+            };
+            
+            channel.onerror = (err) => {
+                console.error('DataChannel error:', err);
+                updateStatus('ошибка канала', 'error');
+            };
+            
+            channel.onmessage = (event) => {
+                try {
+                    const data = JSON.parse(event.data);
+                    displayMessage(data);
+                } catch (e) {
+                    console.log('Raw:', event.data);
+                    displayMessage({ type: 'text', user: 'unknown', text: event.data, time: Date.now() });
+                }
+            };
+        }
+                // HOST: Create offer
         async function createOffer() {
             try {
+                updateStatus('создание offer...', 'connecting');
                 peerConnection = new RTCPeerConnection(configuration);
                 
-                // Create data channel
                 dataChannel = peerConnection.createDataChannel('chat');
-                setupDataChannel();
+                setupDataChannel(dataChannel);
                 
-                // Create offer
+                peerConnection.oniceconnectionstatechange = () => {
+                    const state = peerConnection.iceConnectionState;
+                    if (state === 'connected' || state === 'completed') {
+                        updateStatus('P2P соединение ✓');
+                    } else if (state === 'failed') {
+                        updateStatus('ошибка NAT — проверьте TURN', 'error');
+                    } else if (state === 'checking') {
+                        updateStatus('поиск пути...', 'connecting');
+                    }
+                };
+                
                 const offer = await peerConnection.createOffer();
                 await peerConnection.setLocalDescription(offer);
-                
-                // Wait for ICE gathering
                 await waitForICE(peerConnection);
                 
-                // Display offer
                 const offerSDP = JSON.stringify({
                     type: peerConnection.localDescription.type,
                     sdp: peerConnection.localDescription.sdp
@@ -341,44 +619,48 @@
                 document.getElementById('copyOfferBtn').disabled = false;
                 document.getElementById('setAnswerBtn').disabled = false;
                 
-                addSystemMessage('✅ Offer created! Copy and send to friend');
+                addSystemMessage('✅ Offer создан! Скопируйте и отправьте другу');
+                updateStatus('offer готов — ждём answer', 'connecting');
                 
             } catch (error) {
-                console.error('Error creating offer:', error);
-                alert('Error: ' + error.message);
+                console.error('Offer error:', error);
+                updateStatus('ошибка: ' + error.message, 'error');
+                alert('Ошибка создания offer: ' + error.message);
             }
         }
         
-        // JOIN: Create answer from offer
+        // JOIN: Create answer
         async function createAnswer() {
             try {
                 const offerText = document.getElementById('remoteOfferSDP').value.trim();
                 if (!offerText) {
-                    alert('Paste host offer first');
-                    return;
-                }
+                    alert('Сначала вставьте offer от хоста');
+                    return;                }
                 
+                updateStatus('создание answer...', 'connecting');
                 const offer = JSON.parse(offerText);
-                
                 peerConnection = new RTCPeerConnection(configuration);
                 
-                // Handle incoming data channel
                 peerConnection.ondatachannel = (event) => {
-                    dataChannel = event.channel;
-                    setupDataChannel();
+                    setupDataChannel(event.channel);
                 };
                 
-                // Set remote description
-                await peerConnection.setRemoteDescription(offer);
+                peerConnection.oniceconnectionstatechange = () => {
+                    const state = peerConnection.iceConnectionState;
+                    if (state === 'connected' || state === 'completed') {
+                        updateStatus('P2P соединение ✓');
+                    } else if (state === 'failed') {
+                        updateStatus('ошибка NAT — проверьте TURN', 'error');
+                    } else if (state === 'checking') {
+                        updateStatus('поиск пути...', 'connecting');
+                    }
+                };
                 
-                // Create answer
+                await peerConnection.setRemoteDescription(offer);
                 const answer = await peerConnection.createAnswer();
                 await peerConnection.setLocalDescription(answer);
-                
-                // Wait for ICE gathering
                 await waitForICE(peerConnection);
                 
-                // Display answer
                 const answerSDP = JSON.stringify({
                     type: peerConnection.localDescription.type,
                     sdp: peerConnection.localDescription.sdp
@@ -387,82 +669,45 @@
                 document.getElementById('localAnswerSDP').value = answerSDP;
                 document.getElementById('copyAnswerBtn').disabled = false;
                 
-                addSystemMessage('✅ Answer created! Copy and send to host');
+                addSystemMessage('✅ Answer создан! Скопируйте и отправьте хосту');
+                updateStatus('answer готов — ждём подтверждения', 'connecting');
                 
             } catch (error) {
-                console.error('Error creating answer:', error);
-                alert('Error: ' + error.message);
+                console.error('Answer error:', error);
+                updateStatus('ошибка: ' + error.message, 'error');
+                alert('Ошибка создания answer: ' + error.message);
             }
         }
         
-        // HOST: Set answer from join
+        // HOST: Set answer
         async function setAnswer() {
             try {
                 const answerText = document.getElementById('answerSDP').value.trim();
                 if (!answerText) {
-                    alert('Paste friend answer first');
-                    return;
+                    alert('Вставьте answer от друга');                    return;
                 }
                 
+                updateStatus('установка соединения...', 'connecting');
                 const answer = JSON.parse(answerText);
                 await peerConnection.setRemoteDescription(answer);
                 
-                addSystemMessage('✅ Connection established!');
-                showChat();
+                // Соединение установится через onopen datachannel
+                addSystemMessage('✅ Answer принят — устанавливается соединение...');
                 
             } catch (error) {
-                console.error('Error setting answer:', error);
-                alert('Error: ' + error.message);
+                console.error('SetAnswer error:', error);
+                updateStatus('ошибка: ' + error.message, 'error');
+                alert('Ошибка: ' + error.message);
             }
         }
         
-        // Setup data channel
-        function setupDataChannel() {
-            dataChannel.onopen = () => {
-                addSystemMessage('✅ Data channel open!');
-                showChat();
-                
-                // Send join message
-                sendSystemMessage(username + ' connected');
-            };
-            
-            dataChannel.onclose = () => {
-                addSystemMessage('❌ Connection closed');
-                hideChat();
-            };
-            
-            dataChannel.onmessage = (event) => {
-                try {
-                    const data = JSON.parse(event.data);
-                    displayMessage(data);
-                } catch (e) {
-                    console.log('Raw message:', event.data);
-                }
-            };
-        }
-        
-        // Wait for ICE gathering
-        function waitForICE(pc) {
-            return new Promise((resolve) => {
-                if (pc.iceGatheringState === 'complete') {
-                    resolve();
-                } else {
-                    pc.addEventListener('icegatheringstatechange', () => {
-                        if (pc.iceGatheringState === 'complete') {
-                            resolve();
-                        }
-                    });
-                }
-            });
-        }
-        
-        // Send message
+        // ===== MESSAGING =====
         function sendMessage() {
             const input = document.getElementById('messageInput');
             const text = input.value.trim();
             
             if (!text || !dataChannel || dataChannel.readyState !== 'open') {
-                alert('Not connected');
+                if (!isConnected) alert('Сначала подключитесь');
                 return;
             }
             
@@ -476,34 +721,77 @@
             dataChannel.send(JSON.stringify(msg));
             displayMessage(msg);
             input.value = '';
+            input.focus();
         }
         
-        // Send system message
         function sendSystemMessage(text) {
             if (!dataChannel || dataChannel.readyState !== 'open') return;
-            
-            const msg = {
-                type: 'system',
-                text: text,
-                time: Date.now()
-            };
-            
+            const msg = { type: 'system', text: text, time: Date.now() };
             dataChannel.send(JSON.stringify(msg));
         }
         
-        // Handle photo selection
-        function handlePhotoSelect(event) {
-            const file = event.target.files[0];
+        function displayMessage(msg) {
+            const container = document.getElementById('messages');
+            const div = document.createElement('div');
+            const time = new Date(msg.time).toLocaleTimeString('ru-RU', {hour:'2-digit',minute:'2-digit'});            
+            if (msg.type === 'system') {
+                div.className = 'system-message';
+                div.innerText = '➤ ' + msg.text;
+            } else if (msg.type === 'photo') {
+                div.className = 'message' + (msg.user === username ? ' own' : '');
+                div.innerHTML = `<strong>[${msg.user}]</strong> <small style="color:#666">${time}</small><br>
+                    <img src="${msg.photo}" class="photo-message" onclick="openModal('${msg.photo}')">`;
+            } else {
+                div.className = 'message' + (msg.user === username ? ' own' : '');
+                div.innerHTML = `<strong>[${msg.user}]</strong> <small style="color:#666">${time}</small><br>${escapeHtml(msg.text)}`;
+            }
+            
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
+        }
+        
+        function addSystemMessage(text) {
+            displayMessage({ type: 'system', text: text, time: Date.now() });
+        }
+        
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        // ===== COPY FUNCTIONS =====
+        function copyOffer() {
+            const text = document.getElementById('offerSDP').value;
+            navigator.clipboard.writeText(text).then(() => {
+                const btn = document.getElementById('copyOfferBtn');
+                const original = btn.innerText;
+                btn.innerText = '✅ СКОПИРОВАНО';
+                setTimeout(() => btn.innerText = original, 1500);
+            });
+        }
+        
+        function copyAnswer() {
+            const text = document.getElementById('localAnswerSDP').value;
+            navigator.clipboard.writeText(text).then(() => {
+                const btn = document.getElementById('copyAnswerBtn');
+                const original = btn.innerText;
+                btn.innerText = '✅ СКОПИРОВАНО';
+                setTimeout(() => btn.innerText = original, 1500);
+            });
+        }
+        
+        // ===== PHOTO FUNCTIONS =====
+        function handlePhotoSelect(event) {            const file = event.target.files[0];
             if (!file) return;
             
-            // Check file size (max 5MB)
-            if (file.size > 5 * 1024 * 1024) {
-                alert('Photo too big! Max 5MB');
+            if (file.size > 4 * 1024 * 1024) {
+                alert('📷 Фото слишком большое! Максимум 4MB');
                 return;
             }
             
             const reader = new FileReader();
-            reader.onload = function(e) {
+            reader.onload = (e) => {
                 selectedPhotoData = e.target.result;
                 document.getElementById('previewImage').src = selectedPhotoData;
                 document.getElementById('photoPreview').style.display = 'block';
@@ -511,10 +799,9 @@
             reader.readAsDataURL(file);
         }
         
-        // Send photo
         function sendPhoto() {
             if (!selectedPhotoData || !dataChannel || dataChannel.readyState !== 'open') {
-                alert('Not connected');
+                alert('Не подключено');
                 return;
             }
             
@@ -530,92 +817,35 @@
             cancelPhoto();
         }
         
-        // Cancel photo
         function cancelPhoto() {
             selectedPhotoData = null;
             document.getElementById('photoInput').value = '';
             document.getElementById('photoPreview').style.display = 'none';
         }
         
-        // Display message
-        function displayMessage(msg) {
-            const messagesDiv = document.getElementById('messages');
-            const msgDiv = document.createElement('div');
-            
-            if (msg.type === 'system') {
-                msgDiv.className = 'system-message';
-                msgDiv.innerText = '➤ ' + msg.text;
-            } else if (msg.type === 'photo') {
-                msgDiv.className = 'message';
-                const time = new Date(msg.time).toLocaleTimeString();
-                msgDiv.innerHTML = `<strong>[${msg.user}]</strong> ${time}<br>
-                    <img src="${msg.photo}" class="photo-message" onclick="openModal('${msg.photo}')">`;
-            } else {
-                msgDiv.className = 'message';
-                const time = new Date(msg.time).toLocaleTimeString();
-                msgDiv.innerHTML = `<strong>[${msg.user}]</strong> ${time}<br>${escapeHtml(msg.text)}`;
-            }
-            
-            messagesDiv.appendChild(msgDiv);
-            messagesDiv.scrollTop = messagesDiv.scrollHeight;
-        }
-        
-        // Add system message
-        function addSystemMessage(text) {
-            displayMessage({
-                type: 'system',
-                text: text,
-                time: Date.now()
-            });
-        }
-        
-        // Escape HTML
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-        
-        // Copy functions
-        function copyOffer() {
-            const text = document.getElementById('offerSDP').value;
-            navigator.clipboard.writeText(text).then(() => {
-                alert('Offer copied!');
-            });
-        }
-        
-        function copyAnswer() {
-            const text = document.getElementById('localAnswerSDP').value;
-            navigator.clipboard.writeText(text).then(() => {
-                alert('Answer copied!');
-            });
-        }
-        
-        // UI functions
-        function showChat() {
-            document.getElementById('chatArea').style.display = 'block';
-            document.getElementById('chatStatus').innerText = '[connected]';
-        }
-        
-        function hideChat() {
-            document.getElementById('chatArea').style.display = 'none';
-            document.getElementById('chatStatus').innerText = '[disconnected]';
-        }
-        
-        // Modal functions
+        // ===== MODAL =====
         function openModal(src) {
             document.getElementById('modalImage').src = src;
-            document.getElementById('photoModal').style.display = 'flex';
+            document.getElementById('photoModal').classList.add('active');
         }
         
-        function closeModal() {
-            document.getElementById('photoModal').style.display = 'none';
+        function closeModal(event) {
+            if (event.target.id === 'photoModal' || event.target.className === 'modal-close') {
+                document.getElementById('photoModal').classList.remove('active');            }
         }
         
-        // Enter to send
+        // ===== INIT =====
         document.getElementById('messageInput').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') sendMessage();
         });
+        
+        // Закрыть модальное окно по Escape
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeModal({ target: { id: 'photoModal' } });
+        });
+        
+        // Показать статус при загрузке
+        updateStatus('готов к подключению');
     </script>
 </body>
 </html>
