@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>ANOM SIMPLE</title>
+    <title>ANOM 1.5</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
@@ -87,8 +87,9 @@
         
         .message {
             margin: 5px 0;
-            padding: 5px;
+            padding: 8px;
             border-bottom: 1px solid #333;
+            word-wrap: break-word;
         }
         
         .message strong {
@@ -127,13 +128,97 @@
             color: #888;
             text-align: center;
         }
+        
+        .file-input-container {
+            margin: 5px 0;
+            position: relative;
+        }
+        
+        .file-input-label {
+            display: block;
+            padding: 10px;
+            background: #1a1a1a;
+            border: 1px solid #00ff9d;
+            color: #00ff9d;
+            text-align: center;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        
+        .file-input-label:hover {
+            background: #00ff9d;
+            color: #0a0a0a;
+        }
+        
+        input[type="file"] {
+            position: absolute;
+            opacity: 0;
+            width: 0.1px;
+            height: 0.1px;
+        }
+        
+        .photo-message {
+            max-width: 200px;
+            max-height: 200px;
+            margin: 5px 0;
+            border: 1px solid #00ff9d;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        
+        .photo-message:hover {
+            opacity: 0.8;
+        }
+        
+        .message-content {
+            margin-top: 5px;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal img {
+            max-width: 90%;
+            max-height: 90%;
+            border: 3px solid #00ff9d;
+        }
+        
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            color: #00ff9d;
+            font-size: 30px;
+            cursor: pointer;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin: 5px 0;
+        }
+        
+        .action-buttons button {
+            flex: 1;
+            padding: 8px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>ANOM SIMPLE</h1>
-            <div class="version">just works // no setup</div>
+            <h1>ANOM 1.5</h1>
+            <div class="version">with photo support</div>
         </div>
         
         <div class="user-info">
@@ -144,7 +229,8 @@
         <div class="simple-note" id="note">
             ⚡ 1. Enter room name ⚡<br>
             ⚡ 2. Start chatting ⚡<br>
-            ⚡ 3. Messages disappear on refresh ⚡
+            ⚡ 3. Click 📷 to send photos ⚡<br>
+            ⚡ 4. Messages disappear on refresh ⚡
         </div>
         
         <!-- Room input -->
@@ -154,17 +240,43 @@
         <!-- Chat area -->
         <div id="chatArea" class="chat-area">
             <div class="messages" id="messages"></div>
-            <input type="text" id="messageInput" placeholder="type message">
-            <button onclick="sendMessage()">> SEND _</button>
+            
+            <div class="action-buttons">
+                <button onclick="showFileInput()">📷 PHOTO</button>
+                <button onclick="toggleTextInput()">💬 TEXT</button>
+            </div>
+            
+            <div id="textInputContainer" style="display: block;">
+                <input type="text" id="messageInput" placeholder="type message">
+                <button onclick="sendMessage()">> SEND _</button>
+            </div>
+            
+            <div id="photoInputContainer" style="display: none;">
+                <div class="file-input-container">
+                    <label for="photoInput" class="file-input-label">📷 SELECT PHOTO</label>
+                    <input type="file" id="photoInput" accept="image/*" onchange="handlePhotoSelect(event)">
+                </div>
+                <div id="photoPreview" style="display: none; margin: 10px 0;">
+                    <img id="previewImage" style="max-width: 100%; max-height: 150px; border: 1px solid #00ff9d;">
+                    <button onclick="sendPhoto()">> SEND PHOTO _</button>
+                    <button onclick="cancelPhoto()" style="background: #330000;">✕ CANCEL</button>
+                </div>
+            </div>
+            
             <div class="status" id="status">[connected to room]</div>
         </div>
         
         <div class="footer">
-            [ANOM SIMPLE] // [REFRESH TO ERASE]
+            [ANOM 1.5] // [REFRESH TO ERASE]
         </div>
     </div>
 
-    <!-- Use localStorage for temporary storage -->
+    <!-- Modal for full-size photo -->
+    <div id="photoModal" class="modal" onclick="closeModal()">
+        <span class="modal-close">&times;</span>
+        <img id="modalImage">
+    </div>
+
     <script>
         // Generate random username
         const username = 'user_' + Math.floor(Math.random() * 1000);
@@ -172,6 +284,8 @@
         
         let currentRoom = null;
         let messages = [];
+        let selectedPhotoData = null;
+        let pollInterval = null;
         
         function joinRoom() {
             const room = document.getElementById('roomInput').value.trim();
@@ -194,13 +308,17 @@
             addMessage('system', 'joined room: ' + room);
             addMessage('join', username + ' joined');
             
+            // Clear any existing interval
+            if (pollInterval) {
+                clearInterval(pollInterval);
+            }
+            
             // Start checking for messages
             startPolling();
         }
         
         function startPolling() {
-            // Check every 2 seconds for new messages
-            setInterval(() => {
+            pollInterval = setInterval(() => {
                 if (!currentRoom) return;
                 
                 // Get messages from localStorage
@@ -246,6 +364,60 @@
             input.value = '';
         }
         
+        function showFileInput() {
+            document.getElementById('textInputContainer').style.display = 'none';
+            document.getElementById('photoInputContainer').style.display = 'block';
+        }
+        
+        function toggleTextInput() {
+            document.getElementById('textInputContainer').style.display = 'block';
+            document.getElementById('photoInputContainer').style.display = 'none';
+            cancelPhoto();
+        }
+        
+        function handlePhotoSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                selectedPhotoData = e.target.result;
+                document.getElementById('previewImage').src = selectedPhotoData;
+                document.getElementById('photoPreview').style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        }
+        
+        function sendPhoto() {
+            if (!selectedPhotoData || !currentRoom) return;
+            
+            // Create message with photo
+            const msg = {
+                id: Date.now() + '_' + Math.random(),
+                user: username,
+                photo: selectedPhotoData,
+                time: Date.now(),
+                type: 'photo'
+            };
+            
+            // Save to localStorage
+            saveMessage(msg);
+            
+            // Display
+            messages.push(msg);
+            displayMessage(msg);
+            
+            // Reset photo input
+            cancelPhoto();
+            toggleTextInput();
+        }
+        
+        function cancelPhoto() {
+            selectedPhotoData = null;
+            document.getElementById('photoInput').value = '';
+            document.getElementById('photoPreview').style.display = 'none';
+        }
+        
         function saveMessage(msg) {
             // Get existing messages for this room
             const key = 'room_' + currentRoom;
@@ -261,9 +433,9 @@
             // Add new message
             roomMessages.push(msg);
             
-            // Keep only last 50 messages
-            if (roomMessages.length > 50) {
-                roomMessages = roomMessages.slice(-50);
+            // Keep only last 30 messages (reduced because photos are large)
+            if (roomMessages.length > 30) {
+                roomMessages = roomMessages.slice(-30);
             }
             
             // Save back
@@ -281,10 +453,18 @@
                 msgDiv.className = 'join-message';
                 msgDiv.style.color = '#666';
                 msgDiv.innerText = '>>> ' + msg.text + ' <<<';
+            } else if (msg.type === 'photo') {
+                msgDiv.className = 'message';
+                const time = new Date(msg.time).toLocaleTimeString();
+                msgDiv.innerHTML = `<strong>[${msg.user}]</strong> ${time}<br>
+                    <div class="message-content">
+                        <img src="${msg.photo}" class="photo-message" onclick="openModal('${msg.photo}')">
+                    </div>`;
             } else {
                 msgDiv.className = 'message';
                 const time = new Date(msg.time).toLocaleTimeString();
-                msgDiv.innerHTML = `<strong>[${msg.user}]</strong> ${time}<br>${msg.text}`;
+                msgDiv.innerHTML = `<strong>[${msg.user}]</strong> ${time}<br>
+                    <div class="message-content">${escapeHtml(msg.text)}</div>`;
             }
             
             messagesDiv.appendChild(msgDiv);
@@ -308,16 +488,31 @@
             }
         }
         
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        // Modal functions
+        function openModal(src) {
+            document.getElementById('modalImage').src = src;
+            document.getElementById('photoModal').style.display = 'flex';
+        }
+        
+        function closeModal() {
+            document.getElementById('photoModal').style.display = 'none';
+        }
+        
         // Enter to send
         document.getElementById('messageInput').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') sendMessage();
         });
         
-        // Clean old messages on refresh
+        // Clean up on page unload
         window.addEventListener('beforeunload', () => {
-            // Clear this user's messages from localStorage
-            if (currentRoom) {
-                localStorage.removeItem('room_' + currentRoom);
+            if (pollInterval) {
+                clearInterval(pollInterval);
             }
         });
     </script>
