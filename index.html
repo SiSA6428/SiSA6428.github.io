@@ -510,6 +510,7 @@
         let isConnected = false;
         let iceCandidatesBuffer = [];
         let isGatheringComplete = false;
+        let isHost = false; // Флаг для отслеживания роли
         
         // 🔥 Оптимизированная конфигурация
         const configuration = {
@@ -561,7 +562,7 @@
         }
         
         function goBack() {
-            if (isConnected && peerConnection) {
+            if (peerConnection) {
                 if (dataChannel && dataChannel.readyState === 'open') {
                     dataChannel.close();
                 }
@@ -571,6 +572,7 @@
             }
             iceCandidatesBuffer = [];
             isGatheringComplete = false;
+            isHost = false;
             
             document.getElementById('messages').innerHTML = '';
             document.getElementById('offerSDP').value = '';
@@ -597,7 +599,6 @@
         }
         
         // ===== WEBRTC FUNCTIONS =====
-        // ⚡ TRICKLE ICE — не ждём завершения, отправляем SDP сразу!
         function setupICEGathering(pc, prefix) {
             iceCandidatesBuffer = [];
             isGatheringComplete = false;
@@ -607,7 +608,6 @@
                     iceCandidatesBuffer.push(event.candidate);
                     updateCandidateInfo(prefix, iceCandidatesBuffer.length, true);
                     
-                    // Обновляем textarea с кандидатами в реальном времени
                     const candidatesText = JSON.stringify(iceCandidatesBuffer.map(c => c.toJSON()));
                     if (prefix === 'offer') {
                         document.getElementById('offerCandidates').value = candidatesText;
@@ -636,13 +636,16 @@
             channel.onopen = () => {
                 addSystemMessage('✅ Канал данных открыт');
                 showChat();
-                sendSystemMessage(username + ' подключился');
+                if (isHost) {
+                    sendSystemMessage(username + ' (хост) подключился');
+                } else {
+                    sendSystemMessage(username + ' подключился');
+                }
             };
             
             channel.onclose = () => {
                 addSystemMessage('❌ Соединение разорвано');
                 updateStatus('отключено', 'error');
-                setTimeout(() => { if (!isConnected) hideChat(); }, 2000);
             };
             
             channel.onerror = (err) => {
@@ -660,18 +663,18 @@
             };
         }
         
-        // HOST: Create offer — ⚡ БЫСТРО, без ожидания!
+        // HOST: Create offer
         async function createOffer() {
             try {
                 updateStatus('создание offer...', 'connecting');
                 document.getElementById('createOfferBtn').disabled = true;
+                isHost = true;
                 
                 peerConnection = new RTCPeerConnection(configuration);
                 
                 dataChannel = peerConnection.createDataChannel('chat');
                 setupDataChannel(dataChannel);
                 
-                // ⚡ TRICKLE ICE — начинаем сбор, но не ждём!
                 setupICEGathering(peerConnection, 'offer');
                 
                 peerConnection.oniceconnectionstatechange = () => {
@@ -692,7 +695,6 @@
                 const offer = await peerConnection.createOffer();
                 await peerConnection.setLocalDescription(offer);
                 
-                // ⚡ СРАЗУ отдаём SDP, не ждём ICE!
                 const offerSDP = JSON.stringify({
                     type: peerConnection.localDescription.type,
                     sdp: peerConnection.localDescription.sdp
@@ -700,12 +702,9 @@
                 
                 document.getElementById('offerSDP').value = offerSDP;
                 document.getElementById('copyOfferBtn').disabled = false;
-                document.getElementById('setAnswerBtn').disabled = false;
                 
                 addSystemMessage('✅ Offer создан! Копируйте SDP сейчас');
                 updateStatus('SDP готов — копируйте и отправьте другу', 'success');
-                
-                // ICE кандидаты будут появляться в фоне
                 addSystemMessage('⏳ ICE кандидаты собираются в фоне (скопируйте через 5-10 сек для разных сетей)');
                 
             } catch (error) {
@@ -716,7 +715,7 @@
             }
         }
         
-        // JOIN: Create answer — ⚡ БЫСТРО, без ожидания!
+        // JOIN: Create answer
         async function createAnswer() {
             try {
                 const offerText = document.getElementById('remoteOfferSDP').value.trim();
@@ -724,13 +723,13 @@
                 
                 updateStatus('создание answer...', 'connecting');
                 document.getElementById('createAnswerBtn').disabled = true;
+                isHost = false;
                 
                 const offer = JSON.parse(offerText);
                 peerConnection = new RTCPeerConnection(configuration);
                 
                 peerConnection.ondatachannel = (event) => setupDataChannel(event.channel);
                 
-                // ⚡ TRICKLE ICE
                 setupICEGathering(peerConnection, 'answer');
                 
                 peerConnection.oniceconnectionstatechange = () => {
@@ -745,9 +744,10 @@
                         state === 'failed' ? 'error' : state === 'checking' ? 'connecting' : state === 'connected' || state === 'completed' ? 'success' : 'normal');
                 };
                 
+                // Устанавливаем remote description
                 await peerConnection.setRemoteDescription(offer);
                 
-                // 🔥 Добавляем ICE кандидаты из offer если есть
+                // Добавляем ICE кандидаты из offer если есть
                 const offerCandidatesText = document.getElementById('remoteOfferCandidates').value.trim();
                 if (offerCandidatesText) {
                     try {
@@ -768,7 +768,6 @@
                 const answer = await peerConnection.createAnswer();
                 await peerConnection.setLocalDescription(answer);
                 
-                // ⚡ СРАЗУ отдаём SDP, не ждём ICE!
                 const answerSDP = JSON.stringify({
                     type: peerConnection.localDescription.type,
                     sdp: peerConnection.localDescription.sdp
@@ -777,10 +776,11 @@
                 document.getElementById('localAnswerSDP').value = answerSDP;
                 document.getElementById('copyAnswerBtn').disabled = false;
                 
+                // Включаем кнопку SET ANSWER у хоста
+                document.getElementById('setAnswerBtn').disabled = false;
+                
                 addSystemMessage('✅ Answer создан! Копируйте SDP сейчас');
                 updateStatus('SDP готов — копируйте и отправьте хосту', 'success');
-                
-                // ICE кандидаты будут появляться в фоне
                 addSystemMessage('⏳ ICE кандидаты собираются в фоне (скопируйте через 5-10 сек для разных сетей)');
                 
             } catch (error) {
@@ -797,12 +797,24 @@
                 const answerText = document.getElementById('answerSDP').value.trim();
                 if (!answerText) { alert('Вставьте SDP answer от друга'); return; }
                 
+                if (!peerConnection) {
+                    alert('Сначала создайте offer');
+                    return;
+                }
+                
+                // Проверяем состояние
+                if (peerConnection.signalingState !== 'have-local-offer') {
+                    console.log('Current state:', peerConnection.signalingState);
+                    addSystemMessage('⚠️ Текущее состояние: ' + peerConnection.signalingState + ', ожидается have-local-offer');
+                }
+                
                 updateStatus('установка соединения...', 'connecting');
                 const answer = JSON.parse(answerText);
                 
+                // Устанавливаем remote description
                 await peerConnection.setRemoteDescription(answer);
                 
-                // 🔥 Добавляем ICE кандидаты из answer если есть
+                // Добавляем ICE кандидаты из answer если есть
                 const answerCandidatesText = document.getElementById('answerCandidates').value.trim();
                 if (answerCandidatesText) {
                     try {
