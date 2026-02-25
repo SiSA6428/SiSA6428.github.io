@@ -1,11 +1,10 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>ANOM MESSAGER</title>
+    <title>ANOM FAST</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
     <style>
-        /* Стили без изменений (такие же, как в предыдущей версии) */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             background: #0a0a0a;
@@ -649,8 +648,7 @@
                 
                 document.getElementById('offerSDP').value = offerSDP;
                 document.getElementById('copyOfferBtn').disabled = false;
-                // Включаем кнопку SET ANSWER для хоста
-                document.getElementById('setAnswerBtn').disabled = false;
+                document.getElementById('setAnswerBtn').disabled = false; // включаем для хоста
                 
                 addSystemMessage('✅ Offer создан! Копируйте SDP сейчас');
                 updateStatus('SDP готов — копируйте и отправьте другу', 'success');
@@ -722,9 +720,7 @@
                 
                 document.getElementById('localAnswerSDP').value = answerSDP;
                 document.getElementById('copyAnswerBtn').disabled = false;
-                
-                // НЕ включаем кнопку SET ANSWER у JOIN стороны, она не нужна
-                // document.getElementById('setAnswerBtn').disabled = false;  // удалено
+                // НЕ включаем SET ANSWER для клиента
                 
                 addSystemMessage('✅ Answer создан! Копируйте SDP сейчас');
                 updateStatus('SDP готов — копируйте и отправьте хосту', 'success');
@@ -738,25 +734,40 @@
             }
         }
         
-        // HOST: Set answer
+        // HOST: Set answer (ТОЛЬКО ДЛЯ ХОСТА)
         async function setAnswer() {
             try {
+                // Проверка, что мы хост
+                if (!isHost) {
+                    alert('❌ Эта кнопка только для хоста! Нажмите CREATE OFFER, если вы хотите создать соединение.');
+                    return;
+                }
+
                 const answerText = document.getElementById('answerSDP').value.trim();
-                if (!answerText) { alert('Вставьте SDP answer от друга'); return; }
+                if (!answerText) { 
+                    alert('Вставьте SDP answer от друга'); 
+                    return; 
+                }
                 
                 if (!peerConnection) {
-                    alert('Сначала создайте offer');
+                    alert('Сначала создайте offer (нажмите CREATE OFFER)');
                     return;
                 }
                 
-                // Проверяем состояние
-                if (peerConnection.signalingState !== 'have-local-offer') {
-                    console.log('Current state:', peerConnection.signalingState);
-                    addSystemMessage('⚠️ Текущее состояние: ' + peerConnection.signalingState + ', ожидается have-local-offer');
-                    // Если состояние stable, возможно уже соединение установлено
-                    if (peerConnection.signalingState === 'stable') {
-                        addSystemMessage('⚠️ Соединение, возможно, уже установлено. Попробуйте обменяться ICE кандидатами.');
+                // Проверяем состояние сигнализации
+                const currentState = peerConnection.signalingState;
+                if (currentState !== 'have-local-offer') {
+                    console.warn('Wrong state for setRemoteDescription:', currentState);
+                    if (currentState === 'stable') {
+                        if (peerConnection.remoteDescription) {
+                            addSystemMessage('⚠️ Соединение уже установлено или answer уже принят. Нажмите НАЗАД и начните заново.');
+                        } else {
+                            addSystemMessage('⚠️ Неправильное состояние: ' + currentState + '. Возможно, offer не был создан. Нажмите CREATE OFFER снова.');
+                        }
+                    } else {
+                        addSystemMessage('⚠️ Текущее состояние: ' + currentState + '. Ожидается have-local-offer. Нажмите НАЗАД и начните заново.');
                     }
+                    return;
                 }
                 
                 updateStatus('установка соединения...', 'connecting');
@@ -783,6 +794,9 @@
                 }
                 
                 addSystemMessage('✅ Answer принят — устанавливается соединение...');
+                
+                // После успешного принятия answer можно отключить кнопку SET ANSWER
+                document.getElementById('setAnswerBtn').disabled = true;
                 
             } catch (error) {
                 console.error('SetAnswer error:', error);
