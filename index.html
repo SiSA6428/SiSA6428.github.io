@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>ANOM P2P FIXED</title>
+    <title>ANOM CONNECT</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
     <style>
@@ -12,7 +12,6 @@
             font-family: 'Courier New', monospace;
             color: #00ff9d;
             padding: 15px;
-            min-height: 100vh;
         }
         
         .container {
@@ -38,26 +37,38 @@
             letter-spacing: 3px;
         }
         
-        .connection-panel {
-            background: #1a1a1a;
+        button {
+            background: transparent;
             border: 1px solid #00ff9d;
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-        
-        .step {
-            margin-bottom: 20px;
-            padding: 15px;
-            background: #0d1a0d;
-            border-radius: 8px;
-        }
-        
-        .step h3 {
             color: #00ff9d;
-            margin-bottom: 10px;
-            font-size: 14px;
+            padding: 12px 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            font-weight: bold;
             text-transform: uppercase;
+            cursor: pointer;
+            border-radius: 5px;
+            width: 100%;
+            margin: 5px 0;
+        }
+        
+        button:hover {
+            background: #00ff9d;
+            color: #0a0a0a;
+        }
+        
+        button:disabled {
+            opacity: 0.3;
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin: 10px 0;
+        }
+        
+        .btn-group button {
+            flex: 1;
         }
         
         textarea {
@@ -74,43 +85,6 @@
             min-height: 80px;
         }
         
-        button {
-            background: transparent;
-            border: 1px solid #00ff9d;
-            color: #00ff9d;
-            padding: 12px 20px;
-            font-family: 'Courier New', monospace;
-            font-size: 12px;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            cursor: pointer;
-            border-radius: 5px;
-            width: 100%;
-            margin: 5px 0;
-            transition: all 0.2s;
-        }
-        
-        button:hover {
-            background: #00ff9d;
-            color: #0a0a0a;
-        }
-        
-        button:disabled {
-            opacity: 0.3;
-            cursor: not-allowed;
-        }
-        
-        .btn-group {
-            display: flex;
-            gap: 10px;
-            margin: 10px 0;
-        }
-        
-        .btn-group button {
-            flex: 1;
-        }
-        
         .status {
             background: #0d0d0d;
             border: 1px solid #333;
@@ -121,8 +95,6 @@
         }
         
         .connected { border-color: #00ff9d; color: #00ff9d; }
-        .connecting { border-color: #ffaa00; color: #ffaa00; }
-        .error { border-color: #ff6b6b; color: #ff6b6b; }
         
         .chat-container {
             display: none;
@@ -147,17 +119,11 @@
             padding: 10px;
             background: #0d0d0d;
             border-left: 3px solid #00ff9d;
-            border-radius: 0 5px 5px 0;
         }
         
         .message.own {
             border-left-color: #ff6b6b;
             background: #1a0d0d;
-        }
-        
-        .message small {
-            color: #666;
-            font-size: 9px;
         }
         
         .input-group {
@@ -190,572 +156,371 @@
             font-size: 11px;
         }
         
-        .debug-info {
-            background: #1a1a1a;
-            border: 1px solid #666;
-            border-radius: 5px;
-            padding: 10px;
-            margin: 10px 0;
-            font-size: 10px;
-            color: #666;
-            max-height: 100px;
-            overflow-y: auto;
+        .step {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #0d1a0d;
+            border-radius: 8px;
         }
         
-        @media (max-width: 480px) {
-            .container { padding: 15px; }
-            .btn-group { flex-direction: column; }
+        .step h3 {
+            color: #00ff9d;
+            margin-bottom: 10px;
+            font-size: 14px;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>🔵 ANOM P2P FIXED</h1>
-            <button class="back-btn" id="backBtn" onclick="resetConnection()" style="display: none;">← НАЗАД</button>
+            <h1>🔵 ANOM CONNECT</h1>
+            <button class="back-btn" id="backBtn" onclick="resetAll()" style="display: none;">← НАЗАД</button>
         </div>
         
-        <!-- Панель подключения -->
-        <div id="connectionPanel" class="connection-panel">
+        <div id="connectPanel">
             <div class="step">
-                <h3>ШАГ 1: ВЫБЕРИТЕ РОЛЬ</h3>
+                <h3>ВЫБЕРИТЕ РОЛЬ</h3>
                 <div class="btn-group">
-                    <button onclick="initHost()" id="hostBtn">🎮 СОЗДАТЬ КОМНАТУ</button>
-                    <button onclick="initJoin()" id="joinBtn">👥 ПОДКЛЮЧИТЬСЯ</button>
+                    <button onclick="startHost()" id="hostBtn">СОЗДАТЬ</button>
+                    <button onclick="startJoin()" id="joinBtn">ПОДКЛЮЧИТЬСЯ</button>
                 </div>
             </div>
             
-            <div id="hostStep" style="display: none;">
+            <div id="hostBlock" style="display: none;">
                 <div class="step">
-                    <h3>ШАГ 2: ОТПРАВЬТЕ ЭТОТ КОД ДРУГУ</h3>
-                    <textarea id="offerCode" readonly placeholder="Код появится здесь..."></textarea>
-                    <button onclick="copyOffer()">📋 КОПИРОВАТЬ КОД</button>
-                    <div class="status" id="hostStatus">⏳ Создание комнаты...</div>
+                    <h3>КОД КОМНАТЫ (отправьте другу)</h3>
+                    <textarea id="offerText" readonly></textarea>
+                    <button onclick="copyText('offerText')">КОПИРОВАТЬ</button>
+                    <div class="status" id="hostStatus">Создание комнаты...</div>
                 </div>
                 
                 <div class="step">
-                    <h3>ШАГ 3: ВСТАВЬТЕ ОТВЕТ ДРУГА</h3>
-                    <textarea id="answerInput" placeholder="Вставьте код ответа от друга..."></textarea>
-                    <button onclick="connectWithAnswer()" id="connectBtn" disabled>🔗 ПОДКЛЮЧИТЬСЯ</button>
+                    <h3>ВСТАВЬТЕ КОД ОТВЕТА</h3>
+                    <textarea id="answerText" placeholder="Вставьте код от друга..."></textarea>
+                    <button onclick="processAnswer()" id="answerBtn" disabled>ПОДКЛЮЧИТЬ</button>
                 </div>
             </div>
             
-            <div id="joinStep" style="display: none;">
+            <div id="joinBlock" style="display: none;">
                 <div class="step">
-                    <h3>ШАГ 2: ВСТАВЬТЕ КОД КОМНАТЫ</h3>
-                    <textarea id="offerInput" placeholder="Вставьте код от хоста..."></textarea>
-                    <button onclick="sendAnswer()" id="answerBtn" disabled>📤 ОТПРАВИТЬ ОТВЕТ</button>
-                    <div class="status" id="joinStatus">⏳ Ожидание кода...</div>
+                    <h3>ВСТАВЬТЕ КОД КОМНАТЫ</h3>
+                    <textarea id="remoteOfferText" placeholder="Вставьте код от хоста..."></textarea>
+                    <button onclick="processOffer()" id="offerBtn" disabled>СОЗДАТЬ ОТВЕТ</button>
+                    <div class="status" id="joinStatus">Ожидание кода...</div>
                 </div>
             </div>
-            
-            <div id="debugPanel" class="debug-info" style="display: none;"></div>
         </div>
         
-        <!-- Чат -->
-        <div id="chatContainer" class="chat-container">
-            <div class="messages" id="messages"></div>
-            
+        <div id="chatBlock" class="chat-container">
+            <div class="messages" id="messageList"></div>
             <div class="input-group">
-                <input type="text" id="messageInput" placeholder="Введите сообщение..." onkeypress="checkEnter(event)">
-                <button onclick="sendMessage()">📨</button>
+                <input type="text" id="messageInput" placeholder="Сообщение..." onkeypress="if(event.key=='Enter') sendMsg()">
+                <button onclick="sendMsg()">➤</button>
             </div>
-            
             <div class="btn-group">
-                <button onclick="selectFile()">📷 ФОТО</button>
-                <button onclick="selectAnyFile()">📎 ФАЙЛ</button>
+                <button onclick="selectPhoto()">📷 ФОТО</button>
+                <button onclick="selectFile()">📎 ФАЙЛ</button>
             </div>
-            
-            <input type="file" id="fileInput" style="display: none;" accept="image/*" onchange="handleFileSelect(event)">
-            <input type="file" id="anyFileInput" style="display: none;" onchange="handleAnyFileSelect(event)">
-            
-            <div class="status" id="chatStatus">🔵 Ожидание подключения...</div>
+            <input type="file" id="filePicker" style="display: none;" onchange="handleFile(this)">
+            <div class="status" id="chatStatus">Ожидание подключения...</div>
         </div>
     </div>
 
     <script>
-        // ========== ИСПРАВЛЕННОЕ P2P СОЕДИНЕНИЕ ==========
-        let peerConnection = null;
-        let dataChannel = null;
-        let isHost = false;
-        let username = 'user_' + Math.floor(Math.random() * 1000);
-        let iceCandidates = [];
-        let remoteCandidates = [];
+        // ========== ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ==========
+        let pc = null;
+        let dc = null;
+        let isCreator = false;
+        let userName = 'user_' + Math.floor(Math.random() * 9999);
+        let localCandidates = [];
         
-        // STUN серверы для подключения из разных сетей
-        const config = {
+        // STUN серверы
+        const iceConfig = {
             iceServers: [
                 { urls: 'stun:stun.l.google.com:19302' },
                 { urls: 'stun:stun1.l.google.com:19302' },
-                { urls: 'stun:stun2.l.google.com:19302' },
-                { urls: 'stun:stun3.l.google.com:19302' },
-                { urls: 'stun:stun4.l.google.com:19302' }
+                { urls: 'stun:stun2.l.google.com:19302' }
             ],
-            iceCandidatePoolSize: 0,
-            iceTransportPolicy: 'all',
-            bundlePolicy: 'max-bundle'
+            iceCandidatePoolSize: 0
         };
         
-        // Отладка
-        function debugLog(msg) {
-            console.log('🔍', msg);
-            const debug = document.getElementById('debugPanel');
-            debug.style.display = 'block';
-            debug.innerHTML += '<div>→ ' + msg + '</div>';
-            debug.scrollTop = debug.scrollHeight;
-        }
-        
-        // ========== ИНИЦИАЛИЗАЦИЯ ==========
-        function initHost() {
-            isHost = true;
-            document.getElementById('hostBtn').style.background = '#00ff9d';
-            document.getElementById('hostBtn').style.color = '#000';
-            document.getElementById('joinBtn').disabled = true;
-            
-            document.getElementById('hostStep').style.display = 'block';
-            document.getElementById('joinStep').style.display = 'none';
-            document.getElementById('backBtn').style.display = 'block';
-            document.getElementById('debugPanel').innerHTML = '';
-            
-            createOffer();
-        }
-        
-        function initJoin() {
-            isHost = false;
-            document.getElementById('joinBtn').style.background = '#00ff9d';
-            document.getElementById('joinBtn').style.color = '#000';
+        // ========== ХОСТ ==========
+        function startHost() {
+            isCreator = true;
             document.getElementById('hostBtn').disabled = true;
-            
-            document.getElementById('joinStep').style.display = 'block';
-            document.getElementById('hostStep').style.display = 'none';
+            document.getElementById('joinBtn').disabled = true;
+            document.getElementById('hostBlock').style.display = 'block';
+            document.getElementById('joinBlock').style.display = 'none';
             document.getElementById('backBtn').style.display = 'block';
-            document.getElementById('debugPanel').innerHTML = '';
             
-            document.getElementById('joinStatus').innerHTML = '📋 Вставьте код от хоста';
+            createConnection(true);
         }
         
-        // ========== ХОСТ: СОЗДАНИЕ OFFER ==========
-        async function createOffer() {
+        // ========== УЧАСТНИК ==========
+        function startJoin() {
+            isCreator = false;
+            document.getElementById('hostBtn').disabled = true;
+            document.getElementById('joinBtn').disabled = true;
+            document.getElementById('joinBlock').style.display = 'block';
+            document.getElementById('hostBlock').style.display = 'none';
+            document.getElementById('backBtn').style.display = 'block';
+            document.getElementById('joinStatus').innerHTML = 'Вставьте код от хоста';
+        }
+        
+        // ========== СОЗДАНИЕ СОЕДИНЕНИЯ ==========
+        async function createConnection(isOffer) {
             try {
-                debugLog('Создание peer connection для хоста');
-                peerConnection = new RTCPeerConnection(config);
+                pc = new RTCPeerConnection(iceConfig);
+                localCandidates = [];
                 
-                // Создаем канал данных
-                debugLog('Создание data channel');
-                dataChannel = peerConnection.createDataChannel('chat', {
-                    ordered: true,
-                    maxRetransmits: 30
-                });
-                setupDataChannel(dataChannel);
-                
-                // Сбрасываем кандидаты
-                iceCandidates = [];
-                
-                // Собираем ICE кандидаты
-                peerConnection.onicecandidate = (event) => {
-                    if (event.candidate) {
-                        debugLog('Найден ICE кандидат: ' + event.candidate.candidate.split(' ')[0]);
-                        iceCandidates.push(event.candidate);
-                        document.getElementById('hostStatus').innerHTML = `📡 Найдено кандидатов: ${iceCandidates.length}`;
-                    }
-                };
-                
-                peerConnection.oniceconnectionstatechange = () => {
-                    debugLog('ICE состояние: ' + peerConnection.iceConnectionState);
-                    if (peerConnection.iceConnectionState === 'connected') {
-                        document.getElementById('hostStatus').innerHTML = '✅ ICE соединение установлено!';
-                    }
-                };
-                
-                // Создаем offer
-                debugLog('Создание offer');
-                const offer = await peerConnection.createOffer({
-                    offerToReceiveAudio: false,
-                    offerToReceiveVideo: false
-                });
-                
-                await peerConnection.setLocalDescription(offer);
-                debugLog('Local description установлен');
-                
-                // Ждем сбора кандидатов
-                setTimeout(() => {
-                    if (peerConnection && peerConnection.localDescription) {
-                        // Формируем полный код с кандидатами
-                        const offerData = {
-                            type: 'offer',
-                            sdp: peerConnection.localDescription.sdp,
-                            candidates: iceCandidates
-                        };
-                        
-                        try {
-                            const offerCode = btoa(unescape(encodeURIComponent(JSON.stringify(offerData))));
-                            document.getElementById('offerCode').value = offerCode;
-                            document.getElementById('hostStatus').innerHTML = '✅ Код создан! Кандидатов: ' + iceCandidates.length;
-                            document.getElementById('connectBtn').disabled = false;
-                            debugLog('Код offer создан, длина: ' + offerCode.length);
-                        } catch (e) {
-                            debugLog('Ошибка кодирования: ' + e.message);
-                            document.getElementById('hostStatus').innerHTML = '❌ Ошибка кодирования';
+                // Собираем кандидаты
+                pc.onicecandidate = (e) => {
+                    if (e.candidate) {
+                        localCandidates.push(e.candidate);
+                        if (isOffer) {
+                            document.getElementById('hostStatus').innerHTML = `Найдено путей: ${localCandidates.length}`;
                         }
                     }
-                }, 4000);
+                };
                 
-            } catch (error) {
-                debugLog('Ошибка offer: ' + error.message);
-                document.getElementById('hostStatus').innerHTML = '❌ Ошибка: ' + error.message;
+                pc.oniceconnectionstatechange = () => {
+                    console.log('ICE state:', pc.iceConnectionState);
+                    if (pc.iceConnectionState === 'connected') {
+                        document.getElementById('chatStatus').innerHTML = '✅ ПОДКЛЮЧЕНО';
+                        document.getElementById('chatStatus').className = 'status connected';
+                    }
+                };
+                
+                if (isOffer) {
+                    // Хост: создаем канал
+                    dc = pc.createDataChannel('main');
+                    setupChannel(dc);
+                    
+                    const offer = await pc.createOffer();
+                    await pc.setLocalDescription(offer);
+                    
+                    // Ждем кандидатов и создаем код
+                    setTimeout(() => {
+                        if (pc.localDescription) {
+                            const codeData = {
+                                sdp: pc.localDescription.sdp,
+                                candidates: localCandidates
+                            };
+                            const code = btoa(JSON.stringify(codeData));
+                            document.getElementById('offerText').value = code;
+                            document.getElementById('hostStatus').innerHTML = '✅ Код готов, отправьте другу';
+                        }
+                    }, 2000);
+                }
+                
+            } catch (e) {
+                alert('Ошибка: ' + e.message);
             }
         }
         
-        // ========== ХОСТ: ПОДКЛЮЧЕНИЕ ПО ANSWER ==========
-        async function connectWithAnswer() {
+        // ========== УЧАСТНИК: ОБРАБОТКА OFFER ==========
+        async function processOffer() {
+            const offerCode = document.getElementById('remoteOfferText').value.trim();
+            if (!offerCode) return;
+            
             try {
-                const answerCode = document.getElementById('answerInput').value.trim();
-                if (!answerCode) {
-                    alert('Вставьте код ответа от друга');
-                    return;
-                }
+                document.getElementById('joinStatus').innerHTML = 'Обработка...';
                 
-                debugLog('Декодирование answer кода');
-                let answerData;
-                try {
-                    answerData = JSON.parse(decodeURIComponent(escape(atob(answerCode))));
-                } catch (e) {
-                    debugLog('Ошибка декодирования: ' + e.message);
-                    alert('Неверный формат кода');
-                    return;
-                }
+                const offerData = JSON.parse(atob(offerCode));
                 
-                // Проверяем, что это answer
-                if (answerData.type !== 'answer') {
-                    debugLog('Ошибка: получен не answer, а ' + answerData.type);
-                    alert('Это не код ответа');
-                    return;
-                }
+                pc = new RTCPeerConnection(iceConfig);
+                localCandidates = [];
                 
-                debugLog('Установка remote description');
-                document.getElementById('hostStatus').innerHTML = '🔄 Устанавливаем соединение...';
-                
-                // Устанавливаем удаленное описание
-                await peerConnection.setRemoteDescription(answerData);
-                debugLog('Remote description установлен');
-                
-                // Добавляем ICE кандидаты от участника
-                if (answerData.candidates && answerData.candidates.length > 0) {
-                    debugLog('Добавление ICE кандидатов от участника: ' + answerData.candidates.length);
-                    for (const candidate of answerData.candidates) {
-                        try {
-                            await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
-                            debugLog('Добавлен кандидат');
-                        } catch (e) {
-                            debugLog('Ошибка добавления кандидата: ' + e.message);
-                        }
-                    }
-                }
-                
-                document.getElementById('hostStatus').innerHTML = '✅ Подключение устанавливается...';
-                
-                // Ждем установки соединения
-                setTimeout(() => {
-                    if (peerConnection.iceConnectionState === 'connected' || 
-                        peerConnection.iceConnectionState === 'completed') {
-                        showChat();
-                    } else {
-                        debugLog('Текущее состояние ICE: ' + peerConnection.iceConnectionState);
-                        document.getElementById('hostStatus').innerHTML = '⏳ Ожидание ICE...';
-                    }
-                }, 3000);
-                
-            } catch (error) {
-                debugLog('Ошибка подключения: ' + error.message);
-                document.getElementById('hostStatus').innerHTML = '❌ Ошибка: ' + error.message;
-            }
-        }
-        
-        // ========== УЧАСТНИК: ОТПРАВКА ANSWER ==========
-        async function sendAnswer() {
-            try {
-                const offerCode = document.getElementById('offerInput').value.trim();
-                if (!offerCode) {
-                    alert('Вставьте код от хоста');
-                    return;
-                }
-                
-                debugLog('Декодирование offer кода');
-                let offerData;
-                try {
-                    offerData = JSON.parse(decodeURIComponent(escape(atob(offerCode))));
-                } catch (e) {
-                    debugLog('Ошибка декодирования: ' + e.message);
-                    alert('Неверный формат кода');
-                    return;
-                }
-                
-                // Проверяем, что это offer
-                if (offerData.type !== 'offer') {
-                    debugLog('Ошибка: получен не offer, а ' + offerData.type);
-                    alert('Это не код приглашения');
-                    return;
-                }
-                
-                debugLog('Создание peer connection для участника');
-                document.getElementById('joinStatus').innerHTML = '🔄 Обработка...';
-                
-                peerConnection = new RTCPeerConnection(config);
-                
-                // Сбрасываем кандидаты
-                iceCandidates = [];
-                
-                // Обработка входящего канала
-                peerConnection.ondatachannel = (event) => {
-                    debugLog('Получен входящий data channel');
-                    dataChannel = event.channel;
-                    setupDataChannel(dataChannel);
-                };
-                
-                // Собираем ICE кандидаты
-                peerConnection.onicecandidate = (event) => {
-                    if (event.candidate) {
-                        debugLog('Найден ICE кандидат: ' + event.candidate.candidate.split(' ')[0]);
-                        iceCandidates.push(event.candidate);
-                        document.getElementById('joinStatus').innerHTML = `📡 Найдено кандидатов: ${iceCandidates.length}`;
+                pc.onicecandidate = (e) => {
+                    if (e.candidate) {
+                        localCandidates.push(e.candidate);
+                        document.getElementById('joinStatus').innerHTML = `Найдено путей: ${localCandidates.length}`;
                     }
                 };
                 
-                peerConnection.oniceconnectionstatechange = () => {
-                    debugLog('ICE состояние: ' + peerConnection.iceConnectionState);
+                pc.ondatachannel = (e) => {
+                    dc = e.channel;
+                    setupChannel(dc);
+                };
+                
+                pc.oniceconnectionstatechange = () => {
+                    if (pc.iceConnectionState === 'connected') {
+                        document.getElementById('chatStatus').innerHTML = '✅ ПОДКЛЮЧЕНО';
+                    }
                 };
                 
                 // Устанавливаем удаленное описание
-                debugLog('Установка remote description');
-                await peerConnection.setRemoteDescription(offerData);
+                await pc.setRemoteDescription({ type: 'offer', sdp: offerData.sdp });
                 
-                // Добавляем ICE кандидаты от хоста
-                if (offerData.candidates && offerData.candidates.length > 0) {
-                    debugLog('Добавление ICE кандидатов от хоста: ' + offerData.candidates.length);
-                    for (const candidate of offerData.candidates) {
+                // Добавляем кандидаты хоста
+                if (offerData.candidates) {
+                    for (let c of offerData.candidates) {
                         try {
-                            await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
-                            debugLog('Добавлен кандидат хоста');
-                        } catch (e) {
-                            debugLog('Ошибка добавления кандидата: ' + e.message);
-                        }
+                            await pc.addIceCandidate(new RTCIceCandidate(c));
+                        } catch (e) {}
                     }
                 }
                 
                 // Создаем ответ
-                debugLog('Создание answer');
-                const answer = await peerConnection.createAnswer();
-                await peerConnection.setLocalDescription(answer);
+                const answer = await pc.createAnswer();
+                await pc.setLocalDescription(answer);
                 
-                // Ждем сбора кандидатов
+                // Ждем кандидатов и создаем код ответа
                 setTimeout(() => {
-                    if (peerConnection && peerConnection.localDescription) {
-                        // Формируем ответ с кандидатами
+                    if (pc.localDescription) {
                         const answerData = {
-                            type: 'answer',
-                            sdp: peerConnection.localDescription.sdp,
-                            candidates: iceCandidates
+                            sdp: pc.localDescription.sdp,
+                            candidates: localCandidates
                         };
+                        const answerCode = btoa(JSON.stringify(answerData));
                         
-                        try {
-                            const answerCode = btoa(unescape(encodeURIComponent(JSON.stringify(answerData))));
-                            
-                            // Показываем код для отправки хосту
-                            document.getElementById('offerInput').value = answerCode;
-                            document.getElementById('joinStatus').innerHTML = '✅ Код ответа создан! Кандидатов: ' + iceCandidates.length;
-                            
-                            // Автоматически копируем в буфер
-                            navigator.clipboard.writeText(answerCode).then(() => {
-                                alert('📋 Код скопирован! Отправьте его хосту');
-                            }).catch(() => {
-                                alert('Код готов, скопируйте его вручную');
-                            });
-                            
-                            debugLog('Код answer создан, длина: ' + answerCode.length);
-                            
-                            // Показываем чат
-                            setTimeout(() => {
-                                if (peerConnection.iceConnectionState === 'connected' || 
-                                    peerConnection.iceConnectionState === 'completed') {
-                                    showChat();
-                                }
-                            }, 3000);
-                            
-                        } catch (e) {
-                            debugLog('Ошибка кодирования: ' + e.message);
-                            document.getElementById('joinStatus').innerHTML = '❌ Ошибка кодирования';
-                        }
+                        document.getElementById('remoteOfferText').value = answerCode;
+                        document.getElementById('joinStatus').innerHTML = '✅ Код ответа готов, отправьте хосту';
+                        
+                        navigator.clipboard.writeText(answerCode);
+                        alert('Код скопирован! Отправьте его хосту');
+                        
+                        // Показываем чат
+                        showChat();
                     }
-                }, 4000);
+                }, 2000);
                 
-            } catch (error) {
-                debugLog('Ошибка answer: ' + error.message);
-                document.getElementById('joinStatus').innerHTML = '❌ Ошибка: ' + error.message;
+            } catch (e) {
+                alert('Ошибка: ' + e.message);
+            }
+        }
+        
+        // ========== ХОСТ: ОБРАБОТКА ANSWER ==========
+        async function processAnswer() {
+            const answerCode = document.getElementById('answerText').value.trim();
+            if (!answerCode) return;
+            
+            try {
+                document.getElementById('hostStatus').innerHTML = 'Подключение...';
+                
+                const answerData = JSON.parse(atob(answerCode));
+                
+                await pc.setRemoteDescription({ type: 'answer', sdp: answerData.sdp });
+                
+                if (answerData.candidates) {
+                    for (let c of answerData.candidates) {
+                        try {
+                            await pc.addIceCandidate(new RTCIceCandidate(c));
+                        } catch (e) {}
+                    }
+                }
+                
+                document.getElementById('hostStatus').innerHTML = '✅ Подключение установлено';
+                
+                // Показываем чат
+                showChat();
+                
+            } catch (e) {
+                alert('Ошибка: ' + e.message);
             }
         }
         
         // ========== НАСТРОЙКА КАНАЛА ==========
-        function setupDataChannel(channel) {
+        function setupChannel(channel) {
             channel.onopen = () => {
-                debugLog('DATA CHANNEL OPENED!');
-                addSystemMessage('✅ Подключено к собеседнику!');
+                addSystemMessage('✅ Подключено!');
                 showChat();
             };
             
             channel.onclose = () => {
-                debugLog('DATA CHANNEL CLOSED');
-                addSystemMessage('❌ Соединение закрыто');
-                document.getElementById('chatStatus').innerHTML = '❌ Отключено';
+                addSystemMessage('❌ Отключено');
             };
             
-            channel.onerror = (error) => {
-                debugLog('DATA CHANNEL ERROR: ' + error);
-                addSystemMessage('⚠️ Ошибка канала');
-            };
-            
-            channel.onmessage = (event) => {
+            channel.onmessage = (e) => {
                 try {
-                    const data = JSON.parse(event.data);
-                    displayMessage(data);
-                } catch (e) {
-                    debugLog('Ошибка парсинга сообщения');
+                    const data = JSON.parse(e.data);
+                    showMessage(data);
+                } catch (err) {
+                    showMessage({ user: 'system', text: e.data });
                 }
             };
         }
         
         // ========== ЧАТ ==========
         function showChat() {
-            document.getElementById('connectionPanel').style.display = 'none';
-            document.getElementById('chatContainer').classList.add('active');
-            document.getElementById('chatStatus').innerHTML = '✅ Подключено к пиру';
+            document.getElementById('connectPanel').style.display = 'none';
+            document.getElementById('chatBlock').classList.add('active');
         }
         
-        function sendMessage() {
+        function sendMsg() {
             const input = document.getElementById('messageInput');
             const text = input.value.trim();
             
-            if (!text) return;
-            
-            if (!dataChannel || dataChannel.readyState !== 'open') {
-                alert('❌ Нет подключения к собеседнику');
-                return;
-            }
+            if (!text || !dc || dc.readyState !== 'open') return;
             
             const msg = {
-                type: 'text',
-                user: username,
+                user: userName,
                 text: text,
                 time: Date.now()
             };
             
-            try {
-                dataChannel.send(JSON.stringify(msg));
-                displayMessage(msg);
-                input.value = '';
-            } catch (error) {
-                debugLog('Ошибка отправки: ' + error);
-                alert('Ошибка отправки');
-            }
+            dc.send(JSON.stringify(msg));
+            showMessage(msg);
+            input.value = '';
         }
         
-        function displayMessage(msg) {
-            const container = document.getElementById('messages');
+        function showMessage(msg) {
+            const list = document.getElementById('messageList');
             const div = document.createElement('div');
             const time = new Date(msg.time).toLocaleTimeString();
             
-            div.className = 'message' + (msg.user === username ? ' own' : '');
+            div.className = 'message' + (msg.user === userName ? ' own' : '');
+            div.innerHTML = `<strong>${escapeHtml(msg.user)}</strong> <small>${time}</small><br>${escapeHtml(msg.text)}`;
             
-            if (msg.type === 'text') {
-                div.innerHTML = `<strong>${escapeHtml(msg.user)}</strong> <small>${time}</small><br>${escapeHtml(msg.text)}`;
-            } else if (msg.type === 'file') {
-                div.innerHTML = `<strong>${escapeHtml(msg.user)}</strong> <small>${time}</small><br>
-                    <a href="${msg.data}" download="${msg.name}" style="color:#00ff9d">
-                        📎 ${escapeHtml(msg.name)} (${formatSize(msg.size)})
-                    </a>`;
-            } else if (msg.type === 'photo') {
-                div.innerHTML = `<strong>${escapeHtml(msg.user)}</strong> <small>${time}</small><br>
-                    <img src="${msg.data}" style="max-width:150px;max-height:150px;border:1px solid #00ff9d;border-radius:5px;">`;
-            }
-            
-            container.appendChild(div);
-            container.scrollTop = container.scrollHeight;
+            list.appendChild(div);
+            list.scrollTop = list.scrollHeight;
         }
         
         function addSystemMessage(text) {
-            const container = document.getElementById('messages');
+            const list = document.getElementById('messageList');
             const div = document.createElement('div');
             div.style.textAlign = 'center';
             div.style.color = '#ffaa00';
-            div.style.fontStyle = 'italic';
             div.style.padding = '10px';
             div.innerHTML = text;
-            container.appendChild(div);
+            list.appendChild(div);
         }
         
         // ========== ФАЙЛЫ ==========
+        function selectPhoto() {
+            let input = document.getElementById('filePicker');
+            input.accept = 'image/*';
+            input.click();
+        }
+        
         function selectFile() {
-            document.getElementById('fileInput').click();
+            let input = document.getElementById('filePicker');
+            input.accept = '*/*';
+            input.click();
         }
         
-        function selectAnyFile() {
-            document.getElementById('anyFileInput').click();
-        }
-        
-        function handleFileSelect(event) {
-            const file = event.target.files[0];
+        function handleFile(input) {
+            const file = input.files[0];
             if (!file) return;
             
             if (file.size > 10 * 1024 * 1024) {
-                alert('Файл слишком большой (макс 10MB)');
+                alert('Файл больше 10MB');
                 return;
             }
             
             const reader = new FileReader();
             reader.onload = (e) => {
                 const msg = {
-                    type: 'photo',
-                    user: username,
-                    name: file.name,
-                    size: file.size,
-                    data: e.target.result,
-                    time: Date.now()
+                    user: userName,
+                    text: `[Файл: ${file.name}]`,
+                    file: e.target.result,
+                    fileName: file.name,
+                    time: Date.Now()
                 };
                 
-                if (dataChannel && dataChannel.readyState === 'open') {
-                    dataChannel.send(JSON.stringify(msg));
-                    displayMessage(msg);
-                } else {
-                    alert('Нет подключения');
-                }
-            };
-            reader.readAsDataURL(file);
-        }
-        
-        function handleAnyFileSelect(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            
-            if (file.size > 10 * 1024 * 1024) {
-                alert('Файл слишком большой (макс 10MB)');
-                return;
-            }
-            
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const msg = {
-                    type: 'file',
-                    user: username,
-                    name: file.name,
-                    size: file.size,
-                    data: e.target.result,
-                    time: Date.now()
-                };
-                
-                if (dataChannel && dataChannel.readyState === 'open') {
-                    dataChannel.send(JSON.stringify(msg));
-                    displayMessage(msg);
-                } else {
-                    alert('Нет подключения');
+                if (dc && dc.readyState === 'open') {
+                    dc.send(JSON.stringify(msg));
+                    showMessage(msg);
                 }
             };
             
@@ -767,78 +532,49 @@
         }
         
         // ========== УТИЛИТЫ ==========
-        function copyOffer() {
-            const code = document.getElementById('offerCode').value;
-            if (!code) {
-                alert('Сначала создайте код');
-                return;
-            }
-            navigator.clipboard.writeText(code).then(() => {
-                alert('📋 Код скопирован!');
-            }).catch(() => {
-                alert('Не удалось скопировать, скопируйте вручную');
-            });
-        }
-        
-        function checkEnter(event) {
-            if (event.key === 'Enter') {
-                sendMessage();
-            }
+        function copyText(id) {
+            const text = document.getElementById(id).value;
+            navigator.clipboard.writeText(text);
+            alert('Скопировано!');
         }
         
         function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
+            return String(text).replace(/[&<>"]/g, function(m) {
+                return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[m];
+            });
         }
         
-        function formatSize(bytes) {
-            if (bytes < 1024) return bytes + ' B';
-            if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
-            return (bytes / 1048576).toFixed(1) + ' MB';
-        }
-        
-        function resetConnection() {
-            if (peerConnection) {
-                peerConnection.close();
-            }
+        function resetAll() {
+            if (pc) pc.close();
+            pc = null;
+            dc = null;
             
-            peerConnection = null;
-            dataChannel = null;
-            iceCandidates = [];
-            
-            document.getElementById('connectionPanel').style.display = 'block';
-            document.getElementById('chatContainer').classList.remove('active');
+            document.getElementById('connectPanel').style.display = 'block';
+            document.getElementById('chatBlock').classList.remove('active');
             document.getElementById('backBtn').style.display = 'none';
             
             document.getElementById('hostBtn').disabled = false;
             document.getElementById('joinBtn').disabled = false;
-            document.getElementById('hostBtn').style.background = '';
-            document.getElementById('joinBtn').style.background = '';
             
-            document.getElementById('hostStep').style.display = 'none';
-            document.getElementById('joinStep').style.display = 'none';
+            document.getElementById('hostBlock').style.display = 'none';
+            document.getElementById('joinBlock').style.display = 'none';
             
-            document.getElementById('offerCode').value = '';
-            document.getElementById('answerInput').value = '';
-            document.getElementById('offerInput').value = '';
+            document.getElementById('offerText').value = '';
+            document.getElementById('answerText').value = '';
+            document.getElementById('remoteOfferText').value = '';
+            document.getElementById('messageList').innerHTML = '';
             
-            document.getElementById('messages').innerHTML = '';
-            document.getElementById('debugPanel').innerHTML = '';
-            document.getElementById('debugPanel').style.display = 'none';
-            
-            document.getElementById('hostStatus').innerHTML = '⏳ Создание комнаты...';
-            document.getElementById('joinStatus').innerHTML = '⏳ Ожидание кода...';
-            document.getElementById('chatStatus').innerHTML = '🔵 Ожидание подключения...';
+            document.getElementById('hostStatus').innerHTML = 'Создание комнаты...';
+            document.getElementById('joinStatus').innerHTML = 'Ожидание кода...';
         }
         
-        // Обновляем статус при изменении поля ввода
-        document.getElementById('offerInput').addEventListener('input', function() {
-            document.getElementById('answerBtn').disabled = this.value.trim() === '';
+        // Активация кнопок
+        document.getElementById('remoteOfferText').addEventListener('input', function() {
+            document.getElementById('offerBtn').disabled = !this.value.trim();
         });
         
-        document.getElementById('answerInput').addEventListener('input', function() {
-            document.getElementById('connectBtn').disabled = this.value.trim() === '';
+        document.getElementById('answerText').addEventListener('input', function() {
+            document.getElementById('answerBtn').disabled = !this.value.trim();
         });
     </script>
 </body>
