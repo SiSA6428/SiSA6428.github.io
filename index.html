@@ -3,31 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AnomSea — анонимный чат с шифрованием</title>
+    <title>Anommess — анонимный шифрованный чат</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <!-- Firebase SDK (совместимые версии) -->
+    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
-    <!-- CryptoJS для шифрования AES -->
+    <!-- CryptoJS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
         body {
             background: linear-gradient(145deg, #0a2540 0%, #003366 50%, #001f3f 100%);
             font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
         }
+        
         .glass {
             background: rgba(255, 255, 255, 0.08);
             backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.15);
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
         }
+        
         .chat-bubble-me {
             background: linear-gradient(135deg, #00bfff, #0099cc);
             color: white;
             border-radius: 20px 20px 4px 20px;
+            box-shadow: 0 4px 15px rgba(0, 191, 255, 0.3);
         }
+        
         .chat-bubble-other {
             background: rgba(255, 255, 255, 0.12);
             backdrop-filter: blur(12px);
@@ -35,74 +49,112 @@
             color: white;
             border-radius: 20px 20px 20px 4px;
         }
+        
         .water-gradient {
             background: linear-gradient(90deg, #00d4ff, #00ffaa);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
+        
         .online-dot {
             width: 8px;
             height: 8px;
             background: #4caf50;
             border-radius: 50%;
             animation: pulse 2s infinite;
+            display: inline-block;
         }
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
+        
+        @keyframes pulse {
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(1.2); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+        
+        .message-container { 
+            scrollbar-width: thin; 
+            scrollbar-color: #00d4ff rgba(255,255,255,0.1); 
+        }
+        
+        .message-container::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .message-container::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+        }
+        
+        .message-container::-webkit-scrollbar-thumb {
+            background: #00d4ff;
+            border-radius: 10px;
+        }
     </style>
 </head>
-<body class="min-h-screen text-white flex items-center justify-center p-4">
+<body>
 
     <!-- ИНТЕРФЕЙС -->
     <div id="app" class="w-full max-w-6xl h-[90vh] glass rounded-3xl overflow-hidden flex flex-col lg:flex-row">
 
-        <!-- Левая панель: чаты и профиль -->
+        <!-- Левая панель: чаты -->
         <div class="w-80 glass border-r border-white/10 flex flex-col h-full">
             <div class="p-5 border-b border-white/10 flex items-center gap-3">
                 <span class="text-4xl">🌊</span>
-                <span class="text-2xl font-bold water-gradient">AnomSea</span>
+                <span class="text-2xl font-bold water-gradient">Anommess</span>
             </div>
+            
             <div class="p-4">
                 <div class="glass flex items-center gap-3 px-5 py-3 rounded-3xl">
-                    <i class="fa-solid fa-magnifying-glass"></i>
-                    <input id="searchRooms" type="text" placeholder="Поиск чатов..." class="bg-transparent outline-none w-full">
+                    <i class="fa-solid fa-magnifying-glass text-cyan-300"></i>
+                    <input id="searchRooms" type="text" placeholder="Поиск чатов..." 
+                           class="bg-transparent outline-none w-full text-white placeholder:text-cyan-700">
                 </div>
             </div>
+            
             <div class="px-4 mb-2">
-                <button onclick="showCreateRoom()" class="w-full py-3 glass rounded-3xl hover:bg-white/10 flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-plus"></i> Создать чат
+                <button onclick="showCreateRoom()" class="w-full py-3 glass rounded-3xl hover:bg-white/10 flex items-center justify-center gap-2 transition">
+                    <i class="fa-solid fa-plus text-emerald-400"></i> Создать чат
                 </button>
             </div>
-            <div id="roomList" class="flex-1 overflow-y-auto px-3 py-2 space-y-1"></div>
+            
+            <div id="roomList" class="flex-1 overflow-y-auto px-3 py-2 space-y-1 message-container"></div>
+            
             <div class="p-4 border-t border-white/10 flex items-center gap-3">
                 <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center text-2xl">👤</div>
                 <div class="flex-1 min-w-0">
-                    <input id="userName" type="text" placeholder="Ваше имя" class="bg-transparent border-b border-white/20 w-full outline-none text-sm">
+                    <input id="userName" type="text" placeholder="Ваше имя" 
+                           class="bg-transparent border-b border-white/20 w-full outline-none text-sm text-white placeholder:text-cyan-700">
                 </div>
-                <button onclick="saveUserName()" class="text-xs text-cyan-300 hover:text-white"><i class="fa-regular fa-floppy-disk"></i></button>
+                <button onclick="saveUserName()" class="text-xs text-cyan-300 hover:text-white transition" title="Сохранить имя">
+                    <i class="fa-regular fa-floppy-disk"></i>
+                </button>
             </div>
         </div>
 
         <!-- Центр: сообщения -->
         <div class="flex-1 flex flex-col">
             <div id="roomHeader" class="h-16 glass border-b border-white/10 px-6 flex items-center">
-                <div class="font-semibold text-xl" id="currentRoomName">Выберите чат</div>
-                <div class="ml-auto flex items-center gap-2 text-sm">
+                <div class="font-semibold text-xl text-white" id="currentRoomName">Выберите чат</div>
+                <div class="ml-auto flex items-center gap-2 text-sm text-cyan-300">
                     <span class="online-dot"></span> <span id="roomOnline">0</span>
                 </div>
             </div>
+            
             <div id="messagesArea" class="flex-1 overflow-y-auto p-6 space-y-4 message-container"></div>
+            
             <div class="glass border-t border-white/10 p-4">
                 <div class="flex gap-3 bg-white/5 rounded-3xl px-5 py-2">
                     <input id="messageInput" type="text" placeholder="Сообщение..." onkeydown="if(event.key==='Enter') sendMessage()"
-                           class="flex-1 bg-transparent outline-none text-lg">
-                    <button onclick="sendMessage()" class="w-11 h-11 bg-gradient-to-br from-emerald-400 to-teal-400 rounded-2xl">
-                        <i class="fa-solid fa-paper-plane"></i>
+                           class="flex-1 bg-transparent outline-none text-lg text-white placeholder:text-cyan-700">
+                    <button onclick="sendMessage()" class="w-11 h-11 bg-gradient-to-br from-emerald-400 to-teal-400 rounded-2xl hover:scale-105 transition flex items-center justify-center">
+                        <i class="fa-solid fa-paper-plane text-white"></i>
                     </button>
                 </div>
             </div>
         </div>
 
-        <!-- Правая панель: участники онлайн -->
+        <!-- Правая панель: онлайн -->
         <div class="w-64 glass border-l border-white/10 hidden lg:flex flex-col p-4">
             <div class="uppercase text-xs tracking-widest text-cyan-300 mb-4">В чате</div>
             <div id="onlineUsers" class="space-y-3"></div>
@@ -112,57 +164,81 @@
     <!-- Модалка создания чата -->
     <div id="roomModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center hidden z-50">
         <div class="glass w-96 p-8 rounded-3xl">
-            <h3 class="text-2xl font-bold mb-4">Новый чат</h3>
-            <input id="newRoomName" type="text" placeholder="Название чата" class="w-full bg-white/10 border border-white/20 rounded-2xl px-5 py-4 mb-4 outline-none">
-            <input id="newRoomPassword" type="text" placeholder="Пароль чата (для шифрования)" class="w-full bg-white/10 border border-white/20 rounded-2xl px-5 py-4 mb-4 outline-none">
+            <h3 class="text-2xl font-bold mb-4 water-gradient">🌊 Новый чат</h3>
+            <input id="newRoomName" type="text" placeholder="Название чата" 
+                   class="w-full bg-white/10 border border-white/20 rounded-2xl px-5 py-4 mb-4 outline-none focus:border-emerald-400 text-white placeholder:text-cyan-700">
+            <input id="newRoomPassword" type="text" placeholder="Пароль чата (для шифрования)" 
+                   class="w-full bg-white/10 border border-white/20 rounded-2xl px-5 py-4 mb-4 outline-none focus:border-emerald-400 text-white placeholder:text-cyan-700">
             <div class="flex gap-3">
-                <button onclick="createRoom()" class="flex-1 py-3 bg-gradient-to-r from-emerald-400 to-cyan-400 rounded-2xl">Создать</button>
-                <button onclick="closeModal()" class="flex-1 py-3 glass rounded-2xl">Отмена</button>
+                <button onclick="createRoom()" class="flex-1 py-3 bg-gradient-to-r from-emerald-400 to-cyan-400 rounded-2xl hover:scale-105 transition font-medium">
+                    Создать
+                </button>
+                <button onclick="closeModal()" class="flex-1 py-3 glass rounded-2xl hover:bg-white/10 transition">
+                    Отмена
+                </button>
             </div>
         </div>
     </div>
 
-    <!-- Firebase и основной скрипт -->
+    <!-- Тост уведомления -->
+    <div id="toast" class="hidden fixed bottom-8 right-8 glass px-6 py-4 rounded-3xl flex items-center gap-4 shadow-2xl z-50">
+        <i class="fa-solid fa-circle-check text-emerald-400 text-xl"></i>
+        <div>
+            <div id="toastTitle" class="font-semibold text-white"></div>
+            <div id="toastText" class="text-sm text-cyan-200"></div>
+        </div>
+    </div>
+
     <script>
         // 🔥 ВСТАВЬТЕ СВОЙ КОНФИГ FIREBASE
         const firebaseConfig = {
-            apiKey: "AIzaSy...",
-            authDomain: "anomsea.firebaseapp.com",
-            databaseURL: "https://anomsea-default-rtdb.firebaseio.com",
-            projectId: "anomsea",
-            storageBucket: "anomsea.appspot.com",
+            apiKey: "AIzaSyBp8Q6V8KJ7xKJ7xKJ7xKJ7xKJ7xKJ7xKJ7x",
+            authDomain: "anommess.firebaseapp.com",
+            databaseURL: "https://anommess-default-rtdb.firebaseio.com",
+            projectId: "anommess",
+            storageBucket: "anommess.appspot.com",
             messagingSenderId: "1234567890",
             appId: "1:1234567890:web:xxx"
         };
+
+        // Инициализация Firebase
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
         // Глобальные переменные
-        let myId = localStorage.getItem('anomsea_userId');
+        let myId = localStorage.getItem('anommess_userId');
         if (!myId) {
             myId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-            localStorage.setItem('anomsea_userId', myId);
+            localStorage.setItem('anommess_userId', myId);
         }
-        let myName = localStorage.getItem('anomsea_userName') || 'Аноним';
+        
+        let myName = localStorage.getItem('anommess_userName') || 'Аноним';
         document.getElementById('userName').value = myName;
 
         let currentRoomId = null;
-        let currentRoomKey = null; // ключ шифрования для комнаты
-        let rooms = {}; // {roomId: {name, password}}
+        let currentRoomKey = null;
+        let rooms = {};
         let messagesListener = null;
         let onlineListener = null;
 
-        // Загружаем список комнат из Firebase
-        const userRoomsRef = db.ref('userRooms/' + myId);
-        userRoomsRef.on('value', snapshot => {
-            const data = snapshot.val() || {};
-            rooms = data;
-            renderRoomList();
-        });
+        // Загружаем комнаты пользователя
+        function loadRooms() {
+            const userRoomsRef = db.ref('users/' + myId + '/rooms');
+            userRoomsRef.on('value', (snapshot) => {
+                rooms = snapshot.val() || {};
+                renderRoomList();
+            });
+        }
 
         function renderRoomList() {
             const container = document.getElementById('roomList');
             container.innerHTML = '';
+            
+            if (Object.keys(rooms).length === 0) {
+                container.innerHTML = '<div class="text-center text-cyan-700 py-8">Нет чатов<br>Создайте первый!</div>';
+                return;
+            }
+            
             Object.keys(rooms).forEach(roomId => {
                 const room = rooms[roomId];
                 const div = document.createElement('div');
@@ -171,8 +247,8 @@
                 div.innerHTML = `
                     <div class="w-10 h-10 text-3xl flex items-center justify-center">💬</div>
                     <div class="flex-1 min-w-0">
-                        <div class="font-medium truncate">${room.name}</div>
-                        <div class="text-xs text-cyan-200/70">🔒 зашифровано</div>
+                        <div class="font-medium truncate text-white">${room.name}</div>
+                        <div class="text-xs text-cyan-400/70">🔒 зашифровано</div>
                     </div>
                 `;
                 container.appendChild(div);
@@ -182,23 +258,33 @@
         // Вход в комнату
         function enterRoom(roomId, password) {
             if (currentRoomId === roomId) return;
-            currentRoomId = roomId;
-            currentRoomKey = password; // для шифрования
-            document.getElementById('currentRoomName').textContent = rooms[roomId]?.name || 'Чат';
             
-            // Отписаться от старых слушателей
+            currentRoomId = roomId;
+            currentRoomKey = password;
+            
+            const room = rooms[roomId];
+            document.getElementById('currentRoomName').textContent = room ? room.name : 'Чат';
+            
+            // Отписываемся от старых слушателей
             if (messagesListener) messagesListener.off();
             if (onlineListener) onlineListener.off();
 
+            // Очищаем сообщения
+            document.getElementById('messagesArea').innerHTML = '';
+
             // Слушаем сообщения
             const messagesRef = db.ref('rooms/' + roomId + '/messages');
-            messagesListener = messagesRef.on('child_added', snapshot => {
+            messagesListener = messagesRef.on('child_added', (snapshot) => {
                 const encryptedMsg = snapshot.val();
                 if (!encryptedMsg) return;
+                
                 try {
                     // Расшифровываем
                     const decrypted = CryptoJS.AES.decrypt(encryptedMsg.text, currentRoomKey).toString(CryptoJS.enc.Utf8);
+                    if (!decrypted) return;
+                    
                     const msg = {
+                        id: snapshot.key,
                         fromId: encryptedMsg.fromId,
                         fromName: encryptedMsg.fromName,
                         text: decrypted,
@@ -210,9 +296,9 @@
                 }
             });
 
-            // Слушаем онлайн-участников
+            // Слушаем онлайн
             const presenceRef = db.ref('rooms/' + roomId + '/presence');
-            onlineListener = presenceRef.on('value', snapshot => {
+            onlineListener = presenceRef.on('value', (snapshot) => {
                 const users = [];
                 snapshot.forEach(child => {
                     if (child.key !== myId) {
@@ -220,47 +306,57 @@
                     }
                 });
                 document.getElementById('roomOnline').textContent = users.length;
+                
                 const onlineDiv = document.getElementById('onlineUsers');
-                onlineDiv.innerHTML = users.map(name => `
-                    <div class="flex items-center gap-2">
-                        <span class="online-dot"></span> ${name}
-                    </div>
-                `).join('') || '<div class="text-sm opacity-60">Нет никого</div>';
+                if (users.length === 0) {
+                    onlineDiv.innerHTML = '<div class="text-sm text-cyan-700">Нет никого</div>';
+                } else {
+                    onlineDiv.innerHTML = users.map(name => `
+                        <div class="flex items-center gap-2">
+                            <span class="online-dot"></span>
+                            <span class="text-cyan-100">${name}</span>
+                        </div>
+                    `).join('');
+                }
             });
 
-            // Установить своё присутствие
+            // Устанавливаем своё присутствие
             presenceRef.child(myId).set({
                 name: myName,
                 online: true
             });
             presenceRef.child(myId).onDisconnect().remove();
-
-            // Очистить сообщения
-            document.getElementById('messagesArea').innerHTML = '';
         }
 
-        // Отображение одного сообщения
         function displayMessage(msg) {
             const area = document.getElementById('messagesArea');
             const div = document.createElement('div');
             const isMe = msg.fromId === myId;
+            
             div.className = `max-w-[75%] ${isMe ? 'ml-auto' : ''}`;
+            
+            const time = msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString() : '';
+            
             div.innerHTML = `
                 <div class="${isMe ? 'chat-bubble-me' : 'chat-bubble-other'} px-6 py-4 relative">
                     ${!isMe ? `<div class="text-xs text-cyan-300 mb-1">${msg.fromName}</div>` : ''}
-                    ${msg.text}
-                    <div class="text-[10px] text-right mt-1 opacity-70">${new Date(msg.timestamp).toLocaleTimeString()}</div>
+                    <div class="text-white break-words">${msg.text}</div>
+                    <div class="text-[10px] text-right mt-1 opacity-70">${time}</div>
                 </div>
             `;
+            
             area.appendChild(div);
             area.scrollTop = area.scrollHeight;
         }
 
-        // Отправка сообщения
         function sendMessage() {
             const input = document.getElementById('messageInput');
             const text = input.value.trim();
-            if (!text || !currentRoomId || !currentRoomKey) return;
+            
+            if (!text || !currentRoomId || !currentRoomKey) {
+                showToast('Ошибка', 'Выберите чат и введите сообщение');
+                return;
+            }
 
             // Шифруем
             const encrypted = CryptoJS.AES.encrypt(text, currentRoomKey).toString();
@@ -271,44 +367,67 @@
                 text: encrypted,
                 timestamp: firebase.database.ServerValue.TIMESTAMP
             };
+            
             db.ref('rooms/' + currentRoomId + '/messages').push(msg);
-
             input.value = '';
         }
 
-        // Создание новой комнаты
+        // Создание комнаты
         function showCreateRoom() {
             document.getElementById('roomModal').classList.remove('hidden');
         }
+        
         function closeModal() {
             document.getElementById('roomModal').classList.add('hidden');
             document.getElementById('newRoomName').value = '';
             document.getElementById('newRoomPassword').value = '';
         }
+        
         function createRoom() {
             const name = document.getElementById('newRoomName').value.trim();
             const password = document.getElementById('newRoomPassword').value.trim();
-            if (!name || !password) return alert('Введите название и пароль');
+            
+            if (!name || !password) {
+                showToast('Ошибка', 'Введите название и пароль');
+                return;
+            }
             
             const roomId = 'room_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
-            // Сохраняем в /rooms/ только для структуры (сообщения пойдут туда)
-            // Для пользователя сохраняем ссылку
-            db.ref('userRooms/' + myId + '/' + roomId).set({
+            
+            // Сохраняем для пользователя
+            const updates = {};
+            updates['users/' + myId + '/rooms/' + roomId] = {
                 name: name,
-                password: password  // в реальном проекте пароль не хранят в открытом виде, но для демо оставим
-            }).then(() => {
-                closeModal();
-                enterRoom(roomId, password);
-            });
+                password: password
+            };
+            // Создаём запись о комнате
+            updates['rooms/' + roomId + '/info'] = {
+                name: name,
+                created: firebase.database.ServerValue.TIMESTAMP,
+                createdBy: myId
+            };
+            
+            db.ref().update(updates)
+                .then(() => {
+                    closeModal();
+                    enterRoom(roomId, password);
+                    showToast('Успех', 'Чат создан!');
+                })
+                .catch(error => {
+                    showToast('Ошибка', error.message);
+                });
         }
 
         // Сохранение имени
         function saveUserName() {
             myName = document.getElementById('userName').value.trim() || 'Аноним';
-            localStorage.setItem('anomsea_userName', myName);
+            localStorage.setItem('anommess_userName', myName);
+            
             if (currentRoomId) {
                 db.ref('rooms/' + currentRoomId + '/presence/' + myId).update({ name: myName });
             }
+            
+            showToast('Имя сохранено', myName);
         }
 
         // Поиск комнат
@@ -320,18 +439,37 @@
             });
         });
 
-        // Авто-вход в последнюю комнату при перезагрузке (опционально)
+        // Тост
+        function showToast(title, text) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastTitle').textContent = title;
+            document.getElementById('toastText').textContent = text;
+            toast.classList.remove('hidden');
+            
+            setTimeout(() => {
+                toast.classList.add('hidden');
+            }, 3000);
+        }
+
+        // Загрузка
         window.onload = () => {
-            const lastRoom = localStorage.getItem('anomsea_lastRoom');
-            const lastKey = localStorage.getItem('anomsea_lastKey');
-            if (lastRoom && lastKey && rooms[lastRoom]) {
-                enterRoom(lastRoom, lastKey);
-            }
+            loadRooms();
+            
+            // Проверяем последнюю комнату
+            const lastRoom = localStorage.getItem('anommess_lastRoom');
+            const lastKey = localStorage.getItem('anommess_lastKey');
+            
+            setTimeout(() => {
+                if (lastRoom && lastKey && rooms[lastRoom]) {
+                    enterRoom(lastRoom, lastKey);
+                }
+            }, 1000);
         };
+        
         window.addEventListener('beforeunload', () => {
             if (currentRoomId) {
-                localStorage.setItem('anomsea_lastRoom', currentRoomId);
-                localStorage.setItem('anomsea_lastKey', currentRoomKey);
+                localStorage.setItem('anommess_lastRoom', currentRoomId);
+                localStorage.setItem('anommess_lastKey', currentRoomKey);
             }
         });
     </script>
