@@ -1,929 +1,503 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
-<title>ANOM DIRECT</title>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body {
-background: #0a0a0a;
-font-family: 'Courier New', monospace;
-color: #00ff9d;
-padding: 15px;
-min-height: 100vh;
-}
-.container {
-max-width: 650px;
-margin: 0 auto;
-background: #111;
-border: 2px solid #00ff9d;
-border-radius: 10px;
-padding: 20px;
-}
-.header {
-display: flex;
-align-items: center;
-justify-content: space-between;
-margin-bottom: 20px;
-border-bottom: 1px solid #00ff9d;
-padding-bottom: 10px;
-gap: 10px;
-}
-.header h1 {
-font-size: 24px;
-letter-spacing: 3px;
-flex: 1;
-text-align: center;
-}
-.back-btn {
-background: transparent;
-border: 1px solid #00ff9d;
-color: #00ff9d;
-padding: 8px 15px;
-border-radius: 5px;
-cursor: pointer;
-font-family: inherit;
-font-size: 14px;
-display: none;
-transition: all 0.2s;
-}.back-btn:hover { background: #00ff9d; color: #0a0a0a; }
-.back-btn.visible { display: block; }
-.version {
-font-size: 10px;
-color: #666;
-text-align: center;
-width: 100%;
-margin-top: 5px;
-}
-.setup-section { transition: opacity 0.3s ease; }
-.setup-section.hidden { display: none; }
-.alert-box {
-background: #0d1a0d;
-border: 1px solid #00ff9d;
-color: #00ff9d;
-padding: 12px;
-margin: 10px 0 20px;
-border-radius: 5px;
-font-size: 11px;
-line-height: 1.5;
-}
-.alert-box.warning {
-background: #1a0d0d;
-border-color: #ff6b6b;
-color: #ffaa00;
-}
-.alert-box strong { color: inherit; }
-.signal-area {
-background: #1a1a1a;
-border: 1px solid #00ff9d;
-padding: 15px;
-margin: 15px 0;
-border-radius: 5px;
-}
-.signal-title {
-color: #00ff9d;
-font-size: 14px;
-margin-bottom: 10px;
-text-align: center;
-font-weight: bold;
-}
-.step-number {
-display: inline-block;
-background: #00ff9d;
-color: #0a0a0a;
-width: 20px;
-height: 20px;
-border-radius: 50%;
-text-align: center;
-line-height: 20px;font-size: 12px;
-font-weight: bold;
-margin-right: 8px;
-}
-input, button, textarea {
-width: 100%;
-padding: 12px;
-margin: 5px 0;
-background: #1a1a1a;
-border: 1px solid #00ff9d;
-color: #00ff9d;
-font-family: 'Courier New', monospace;
-font-size: 13px;
-border-radius: 5px;
-transition: all 0.2s;
-}
-textarea {
-resize: vertical;
-min-height: 100px;
-font-size: 10px;
-word-break: break-all;
-}
-.candidates-textarea {
-min-height: 60px;
-font-size: 9px;
-color: #666;
-}
-button {
-cursor: pointer;
-font-weight: bold;
-text-transform: uppercase;
-font-size: 12px;
-letter-spacing: 1px;
-}
-button:hover:not(:disabled) {
-background: #00ff9d;
-color: #0a0a0a;
-}
-button:disabled { opacity: 0.4; cursor: not-allowed; }
-.btn-row {
-display: flex;
-gap: 8px;
-margin: 5px 0;
-}
-.btn-row button { flex: 1; }
-.chat-area { display: none; animation: fadeIn 0.3s ease; }
-.chat-area.active { display: block; }
-@keyframes fadeIn {
-from { opacity: 0; transform: translateY(10px); }
-to { opacity: 1; transform: translateY(0); }}
-.messages {
-background: #1a1a1a;
-border: 1px solid #00ff9d;
-height: 350px;
-overflow-y: auto;
-padding: 12px;
-margin: 15px 0;
-font-size: 13px;
-border-radius: 5px;
-}
-.message {
-margin: 6px 0;
-padding: 10px;
-border-left: 3px solid #00ff9d;
-background: #0d0d0d;
-border-radius: 0 5px 5px 0;
-word-wrap: break-word;
-}
-.message.own {
-border-left-color: #ff6b6b;
-background: #1a0d0d;
-border-right: 3px solid #ff6b6b;
-border-left: none;
-border-radius: 5px 0 0 5px;
-text-align: right;
-}
-.system-message {
-color: #ffaa00;
-text-align: center;
-font-style: italic;
-margin: 8px 0;
-font-size: 11px;
-padding: 5px;
-border-top: 1px dashed #333;
-border-bottom: 1px dashed #333;
-}
-.status {
-color: #00cc7a;
-font-size: 11px;
-text-align: center;
-margin: 10px 0;
-padding: 8px;
-background: #0d0d0d;
-border-radius: 3px;
-border: 1px solid #333;
-}
-.status.error { color: #ff6b6b; border-color: #ff6b6b; }
-.status.connecting { color: #ffaa00; border-color: #ffaa00; }
-.status.success { color: #00ff9d; border-color: #00ff9d; }.candidate-info {
-display: flex;
-justify-content: space-between;
-align-items: center;
-font-size: 10px;
-color: #666;
-margin-top: 5px;
-padding: 5px;
-background: #0d0d0d;
-border-radius: 3px;
-}
-.candidate-info span {
-display: flex;
-align-items: center;
-gap: 5px;
-}
-.candidate-dot {
-width: 8px;
-height: 8px;
-border-radius: 50%;
-background: #333;
-display: inline-block;
-}
-.candidate-dot.active {
-background: #00ff9d;
-animation: pulse 1s infinite;
-}
-@keyframes pulse {
-0%, 100% { opacity: 1; }
-50% { opacity: 0.5; }
-}
-.input-row { display: flex; gap: 8px; margin: 10px 0; }
-.input-row input { flex: 1; margin: 0; }
-.input-row button { flex: 0 0 80px; margin: 0; padding: 12px 8px; }
-.file-input-container { margin: 8px 0; position: relative; }
-.file-input-label {
-display: block;
-padding: 10px;
-background: #1a1a1a;
-border: 1px dashed #00ff9d;
-color: #00ff9d;
-text-align: center;
-cursor: pointer;
-border-radius: 5px;
-font-size: 12px;
-transition: all 0.2s;
-}
-.file-input-label:hover { background: #003322; border-style: solid; }
-input[type="file"] {
-position: absolute;opacity: 0;
-width: 0.1px;
-height: 0.1px;
-}
-.photo-preview {
-display: none;
-margin: 10px 0;
-padding: 10px;
-background: #1a1a1a;
-border: 1px solid #00ff9d;
-border-radius: 5px;
-}
-.photo-preview img {
-max-width: 100%;
-max-height: 150px;
-border: 1px solid #00ff9d;
-border-radius: 3px;
-margin-bottom: 8px;
-}
-.photo-preview .actions { display: flex; gap: 8px; }
-.photo-preview button { flex: 1; margin: 0; padding: 8px; font-size: 11px; }
-.photo-preview button.cancel { background: #330000; border-color: #ff6b6b; }
-.photo-message {
-max-width: 180px;
-max-height: 180px;
-margin: 5px 0;
-border: 2px solid #00ff9d;
-border-radius: 5px;
-cursor: pointer;
-transition: opacity 0.2s;
-}
-.photo-message:hover { opacity: 0.85; }
-.modal {
-display: none;
-position: fixed;
-top: 0; left: 0;
-width: 100%; height: 100%;
-background: rgba(0,0,0,0.95);
-z-index: 1000;
-justify-content: center;
-align-items: center;
-flex-direction: column;
-}
-.modal.active { display: flex; }
-.modal img {
-max-width: 95%;
-max-height: 80%;
-border: 3px solid #00ff9d;
-border-radius: 5px;
-}.modal-close {
-position: absolute;
-top: 20px;
-right: 25px;
-color: #00ff9d;
-font-size: 35px;
-cursor: pointer;
-font-weight: bold;
-}
-.modal-close:hover { color: #fff; }
-.footer {
-margin-top: 25px;
-text-align: center;
-font-size: 9px;
-color: #333;
-border-top: 1px solid #1a1a1a;
-padding-top: 12px;
-}
-/* TURN Settings Panel */
-.turn-settings {
-background: #0d0d0d;
-border: 1px solid #333;
-padding: 10px;
-margin: 10px 0;
-border-radius: 5px;
-}
-.turn-settings summary {
-color: #ffaa00;
-cursor: pointer;
-font-size: 11px;
-font-weight: bold;
-}
-.turn-settings input {
-font-size: 10px;
-padding: 8px;
-margin: 3px 0;
-border-color: #444;
-}
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: #0a0a0a; }
-::-webkit-scrollbar-thumb { background: #00ff9d; border-radius: 3px; opacity: 0.6; }
-::-webkit-scrollbar-thumb:hover { opacity: 1; }
-@media (max-width: 480px) {
-body { padding: 10px; }
-.container { padding: 15px; border-radius: 8px; }
-.header h1 { font-size: 20px; }
-.messages { height: 300px; }
-.btn-row { flex-direction: column; }
-}
-</style></head>
-<body>
-<div class="container">
-<div class="header">
-<button class="back-btn" id="backBtn" onclick="goBack()">← НАЗАД</button>
-<h1>ANOM DIRECT</h1>
-<div style="width: 70px;"></div>
-</div>
-<div class="version">TRICKLE ICE • TURN ENABLED • v5.0</div>
-<div id="setupArea" class="setup-section">
-<div class="alert-box">
-<strong>⚡ TRICKLE ICE + TURN режим:</strong><br>
-• SDP можно копировать СРАЗУ после создания<br>
-• ICE кандидаты собираются в фоне<br>
-• <strong>TURN серверы включены</strong> — работает через 4G/разные сети<br>
-• Для сложных NAT: скопируйте кандидаты через 5-10 сек
-</div>
-
-<!-- CUSTOM TURN SETTINGS -->
-<details class="turn-settings">
-<summary>⚙️ НАСТРОЙКИ TURN (если публичные не работают)</summary>
-<div style="margin-top: 10px;">
-<label style="font-size: 10px; color: #666;">TURN Server URL:</label>
-<input type="text" id="turnServer" placeholder="turn:ваш-сервер:3478">
-<label style="font-size: 10px; color: #666;">Username:</label>
-<input type="text" id="turnUser" placeholder="username">
-<label style="font-size: 10px; color: #666;">Password:</label>
-<input type="text" id="turnPass" placeholder="password">
-<button onclick="saveTurnSettings()" style="margin-top: 5px; font-size: 10px; padding: 8px;">💾 СОХРАНИТЬ</button>
-</div>
-</details>
-
-<!-- HOST -->
-<div class="signal-area">
-<div class="signal-title">🔵 HOST — создать соединение</div>
-<button onclick="createOffer()" id="createOfferBtn">
-<span class="step-number">1</span>CREATE OFFER
-</button>
-<div class="candidate-info" id="offerCandidateInfo" style="display:none;">
-<span><span class="candidate-dot active" id="offerDot"></span>Сбор ICE кандидатов...</span>
-<span id="offerCount">0 найдено</span>
-</div>
-<textarea id="offerSDP" placeholder="Нажмите CREATE OFFER..."></textarea>
-<textarea id="offerCandidates" class="candidates-textarea" placeholder="ICE кандидаты (появятся через 5-10 сек)..."></textarea>
-<div class="btn-row">
-<button onclick="copyOffer()" id="copyOfferBtn" disabled>📋 COPY SDP</button>
-<button onclick="copyOfferCandidates()" id="copyOfferCandBtn" disabled>📋 COPY CANDIDATES</button>
-</div>
-<div style="margin: 15px 0; border-top: 1px solid #333;"></div>
-<textarea id="answerSDP" placeholder="Вставьте SDP answer от друга..."></textarea><textarea id="answerCandidates" class="candidates-textarea" placeholder="Вставьте ICE кандидаты от друга (если есть)..."></textarea>
-<button onclick="setAnswer()" id="setAnswerBtn" disabled>
-<span class="step-number">3</span>SET ANSWER
-</button>
-</div>
-
-<!-- JOIN -->
-<div class="signal-area">
-<div class="signal-title">🟢 JOIN — подключиться к хосту</div>
-<textarea id="remoteOfferSDP" placeholder="Вставьте SDP offer от хоста..."></textarea>
-<textarea id="remoteOfferCandidates" class="candidates-textarea" placeholder="Вставьте ICE кандидаты от хоста (если есть)..."></textarea>
-<button onclick="createAnswer()" id="createAnswerBtn">
-<span class="step-number">2</span>CREATE ANSWER
-</button>
-<div class="candidate-info" id="answerCandidateInfo" style="display:none;">
-<span><span class="candidate-dot active" id="answerDot"></span>Сбор ICE кандидатов...</span>
-<span id="answerCount">0 найдено</span>
-</div>
-<textarea id="localAnswerSDP" placeholder="Нажмите CREATE ANSWER..."></textarea>
-<textarea id="localAnswerCandidates" class="candidates-textarea" placeholder="ICE кандидаты (появятся через 5-10 сек)..."></textarea>
-<div class="btn-row">
-<button onclick="copyAnswer()" id="copyAnswerBtn" disabled>📋 COPY SDP</button>
-<button onclick="copyAnswerCandidates()" id="copyAnswerCandBtn" disabled>📋 COPY CANDIDATES</button>
-</div>
-</div>
-
-<div class="alert-box warning" style="margin-top: 15px;">
-<strong>📋 Порядок обмена для разных сетей:</strong><br>
-1. Хост: CREATE OFFER → скопировать SDP → отправить другу<br>
-2. Хост: подождать 5-10 сек → скопировать ICE кандидаты → отправить другу<br>
-3. Друг: вставить SDP + кандидаты → CREATE ANSWER<br>
-4. Друг: скопировать SDP answer → отправить хосту<br>
-5. Друг: подождать 5-10 сек → скопировать ICE кандидаты → отправить хосту<br>
-6. Хост: вставить answer + кандидаты → SET ANSWER → ✅
-</div>
-</div>
-
-<!-- CHAT AREA -->
-<div id="chatArea" class="chat-area">
-<div class="messages" id="messages"></div>
-<div class="input-row">
-<input type="text" id="messageInput" placeholder="введите сообщение..." autocomplete="off">
-<button onclick="sendMessage()">SEND</button>
-</div>
-<div class="file-input-container">
-<label for="photoInput" class="file-input-label">📷 ПРИКРЕПИТЬ ФОТО</label>
-<input type="file" id="photoInput" accept="image/*" onchange="handlePhotoSelect(event)">
-</div>
-<div class="photo-preview" id="photoPreview">
-<img id="previewImage" src=""><div class="actions">
-<button onclick="sendPhoto()">➤ ОТПРАВИТЬ</button>
-<button class="cancel" onclick="cancelPhoto()">✕ ОТМЕНИТЬ</button>
-</div>
-</div>
-<div class="status" id="chatStatus">[ожидание подключения]</div>
-</div>
-
-<div class="footer">
-[ANOM DIRECT] • P2P ENCRYPTED • TURN ENABLED • v5.0
-</div>
-</div>
-
-<div id="photoModal" class="modal" onclick="closeModal(event)">
-<span class="modal-close" onclick="closeModal(event)">&times;</span>
-<img id="modalImage" src="">
-</div>
-
-<script>
-// ===== CONFIG =====
-const username = 'anon_' + Math.floor(Math.random() * 9000 + 1000);
-let peerConnection = null;
-let dataChannel = null;
-let selectedPhotoData = null;
-let isConnected = false;
-let iceCandidatesBuffer = [];
-let isGatheringComplete = false;
-
-// 🔥 КОНФИГУРАЦИЯ С TURN СЕРВЕРАМИ
-function getConfiguration() {
-    const servers = [
-        // STUN серверы
-        { urls: 'stun:stun.l.google.com:19302' },
-        { urls: 'stun:stun1.l.google.com:19302' },
-        { urls: 'stun:stun2.l.google.com:19302' },
-        { urls: 'stun:stun3.l.google.com:19302' },
-        { urls: 'stun:stun.services.mozilla.com' },
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AquaChat — водный мессенджер (РЕАЛЬНЫЙ)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- FIREBASE CDN -->
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Playfair+Display:wght@700&amp;display=swap');
         
-        // 🔥 ПУБЛИЧНЫЕ TURN серверы (для работы через 4G/разные сети)
-        {
-            urls: 'turn:openrelay.metered.ca:80',
-            username: 'openrelayproject',
-            credential: 'openrelayproject'
-        },
-        {
-            urls: 'turn:openrelay.metered.ca:443',
-            username: 'openrelayproject',
-            credential: 'openrelayproject'
-        },
-        {            urls: 'turn:openrelay.metered.ca:443?transport=tcp',
-            username: 'openrelayproject',
-            credential: 'openrelayproject'
+        :root { --water-primary: #00d4ff; }
+        
+        body {
+            background: linear-gradient(135deg, #0a2540 0%, #003366 50%, #001f3f 100%);
+            background-attachment: fixed;
+            font-family: 'Inter', system_ui, sans-serif;
         }
-    ];
-    
-    // Добавляем пользовательские TURN если настроены
-    const customTurn = localStorage.getItem('customTurn');
-    if (customTurn) {
-        try {
-            const turnData = JSON.parse(customTurn);
-            if (turnData.url && turnData.url.trim()) {
-                servers.push({
-                    urls: turnData.url,
-                    username: turnData.username || '',
-                    credential: turnData.password || ''
+        
+        .glass {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        
+        .chat-bubble-me {
+            background: linear-gradient(135deg, #00bfff, #0099cc);
+            color: white;
+            border-radius: 20px 20px 4px 20px;
+            box-shadow: 0 4px 15px rgba(0, 191, 255, 0.3);
+        }
+        
+        .chat-bubble-other {
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            color: white;
+            border-radius: 20px 20px 20px 4px;
+        }
+        
+        .water-gradient {
+            background: linear-gradient(90deg, #00d4ff, #00ffaa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .message-container { scrollbar-width: thin; scrollbar-color: #00d4ff rgba(255,255,255,0.1); }
+        
+        .wave-bg::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 100%;
+            background: linear-gradient(180deg, transparent 40%, rgba(0, 212, 255, 0.08) 50%, transparent 60%);
+            animation: waterFlow 8s linear infinite;
+        }
+        
+        @keyframes waterFlow { 0% { background-position: 0 0; } 100% { background-position: 0 200px; } }
+        
+        .online-dot { animation: pulse 2s infinite; }
+        
+        .tail {
+            position: absolute; bottom: -2px; right: -8px;
+            width: 20px; height: 20px;
+            background: linear-gradient(135deg, #00bfff, #0099cc);
+            clip-path: polygon(0 0, 100% 100%, 0 100%);
+            transform: rotate(45deg);
+        }
+    </style>
+</head>
+<body class="min-h-screen text-white flex items-center justify-center overflow-hidden">
+
+    <!-- ЭКРАН ВХОДА -->
+    <div id="login-screen" class="w-full max-w-md mx-auto glass rounded-3xl p-8 shadow-2xl">
+        <div class="text-center mb-10">
+            <div class="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-cyan-400 to-blue-600 mb-6 shadow-inner">
+                <span class="text-5xl">🌊</span>
+            </div>
+            <h1 class="text-4xl font-bold water-gradient tracking-tighter">AquaChat</h1>
+            <p class="text-cyan-300 mt-2 text-lg">Реальный водный мессенджер</p>
+        </div>
+        
+        <div id="phone-step">
+            <label class="block text-sm text-cyan-200 mb-2 font-medium">Номер телефона</label>
+            <div class="flex">
+                <div class="glass px-5 flex items-center text-cyan-300 font-medium rounded-l-2xl">+7</div>
+                <input id="phone-input" type="tel" placeholder="999 123 45 67" 
+                       class="flex-1 bg-white/10 border border-white/20 focus:border-cyan-400 rounded-r-2xl px-6 py-5 text-lg outline-none">
+            </div>
+            <button onclick="nextStep()" 
+                    class="mt-8 w-full py-5 rounded-2xl bg-gradient-to-r from-emerald-400 to-cyan-400 font-semibold text-lg active:scale-95">
+                Далее
+            </button>
+        </div>
+        
+        <div id="code-step" class="hidden">
+            <p class="text-center text-cyan-300">Код из SMS</p>
+            <p id="phone-display" class="font-mono text-2xl text-center mt-2"></p>
+            <div class="flex gap-4 justify-center my-8" id="code-inputs"></div>
+            <button onclick="verifyCode()" 
+                    class="w-full py-5 rounded-2xl bg-gradient-to-r from-emerald-400 to-cyan-400 font-semibold text-lg active:scale-95">
+                Войти в океан
+            </button>
+        </div>
+    </div>
+
+    <!-- ПРИЛОЖЕНИЕ -->
+    <div id="app-screen" class="hidden w-full h-screen flex flex-col lg:flex-row">
+        <!-- Сайдбар чатов -->
+        <div class="w-80 glass border-r border-white/10 flex flex-col h-full">
+            <div class="p-5 border-b border-white/10 flex items-center gap-3">
+                <div class="w-9 h-9 rounded-2xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center text-3xl">🌊</div>
+                <span class="text-3xl font-bold water-gradient">AquaChat</span>
+            </div>
+            
+            <div class="p-4">
+                <div class="glass flex items-center gap-3 px-5 py-3 rounded-3xl">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input id="search-input" onkeyup="filterChats()" type="text" placeholder="Поиск по воде..." 
+                           class="flex-1 bg-transparent outline-none">
+                </div>
+            </div>
+            
+            <div id="chat-list" class="flex-1 overflow-y-auto px-3 py-2 space-y-1 message-container"></div>
+            
+            <div class="p-4 border-t border-white/10 text-xs flex justify-between text-cyan-300">
+                <div onclick="logout()" class="cursor-pointer hover:text-white flex items-center gap-2">
+                    <i class="fa-solid fa-right-from-bracket"></i> Выйти
+                </div>
+            </div>
+        </div>
+        
+        <!-- ЧАТ -->
+        <div class="flex-1 flex flex-col wave-bg relative">
+            <div id="chat-header" class="h-16 glass border-b border-white/10 px-6 flex items-center">
+                <div id="header-avatar" class="w-10 h-10 text-4xl mr-4"></div>
+                <div>
+                    <div id="header-name" class="font-semibold text-xl"></div>
+                    <div id="header-status" class="text-xs text-emerald-400 flex items-center gap-2"></div>
+                </div>
+            </div>
+            
+            <div id="messages-area" class="flex-1 overflow-y-auto p-6 space-y-8 message-container bg-[radial-gradient(#ffffff05_1px,transparent_1px)]"></div>
+            
+            <!-- ВВОД -->
+            <div class="glass border-t border-white/10 p-4">
+                <div class="flex gap-3 bg-white/5 rounded-3xl px-5 py-2">
+                    <label onclick="document.getElementById('photo-input').click()" class="cursor-pointer w-10 h-10 flex items-center justify-center text-2xl hover:scale-110 transition">
+                        📸
+                    </label>
+                    <input id="photo-input" type="file" accept="image/*" class="hidden" onchange="handlePhotoUpload(event)">
+                    
+                    <input id="message-input" onkeydown="if(event.key==='Enter') sendMessage()" 
+                           type="text" placeholder="Напиши сообщение океану..." 
+                           class="flex-1 bg-transparent outline-none text-lg">
+                    
+                    <button onclick="sendMessage()" 
+                            class="w-11 h-11 bg-gradient-to-br from-emerald-400 to-teal-400 rounded-2xl flex items-center justify-center text-xl active:scale-95">
+                        <i class="fa-solid fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- ПРАВАЯ ПАНЕЛЬ (онлайн друзья) -->
+        <div class="w-72 glass border-l border-white/10 hidden lg:flex flex-col p-6">
+            <div class="uppercase text-xs tracking-widest text-cyan-300 mb-6">Онлайн в океане</div>
+            <div id="online-list" class="space-y-4"></div>
+        </div>
+    </div>
+
+    <!-- ТОАСТ -->
+    <div id="toast" class="hidden fixed bottom-8 right-8 glass px-6 py-4 rounded-3xl flex items-center gap-4 shadow-2xl">
+        <i class="fa-solid fa-bell text-emerald-400"></i>
+        <div>
+            <div id="toast-title" class="font-semibold"></div>
+            <div id="toast-text" class="text-sm text-cyan-200"></div>
+        </div>
+    </div>
+
+    <script>
+        // ===================== FIREBASE CONFIG =====================
+        // === ЗАМЕНИ ЭТО НА СВОЙ КОНФИГ ИЗ FIREBASE CONSOLE ===
+        const firebaseConfig = {
+            apiKey: "AIzaSyXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+            authDomain: "aquachat-water.firebaseapp.com",
+            databaseURL: "https://aquachat-water-default-rtdb.firebaseio.com",
+            projectId: "aquachat-water",
+            storageBucket: "aquachat-water.appspot.com",
+            messagingSenderId: "1234567890",
+            appId: "1:1234567890:web:xxxxxxxxxxxxxxxx"
+        };
+        // =======================================================
+
+        let app, auth, db;
+        let currentUser = { uid: null, name: "Ты" };
+        let currentChatId = null;
+        let messagesListener = null;
+        let onlineListener = null;
+        
+        let chats = [
+            { id: 1, name: "Общий океан", avatar: "🌊", lastMsg: "Присоединяйся!", time: "только что", messages: [] },
+            { id: 2, name: "Друзья-дайверы", avatar: "🐬", lastMsg: "", time: "", messages: [] },
+            { id: 3, name: "Морские приключения", avatar: "🧜‍♀️", lastMsg: "", time: "", messages: [] }
+        ];
+
+        function initFirebase() {
+            if (app) return;
+            app = firebase.initializeApp(firebaseConfig);
+            auth = firebase.auth();
+            db = firebase.database();
+        }
+
+        function nextStep() {
+            const phone = document.getElementById("phone-input").value.trim();
+            if (!phone) return alert("Введи номер!");
+            document.getElementById("phone-display").textContent = "+7 " + phone;
+            document.getElementById("phone-step").classList.add("hidden");
+            document.getElementById("code-step").classList.remove("hidden");
+            
+            const container = document.getElementById("code-inputs");
+            container.innerHTML = "";
+            for (let i = 0; i < 4; i++) {
+                const inp = document.createElement("input");
+                inp.maxLength = 1;
+                inp.className = "w-14 h-16 text-5xl text-center bg-white/10 border border-white/30 rounded-3xl focus:border-emerald-400 outline-none";
+                inp.oninput = () => { if (inp.value && inp.nextElementSibling) inp.nextElementSibling.focus(); };
+                container.appendChild(inp);
+            }
+            container.children[0].focus();
+        }
+
+        async function verifyCode() {
+            const code = Array.from(document.getElementById("code-inputs").children).map(i => i.value).join("");
+            if (code.length !== 4) return alert("Введи 4 цифры");
+            
+            initFirebase();
+            
+            try {
+                const cred = await auth.signInAnonymously();
+                currentUser.uid = cred.user.uid;
+                currentUser.name = prompt("Как тебя зовут в океане? 🌊", "Водный странник") || "Аноним";
+                
+                // Показываем приложение
+                document.getElementById("login-screen").classList.add("hidden");
+                document.getElementById("app-screen").classList.remove("hidden");
+                
+                setupPresence();
+                renderChatList();
+                openChat(1); // открываем первый чат
+                
+                showToast("Добро пожаловать в океан!", "Сообщения теперь реальные!");
+            } catch (e) {
+                alert("Ошибка входа: " + e.message);
+            }
+        }
+
+        function setupPresence() {
+            const connectedRef = db.ref(".info/connected");
+            const presenceRef = db.ref("online/" + currentUser.uid);
+            
+            connectedRef.on("value", (snap) => {
+                if (snap.val() === true) {
+                    presenceRef.set({ name: currentUser.name, timestamp: Date.now() });
+                    presenceRef.onDisconnect().remove();
+                }
+            });
+            
+            // Слушаем онлайн
+            if (onlineListener) onlineListener.off();
+            onlineListener = db.ref("online");
+            onlineListener.on("value", (snap) => {
+                const listHTML = [];
+                snap.forEach(child => {
+                    if (child.key !== currentUser.uid) {
+                        listHTML.push(`
+                            <div class="flex items-center gap-3">
+                                <span class="w-3 h-3 bg-emerald-400 rounded-full online-dot"></span>
+                                <span class="text-cyan-100">${child.val().name}</span>
+                            </div>
+                        `);
+                    }
                 });
-            }
-        } catch(e) {}
-    }
-    
-    return {
-        iceServers: servers,
-        iceTransportPolicy: 'all',
-        bundlePolicy: 'max-bundle',
-        rtcpMuxPolicy: 'require',
-        sdpSemantics: 'unified-plan'
-    };
-}
-
-// ===== TURN SETTINGS =====
-function saveTurnSettings() {
-    const url = document.getElementById('turnServer').value.trim();
-    const user = document.getElementById('turnUser').value.trim();
-    const pass = document.getElementById('turnPass').value.trim();
-    
-    if (url) {
-        localStorage.setItem('customTurn', JSON.stringify({ url, username: user, password: pass }));
-        alert('✅ TURN настройки сохранены! Перезагрузите страницу для применения.');
-    } else {
-        localStorage.removeItem('customTurn');
-        alert('✅ Пользовательские TURN удалены');
-    }
-}
-
-// ===== UI FUNCTIONS =====
-function updateStatus(text, type = 'normal') {
-    const status = document.getElementById('chatStatus');
-    status.innerText = `[${text}]`;
-    status.className = 'status ' + (type === 'error' ? 'error' : type === 'connecting' ? 'connecting' : type === 'success' ? 'success' : '');}
-
-function updateCandidateInfo(prefix, count, gathering) {
-    const info = document.getElementById(prefix + 'CandidateInfo');
-    const dot = document.getElementById(prefix + 'Dot');
-    const countEl = document.getElementById(prefix + 'Count');
-    if (info) info.style.display = count > 0 || gathering ? 'flex' : 'none';
-    if (dot) dot.className = 'candidate-dot' + (gathering ? ' active' : '');
-    if (countEl) countEl.innerText = count + ' найдено';
-}
-
-function showChat() {
-    document.getElementById('setupArea').classList.add('hidden');
-    document.getElementById('chatArea').classList.add('active');
-    document.getElementById('backBtn').classList.add('visible');
-    isConnected = true;
-    updateStatus('подключено ✓', 'success');
-    document.getElementById('messageInput').focus();
-}
-
-function hideChat() {
-    document.getElementById('setupArea').classList.remove('hidden');
-    document.getElementById('chatArea').classList.remove('active');
-    document.getElementById('backBtn').classList.remove('visible');
-    isConnected = false;
-    updateStatus('отключено');
-}
-
-function goBack() {
-    if (isConnected && peerConnection) {
-        if (dataChannel && dataChannel.readyState === 'open') {
-            dataChannel.close();
+                document.getElementById("online-list").innerHTML = listHTML.length ? listHTML.join("") : "<p class='text-cyan-400 text-sm'>Пока никого...</p>";
+            });
         }
-        peerConnection.close();
-        peerConnection = null;
-        dataChannel = null;
-    }
-    iceCandidatesBuffer = [];
-    isGatheringComplete = false;
-    document.getElementById('messages').innerHTML = '';
-    document.getElementById('offerSDP').value = '';
-    document.getElementById('offerCandidates').value = '';
-    document.getElementById('answerSDP').value = '';
-    document.getElementById('answerCandidates').value = '';
-    document.getElementById('remoteOfferSDP').value = '';
-    document.getElementById('remoteOfferCandidates').value = '';
-    document.getElementById('localAnswerSDP').value = '';
-    document.getElementById('localAnswerCandidates').value = '';
-    document.getElementById('copyOfferBtn').disabled = true;
-    document.getElementById('copyOfferCandBtn').disabled = true;    document.getElementById('copyAnswerBtn').disabled = true;
-    document.getElementById('copyAnswerCandBtn').disabled = true;
-    document.getElementById('setAnswerBtn').disabled = true;
-    document.getElementById('createOfferBtn').disabled = false;
-    document.getElementById('createAnswerBtn').disabled = false;
-    updateCandidateInfo('offer', 0, false);
-    updateCandidateInfo('answer', 0, false);
-    hideChat();
-}
 
-// ===== WEBRTC FUNCTIONS =====
-function setupICEGathering(pc, prefix) {
-    iceCandidatesBuffer = [];
-    isGatheringComplete = false;
-    pc.onicecandidate = (event) => {
-        if (event.candidate) {
-            iceCandidatesBuffer.push(event.candidate);
-            updateCandidateInfo(prefix, iceCandidatesBuffer.length, true);
-            const candidatesText = JSON.stringify(iceCandidatesBuffer.map(c => c.toJSON()));
-            if (prefix === 'offer') {
-                document.getElementById('offerCandidates').value = candidatesText;
-                document.getElementById('copyOfferCandBtn').disabled = false;
-            } else {
-                document.getElementById('localAnswerCandidates').value = candidatesText;
-                document.getElementById('copyAnswerCandBtn').disabled = false;
-            }
-            console.log('ICE candidate:', event.candidate.candidate?.substring(0, 50) + '...');
+        function renderChatList() {
+            const container = document.getElementById("chat-list");
+            container.innerHTML = "";
+            chats.forEach(chat => {
+                const div = document.createElement("div");
+                div.className = `group flex items-center gap-4 px-5 py-4 rounded-3xl hover:bg-white/10 cursor-pointer transition-all ${currentChatId === chat.id ? 'bg-white/15' : ''}`;
+                div.onclick = () => openChat(chat.id);
+                div.innerHTML = `
+                    <div class="w-12 h-12 text-4xl flex items-center justify-center bg-white/10 rounded-2xl">${chat.avatar}</div>
+                    <div class="flex-1 min-w-0">
+                        <div class="font-medium truncate">${chat.name}</div>
+                        <div class="text-sm text-cyan-200/70 truncate">${chat.lastMsg || "Начни разговор"}</div>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
         }
-    };
-    pc.onicegatheringstatechange = () => {
-        console.log('ICE gathering:', pc.iceGatheringState);
-        if (pc.iceGatheringState === 'complete') {
-            isGatheringComplete = true;
-            updateCandidateInfo(prefix, iceCandidatesBuffer.length, false);
-        }
-    };
-}
 
-function setupDataChannel(channel) {
-    dataChannel = channel;
-    channel.onopen = () => {
-        addSystemMessage('✅ Канал данных открыт');
-        showChat();
-        sendSystemMessage(username + ' подключился');
-    };
-    channel.onclose = () => {
-        addSystemMessage('❌ Соединение разорвано');
-        updateStatus('отключено', 'error');
-        setTimeout(() => { if (!isConnected) hideChat(); }, 2000);
-    };    channel.onerror = (err) => {
-        console.error('DataChannel error:', err);
-        updateStatus('ошибка канала', 'error');
-    };
-    channel.onmessage = (event) => {
-        try {
-            const data = JSON.parse(event.data);
-            displayMessage(data);
-        } catch (e) {
-            displayMessage({ type: 'text', user: 'unknown', text: event.data, time: Date.now() });
-        }
-    };
-}
-
-async function createOffer() {
-    try {
-        updateStatus('создание offer...', 'connecting');
-        document.getElementById('createOfferBtn').disabled = true;
-        peerConnection = new RTCPeerConnection(getConfiguration());
-        dataChannel = peerConnection.createDataChannel('chat');
-        setupDataChannel(dataChannel);
-        setupICEGathering(peerConnection, 'offer');
-        peerConnection.oniceconnectionstatechange = () => {
-            const state = peerConnection.iceConnectionState;
-            const states = {
-                'new': '⏳ Ожидание...',
-                'checking': '🔍 Поиск пути через NAT...',
-                'connected': '✅ P2P соединение!',
-                'completed': '✅ Готово!',
-                'disconnected': '🔄 Переподключение...',
-                'failed': '❌ Ошибка — обменяйтесь ICE кандидатами',
-                'closed': '🔒 Закрыто'
-            };
-            updateStatus(states[state] || state,
-                state === 'failed' ? 'error' : state === 'checking' ? 'connecting' : state === 'connected' || state === 'completed' ? 'success' : 'normal');
-        };
-        const offer = await peerConnection.createOffer();
-        await peerConnection.setLocalDescription(offer);
-        const offerSDP = JSON.stringify({
-            type: peerConnection.localDescription.type,
-            sdp: peerConnection.localDescription.sdp
-        });
-        document.getElementById('offerSDP').value = offerSDP;
-        document.getElementById('copyOfferBtn').disabled = false;
-        document.getElementById('setAnswerBtn').disabled = false;
-        addSystemMessage('✅ Offer создан! Копируйте SDP сейчас');
-        updateStatus('SDP готов — копируйте и отправьте другу', 'success');
-        addSystemMessage('⏳ ICE кандидаты собираются в фоне (скопируйте через 5-10 сек для разных сетей)');
-    } catch (error) {
-        console.error('Offer error:', error);        updateStatus('ошибка: ' + error.message, 'error');
-        alert('Ошибка: ' + error.message);
-        document.getElementById('createOfferBtn').disabled = false;
-    }
-}
-
-async function createAnswer() {
-    try {
-        const offerText = document.getElementById('remoteOfferSDP').value.trim();
-        if (!offerText) { alert('Вставьте SDP offer от хоста'); return; }
-        updateStatus('создание answer...', 'connecting');
-        document.getElementById('createAnswerBtn').disabled = true;
-        const offer = JSON.parse(offerText);
-        peerConnection = new RTCPeerConnection(getConfiguration());
-        peerConnection.ondatachannel = (event) => setupDataChannel(event.channel);
-        setupICEGathering(peerConnection, 'answer');
-        peerConnection.oniceconnectionstatechange = () => {
-            const state = peerConnection.iceConnectionState;
-            const states = {
-                'connected': '✅ P2P соединение!',
-                'completed': '✅ Готово!',
-                'failed': '❌ Ошибка NAT — обменяйтесь ICE кандидатами',
-                'checking': '🔍 Поиск пути...'
-            };
-            updateStatus(states[state] || state,
-                state === 'failed' ? 'error' : state === 'checking' ? 'connecting' : state === 'connected' || state === 'completed' ? 'success' : 'normal');
-        };
-        await peerConnection.setRemoteDescription(offer);
-        const offerCandidatesText = document.getElementById('remoteOfferCandidates').value.trim();
-        if (offerCandidatesText) {
-            try {
-                const offerCandidates = JSON.parse(offerCandidatesText);
-                for (const candidate of offerCandidates) {
-                    try {
-                        await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
-                    } catch (e) {
-                        console.warn('Failed to add candidate:', e);
-                    }
+        function openChat(id) {
+            currentChatId = id;
+            renderChatList();
+            
+            const chat = chats.find(c => c.id === id);
+            document.getElementById("header-avatar").innerHTML = chat.avatar;
+            document.getElementById("header-name").textContent = chat.name;
+            document.getElementById("header-status").innerHTML = `<span class="w-2 h-2 bg-emerald-400 rounded-full online-dot"></span> онлайн чат`;
+            
+            const area = document.getElementById("messages-area");
+            area.innerHTML = "";
+            
+            // Снимаем старый слушатель
+            if (messagesListener) messagesListener.off();
+            
+            const ref = db.ref(`chats/${id}/messages`);
+            messagesListener = ref;
+            
+            // Загружаем все существующие сообщения
+            ref.once("value", (snap) => {
+                const data = snap.val() || {};
+                chat.messages = [];
+                Object.keys(data).forEach(key => {
+                    const m = data[key];
+                    chat.messages.push({
+                        id: key,
+                        fromMe: m.fromUid === currentUser.uid,
+                        fromName: m.fromName,
+                        text: m.text,
+                        url: m.url,
+                        time: m.time,
+                        type: m.type || "text"
+                    });
+                });
+                renderCurrentChat();
+            });
+            
+            // Реал-тайм новые сообщения
+            ref.on("child_added", (snap) => {
+                const m = snap.val();
+                if (!chat.messages.find(msg => msg.id === snap.key)) {
+                    const newMsg = {
+                        id: snap.key,
+                        fromMe: m.fromUid === currentUser.uid,
+                        fromName: m.fromName,
+                        text: m.text,
+                        url: m.url,
+                        time: m.time,
+                        type: m.type || "text"
+                    };
+                    chat.messages.push(newMsg);
+                    if (currentChatId === id) renderCurrentChat();
+                    chat.lastMsg = m.text || "📸 Фото";
+                    chat.time = m.time;
+                    renderChatList();
                 }
-                addSystemMessage('✅ Добавлено ' + offerCandidates.length + ' ICE кандидатов от хоста');
-            } catch (e) {
-                console.warn('Failed to parse offer candidates:', e);
-            }
+            });
         }
-        const answer = await peerConnection.createAnswer();
-        await peerConnection.setLocalDescription(answer);
-        const answerSDP = JSON.stringify({
-            type: peerConnection.localDescription.type,
-            sdp: peerConnection.localDescription.sdp
-        });        document.getElementById('localAnswerSDP').value = answerSDP;
-        document.getElementById('copyAnswerBtn').disabled = false;
-        addSystemMessage('✅ Answer создан! Копируйте SDP сейчас');
-        updateStatus('SDP готов — копируйте и отправьте хосту', 'success');
-        addSystemMessage('⏳ ICE кандидаты собираются в фоне (скопируйте через 5-10 сек для разных сетей)');
-    } catch (error) {
-        console.error('Answer error:', error);
-        updateStatus('ошибка: ' + error.message, 'error');
-        alert('Ошибка: ' + error.message);
-        document.getElementById('createAnswerBtn').disabled = false;
-    }
-}
 
-async function setAnswer() {
-    try {
-        const answerText = document.getElementById('answerSDP').value.trim();
-        if (!answerText) { alert('Вставьте SDP answer от друга'); return; }
-        updateStatus('установка соединения...', 'connecting');
-        const answer = JSON.parse(answerText);
-        await peerConnection.setRemoteDescription(answer);
-        const answerCandidatesText = document.getElementById('answerCandidates').value.trim();
-        if (answerCandidatesText) {
-            try {
-                const answerCandidates = JSON.parse(answerCandidatesText);
-                for (const candidate of answerCandidates) {
-                    try {
-                        await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
-                        console.log('Added ICE candidate from answer');
-                    } catch (e) {
-                        console.warn('Failed to add candidate:', e);
-                    }
+        function renderCurrentChat() {
+            const chat = chats.find(c => c.id === currentChatId);
+            if (!chat) return;
+            const area = document.getElementById("messages-area");
+            area.innerHTML = "";
+            
+            chat.messages.forEach(msg => {
+                const bubble = document.createElement("div");
+                bubble.className = `max-w-[75%] ${msg.fromMe ? "ml-auto" : ""}`;
+                
+                if (msg.type === "image") {
+                    bubble.innerHTML = `
+                        <div class="${msg.fromMe ? "chat-bubble-me" : "chat-bubble-other"} p-2 rounded-3xl">
+                            <img src="${msg.url}" class="rounded-2xl max-w-[280px]">
+                            <div class="text-[10px] text-right mt-1 opacity-70">${msg.time} • ${msg.fromName}</div>
+                        </div>
+                    `;
+                } else {
+                    bubble.innerHTML = `
+                        <div class="${msg.fromMe ? "chat-bubble-me px-6 py-4" : "chat-bubble-other px-6 py-4"} relative">
+                            \( {msg.fromMe ? "" : `<div class="text-xs text-cyan-300 mb-1"> \){msg.fromName}</div>`}
+                            ${msg.text}
+                            ${msg.fromMe ? `<div class="tail"></div>` : ""}
+                            <div class="text-[10px] text-right mt-1 opacity-70">${msg.time}</div>
+                        </div>
+                    `;
                 }
-                addSystemMessage('✅ Добавлено ' + answerCandidates.length + ' ICE кандидатов от друга');
-            } catch (e) {
-                console.warn('Failed to parse answer candidates:', e);
-            }
+                area.appendChild(bubble);
+            });
+            area.scrollTop = area.scrollHeight;
         }
-        addSystemMessage('✅ Answer принят — устанавливается соединение...');
-    } catch (error) {
-        console.error('SetAnswer error:', error);
-        updateStatus('ошибка: ' + error.message, 'error');
-        alert('Ошибка: ' + error.message);
-    }
-}
 
-// ===== MESSAGING =====
-function sendMessage() {
-    const input = document.getElementById('messageInput');
-    const text = input.value.trim();
-    if (!text || !dataChannel || dataChannel.readyState !== 'open') {        if (!isConnected) alert('Сначала подключитесь');
-        return;
-    }
-    const msg = { type: 'text', user: username, text: text, time: Date.now() };
-    dataChannel.send(JSON.stringify(msg));
-    displayMessage(msg);
-    input.value = '';
-    input.focus();
-}
+        function sendMessage() {
+            const input = document.getElementById("message-input");
+            const text = input.value.trim();
+            if (!text || !currentChatId) return;
+            
+            const now = new Date().toLocaleTimeString("ru-RU", {hour:"2-digit", minute:"2-digit"});
+            const chat = chats.find(c => c.id === currentChatId);
+            
+            const msgData = {
+                fromUid: currentUser.uid,
+                fromName: currentUser.name,
+                text: text,
+                time: now,
+                type: "text"
+            };
+            
+            // Мгновенно показываем у себя
+            chat.messages.push({
+                id: Date.now(),
+                fromMe: true,
+                fromName: currentUser.name,
+                text: text,
+                time: now,
+                type: "text"
+            });
+            renderCurrentChat();
+            chat.lastMsg = text.length > 30 ? text.substring(0,27)+"..." : text;
+            chat.time = now;
+            renderChatList();
+            
+            // Отправляем в Firebase
+            db.ref(`chats/${currentChatId}/messages`).push(msgData);
+            
+            input.value = "";
+        }
 
-function sendSystemMessage(text) {
-    if (!dataChannel || dataChannel.readyState !== 'open') return;
-    const msg = { type: 'system', text: text, time: Date.now() };
-    dataChannel.send(JSON.stringify(msg));
-}
+        function handlePhotoUpload(e) {
+            const file = e.target.files[0];
+            if (!file || !currentChatId) return;
+            
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                const now = new Date().toLocaleTimeString("ru-RU", {hour:"2-digit", minute:"2-digit"});
+                const chat = chats.find(c => c.id === currentChatId);
+                
+                const msgData = {
+                    fromUid: currentUser.uid,
+                    fromName: currentUser.name,
+                    url: ev.target.result,
+                    time: now,
+                    type: "image"
+                };
+                
+                // Мгновенно показываем
+                chat.messages.push({
+                    id: Date.now(),
+                    fromMe: true,
+                    fromName: currentUser.name,
+                    url: ev.target.result,
+                    time: now,
+                    type: "image"
+                });
+                renderCurrentChat();
+                chat.lastMsg = "📸 Фото";
+                chat.time = now;
+                renderChatList();
+                
+                // В Firebase
+                db.ref(`chats/${currentChatId}/messages`).push(msgData);
+            };
+            reader.readAsDataURL(file);
+        }
 
-function displayMessage(msg) {
-    const container = document.getElementById('messages');
-    const div = document.createElement('div');
-    const time = new Date(msg.time).toLocaleTimeString('ru-RU', {hour:'2-digit',minute:'2-digit'});
-    if (msg.type === 'system') {
-        div.className = 'system-message';
-        div.innerText = '➤ ' + msg.text;
-    } else if (msg.type === 'photo') {
-        div.className = 'message' + (msg.user === username ? ' own' : '');
-        div.innerHTML = `<strong>[${msg.user}]</strong> <small style="color:#666">${time}</small><br>
-<img src="${msg.photo}" class="photo-message" onclick="openModal('${msg.photo}')">`;
-    } else {
-        div.className = 'message' + (msg.user === username ? ' own' : '');
-        div.innerHTML = `<strong>[${msg.user}]</strong> <small style="color:#666">${time}</small><br>${escapeHtml(msg.text)}`;
-    }
-    container.appendChild(div);
-    container.scrollTop = container.scrollHeight;
-}
+        function filterChats() {
+            const term = document.getElementById("search-input").value.toLowerCase();
+            document.querySelectorAll("#chat-list > div").forEach(el => {
+                el.style.display = el.textContent.toLowerCase().includes(term) ? "flex" : "none";
+            });
+        }
 
-function addSystemMessage(text) {
-    displayMessage({ type: 'system', text: text, time: Date.now() });
-}
+        function showToast(title, text) {
+            const t = document.getElementById("toast");
+            document.getElementById("toast-title").textContent = title;
+            document.getElementById("toast-text").textContent = text;
+            t.classList.remove("hidden");
+            setTimeout(() => t.classList.add("hidden"), 3500);
+        }
 
-function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-}
+        function logout() {
+            if (auth) auth.signOut();
+            location.reload();
+        }
 
-// ===== COPY FUNCTIONS =====
-function copyOffer() {
-    const text = document.getElementById('offerSDP').value;
-    navigator.clipboard.writeText(text).then(() => {
-        const btn = document.getElementById('copyOfferBtn');        const original = btn.innerText;
-        btn.innerText = '✅ СКОПИРОВАНО';
-        setTimeout(() => btn.innerText = original, 1500);
-    });
-}
-
-function copyOfferCandidates() {
-    const text = document.getElementById('offerCandidates').value;
-    if (!text) return alert('Подождите ICE кандидаты (5-10 сек)');
-    navigator.clipboard.writeText(text).then(() => {
-        const btn = document.getElementById('copyOfferCandBtn');
-        const original = btn.innerText;
-        btn.innerText = '✅ СКОПИРОВАНО';
-        setTimeout(() => btn.innerText = original, 1500);
-    });
-}
-
-function copyAnswer() {
-    const text = document.getElementById('localAnswerSDP').value;
-    navigator.clipboard.writeText(text).then(() => {
-        const btn = document.getElementById('copyAnswerBtn');
-        const original = btn.innerText;
-        btn.innerText = '✅ СКОПИРОВАНО';
-        setTimeout(() => btn.innerText = original, 1500);
-    });
-}
-
-function copyAnswerCandidates() {
-    const text = document.getElementById('localAnswerCandidates').value;
-    if (!text) return alert('Подождите ICE кандидаты (5-10 сек)');
-    navigator.clipboard.writeText(text).then(() => {
-        const btn = document.getElementById('copyAnswerCandBtn');
-        const original = btn.innerText;
-        btn.innerText = '✅ СКОПИРОВАНО';
-        setTimeout(() => btn.innerText = original, 1500);
-    });
-}
-
-// ===== PHOTO FUNCTIONS =====
-function handlePhotoSelect(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-    if (file.size > 4 * 1024 * 1024) {
-        alert('📷 Фото слишком большое! Максимум 4MB');
-        return;
-    }
-    const reader = new FileReader();
-    reader.onload = (e) => {
-        selectedPhotoData = e.target.result;
-        document.getElementById('previewImage').src = selectedPhotoData;        document.getElementById('photoPreview').style.display = 'block';
-    };
-    reader.readAsDataURL(file);
-}
-
-function sendPhoto() {
-    if (!selectedPhotoData || !dataChannel || dataChannel.readyState !== 'open') {
-        alert('Не подключено');
-        return;
-    }
-    const msg = { type: 'photo', user: username, photo: selectedPhotoData, time: Date.now() };
-    dataChannel.send(JSON.stringify(msg));
-    displayMessage(msg);
-    cancelPhoto();
-}
-
-function cancelPhoto() {
-    selectedPhotoData = null;
-    document.getElementById('photoInput').value = '';
-    document.getElementById('photoPreview').style.display = 'none';
-}
-
-// ===== MODAL =====
-function openModal(src) {
-    document.getElementById('modalImage').src = src;
-    document.getElementById('photoModal').classList.add('active');
-}
-
-function closeModal(event) {
-    if (event.target.id === 'photoModal' || event.target.className === 'modal-close') {
-        document.getElementById('photoModal').classList.remove('active');
-    }
-}
-
-// ===== INIT =====
-document.getElementById('messageInput').addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') sendMessage();
-});
-
-document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') closeModal({ target: { id: 'photoModal' } });
-});
-
-updateStatus('готов к подключению (TURN активен)');
-</script>
+        // Запуск
+        window.onload = () => {
+            console.log("%c🌊 AquaChat РЕАЛЬНЫЙ готов! Замени Firebase config и запускай", "color:#00ffcc; font-size:14px");
+            // Можно сразу открыть приложение для теста (убери комментарий ниже)
+            // document.getElementById("login-screen").classList.add("hidden");
+            // document.getElementById("app-screen").classList.remove("hidden");
+        };
+    </script>
 </body>
 </html>
