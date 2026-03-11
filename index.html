@@ -3,22 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AquaChat — водный мессенджер (РЕАЛЬНЫЙ)</title>
+    <title>Anommess — анонимный водный мессенджер</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <!-- FIREBASE CDN -->
+    <!-- Firebase SDK (совместимые версии) -->
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-storage-compat.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Playfair+Display:wght@700&amp;display=swap');
+        /* (стили остаются те же, только меняем название в тексте) */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@700&display=swap');
         
         :root { --water-primary: #00d4ff; }
         
         body {
             background: linear-gradient(135deg, #0a2540 0%, #003366 50%, #001f3f 100%);
             background-attachment: fixed;
-            font-family: 'Inter', system_ui, sans-serif;
+            font-family: 'Inter', system-ui, sans-serif;
         }
         
         .glass {
@@ -62,6 +64,7 @@
         @keyframes waterFlow { 0% { background-position: 0 0; } 100% { background-position: 0 200px; } }
         
         .online-dot { animation: pulse 2s infinite; }
+        .pulse { animation: pulse 2s infinite; }
         
         .tail {
             position: absolute; bottom: -2px; right: -8px;
@@ -80,12 +83,13 @@
             <div class="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-cyan-400 to-blue-600 mb-6 shadow-inner">
                 <span class="text-5xl">🌊</span>
             </div>
-            <h1 class="text-4xl font-bold water-gradient tracking-tighter">AquaChat</h1>
-            <p class="text-cyan-300 mt-2 text-lg">Реальный водный мессенджер</p>
+            <h1 class="text-4xl font-bold water-gradient tracking-tighter">Anommess</h1>
+            <p class="text-cyan-300 mt-2 text-lg">Анонимный водный мессенджер</p>
         </div>
         
+        <!-- Вход по номеру (или анонимно) -->
         <div id="phone-step">
-            <label class="block text-sm text-cyan-200 mb-2 font-medium">Номер телефона</label>
+            <label class="block text-sm text-cyan-200 mb-2 font-medium">Номер телефона (или оставь пустым для анонимного входа)</label>
             <div class="flex">
                 <div class="glass px-5 flex items-center text-cyan-300 font-medium rounded-l-2xl">+7</div>
                 <input id="phone-input" type="tel" placeholder="999 123 45 67" 
@@ -93,8 +97,9 @@
             </div>
             <button onclick="nextStep()" 
                     class="mt-8 w-full py-5 rounded-2xl bg-gradient-to-r from-emerald-400 to-cyan-400 font-semibold text-lg active:scale-95">
-                Далее
+                Продолжить анонимно
             </button>
+            <p class="text-center text-xs text-cyan-300 mt-4">Если номер не указан, вход будет гостевым</p>
         </div>
         
         <div id="code-step" class="hidden">
@@ -114,15 +119,22 @@
         <div class="w-80 glass border-r border-white/10 flex flex-col h-full">
             <div class="p-5 border-b border-white/10 flex items-center gap-3">
                 <div class="w-9 h-9 rounded-2xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center text-3xl">🌊</div>
-                <span class="text-3xl font-bold water-gradient">AquaChat</span>
+                <span class="text-3xl font-bold water-gradient">Anommess</span>
             </div>
             
             <div class="p-4">
                 <div class="glass flex items-center gap-3 px-5 py-3 rounded-3xl">
                     <i class="fa-solid fa-magnifying-glass"></i>
-                    <input id="search-input" onkeyup="filterChats()" type="text" placeholder="Поиск по воде..." 
+                    <input id="search-input" onkeyup="filterChats()" type="text" placeholder="Поиск..." 
                            class="flex-1 bg-transparent outline-none">
                 </div>
+            </div>
+            
+            <!-- Кнопка создания нового чата -->
+            <div class="px-4 mb-2">
+                <button onclick="showNewChatModal()" class="w-full py-3 glass rounded-3xl flex items-center justify-center gap-2 hover:bg-white/10">
+                    <i class="fa-solid fa-plus"></i> Новый чат
+                </button>
             </div>
             
             <div id="chat-list" class="flex-1 overflow-y-auto px-3 py-2 space-y-1 message-container"></div>
@@ -155,7 +167,7 @@
                     <input id="photo-input" type="file" accept="image/*" class="hidden" onchange="handlePhotoUpload(event)">
                     
                     <input id="message-input" onkeydown="if(event.key==='Enter') sendMessage()" 
-                           type="text" placeholder="Напиши сообщение океану..." 
+                           type="text" placeholder="Анонимное сообщение..." 
                            class="flex-1 bg-transparent outline-none text-lg">
                     
                     <button onclick="sendMessage()" 
@@ -168,8 +180,21 @@
         
         <!-- ПРАВАЯ ПАНЕЛЬ (онлайн друзья) -->
         <div class="w-72 glass border-l border-white/10 hidden lg:flex flex-col p-6">
-            <div class="uppercase text-xs tracking-widest text-cyan-300 mb-6">Онлайн в океане</div>
+            <div class="uppercase text-xs tracking-widest text-cyan-300 mb-6">Сейчас в сети</div>
             <div id="online-list" class="space-y-4"></div>
+        </div>
+    </div>
+
+    <!-- МОДАЛКА НОВОГО ЧАТА -->
+    <div id="new-chat-modal" class="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm hidden z-50">
+        <div class="glass w-96 p-8 rounded-3xl">
+            <h3 class="text-2xl font-bold mb-4">Новый чат</h3>
+            <input id="new-chat-phone" type="text" placeholder="Номер телефона собеседника (+7...)" 
+                   class="w-full bg-white/10 border border-white/20 rounded-2xl px-5 py-4 mb-4 outline-none">
+            <div class="flex gap-3">
+                <button onclick="createNewChat()" class="flex-1 py-3 bg-gradient-to-r from-emerald-400 to-cyan-400 rounded-2xl">Создать</button>
+                <button onclick="closeNewChatModal()" class="flex-1 py-3 glass rounded-2xl">Отмена</button>
+            </div>
         </div>
     </div>
 
@@ -183,320 +208,417 @@
     </div>
 
     <script>
-        // ===================== FIREBASE CONFIG =====================
-        // === ЗАМЕНИ ЭТО НА СВОЙ КОНФИГ ИЗ FIREBASE CONSOLE ===
+        // 🔥 ВСТАВЬТЕ СВОЙ КОНФИГ FIREBASE
         const firebaseConfig = {
-            apiKey: "AIzaSyXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-            authDomain: "aquachat-water.firebaseapp.com",
-            databaseURL: "https://aquachat-water-default-rtdb.firebaseio.com",
-            projectId: "aquachat-water",
-            storageBucket: "aquachat-water.appspot.com",
+            apiKey: "AIzaSy...",
+            authDomain: "anommess.firebaseapp.com",
+            databaseURL: "https://anommess-default-rtdb.firebaseio.com",
+            projectId: "anommess",
+            storageBucket: "anommess.appspot.com",
             messagingSenderId: "1234567890",
-            appId: "1:1234567890:web:xxxxxxxxxxxxxxxx"
+            appId: "1:1234567890:web:xxx"
         };
-        // =======================================================
 
-        let app, auth, db;
-        let currentUser = { uid: null, name: "Ты" };
+        // Инициализация Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.database();
+        const storage = firebase.storage();
+
+        // Глобальные переменные
+        let currentUser = null;               // Firebase user
+        let currentUserName = "Аноним";
+        let currentPhone = "";
         let currentChatId = null;
-        let messagesListener = null;
-        let onlineListener = null;
-        
-        let chats = [
-            { id: 1, name: "Общий океан", avatar: "🌊", lastMsg: "Присоединяйся!", time: "только что", messages: [] },
-            { id: 2, name: "Друзья-дайверы", avatar: "🐬", lastMsg: "", time: "", messages: [] },
-            { id: 3, name: "Морские приключения", avatar: "🧜‍♀️", lastMsg: "", time: "", messages: [] }
-        ];
+        let unsubscribeMessages = null;
+        let unsubscribeOnline = null;
 
-        function initFirebase() {
-            if (app) return;
-            app = firebase.initializeApp(firebaseConfig);
-            auth = firebase.auth();
-            db = firebase.database();
+        // Список чатов (локальное кеширование, но данные берутся из БД)
+        let chats = []; // будет заполняться из Firebase
+
+        // Элементы DOM
+        const loginScreen = document.getElementById('login-screen');
+        const appScreen = document.getElementById('app-screen');
+        const phoneStep = document.getElementById('phone-step');
+        const codeStep = document.getElementById('code-step');
+        const phoneInput = document.getElementById('phone-input');
+        const codeInputs = document.getElementById('code-inputs');
+        const phoneDisplay = document.getElementById('phone-display');
+        const chatListDiv = document.getElementById('chat-list');
+        const messagesArea = document.getElementById('messages-area');
+        const headerName = document.getElementById('header-name');
+        const headerStatus = document.getElementById('header-status');
+        const headerAvatar = document.getElementById('header-avatar');
+        const onlineList = document.getElementById('online-list');
+        const messageInput = document.getElementById('message-input');
+        const toast = document.getElementById('toast');
+        const toastTitle = document.getElementById('toast-title');
+        const toastText = document.getElementById('toast-text');
+        const modal = document.getElementById('new-chat-modal');
+        const newChatPhone = document.getElementById('new-chat-phone');
+
+        // Recaptcha для Firebase Phone Auth
+        let confirmationResult = null;
+        let recaptchaVerifier = null;
+
+        // -------------------- Вход --------------------
+        function nextStep() {
+            const phone = phoneInput.value.trim();
+            if (phone === '') {
+                // Анонимный вход без номера
+                loginAnonymously();
+                return;
+            }
+            // Иначе отправляем SMS
+            const fullPhone = '+7' + phone.replace(/\D/g, '');
+            phoneDisplay.textContent = fullPhone;
+            
+            if (!recaptchaVerifier) {
+                recaptchaVerifier = new firebase.auth.RecaptchaVerifier('phone-step', {
+                    size: 'invisible'
+                });
+            }
+            
+            auth.signInWithPhoneNumber(fullPhone, recaptchaVerifier)
+                .then(result => {
+                    confirmationResult = result;
+                    phoneStep.classList.add('hidden');
+                    codeStep.classList.remove('hidden');
+                    generateCodeInputs();
+                })
+                .catch(error => {
+                    alert('Ошибка: ' + error.message);
+                });
         }
 
-        function nextStep() {
-            const phone = document.getElementById("phone-input").value.trim();
-            if (!phone) return alert("Введи номер!");
-            document.getElementById("phone-display").textContent = "+7 " + phone;
-            document.getElementById("phone-step").classList.add("hidden");
-            document.getElementById("code-step").classList.remove("hidden");
-            
-            const container = document.getElementById("code-inputs");
-            container.innerHTML = "";
-            for (let i = 0; i < 4; i++) {
-                const inp = document.createElement("input");
+        function generateCodeInputs() {
+            const container = document.getElementById('code-inputs');
+            container.innerHTML = '';
+            for (let i = 0; i < 6; i++) {
+                const inp = document.createElement('input');
+                inp.type = 'text';
                 inp.maxLength = 1;
-                inp.className = "w-14 h-16 text-5xl text-center bg-white/10 border border-white/30 rounded-3xl focus:border-emerald-400 outline-none";
-                inp.oninput = () => { if (inp.value && inp.nextElementSibling) inp.nextElementSibling.focus(); };
+                inp.className = 'w-12 h-14 text-3xl text-center bg-white/10 border border-white/30 rounded-2xl focus:border-emerald-400 outline-none';
+                inp.oninput = () => {
+                    if (inp.value && inp.nextElementSibling) inp.nextElementSibling.focus();
+                };
                 container.appendChild(inp);
             }
             container.children[0].focus();
         }
 
-        async function verifyCode() {
-            const code = Array.from(document.getElementById("code-inputs").children).map(i => i.value).join("");
-            if (code.length !== 4) return alert("Введи 4 цифры");
+        function verifyCode() {
+            const code = Array.from(codeInputs.children).map(i => i.value).join('');
+            if (code.length < 6) return alert('Введите полный код');
             
-            initFirebase();
+            confirmationResult.confirm(code)
+                .then(result => {
+                    // Успешный вход
+                    afterLogin(result.user);
+                })
+                .catch(error => alert('Неверный код'));
+        }
+
+        function loginAnonymously() {
+            auth.signInAnonymously()
+                .then(result => {
+                    afterLogin(result.user);
+                })
+                .catch(error => alert('Ошибка анонимного входа'));
+        }
+
+        function afterLogin(user) {
+            currentUser = user;
+            currentPhone = user.phoneNumber || 'Аноним';
             
-            try {
-                const cred = await auth.signInAnonymously();
-                currentUser.uid = cred.user.uid;
-                currentUser.name = prompt("Как тебя зовут в океане? 🌊", "Водный странник") || "Аноним";
-                
-                // Показываем приложение
-                document.getElementById("login-screen").classList.add("hidden");
-                document.getElementById("app-screen").classList.remove("hidden");
-                
-                setupPresence();
-                renderChatList();
-                openChat(1); // открываем первый чат
-                
-                showToast("Добро пожаловать в океан!", "Сообщения теперь реальные!");
-            } catch (e) {
-                alert("Ошибка входа: " + e.message);
+            // Запрашиваем имя (можно сохранять в профиль)
+            let name = prompt('Как вас называть? (никнейм)', 'Аноним');
+            if (!name) name = 'Аноним';
+            currentUserName = name;
+            
+            // Сохраняем пользователя в базе (онлайн-статус)
+            const userRef = db.ref('users/' + user.uid);
+            userRef.set({
+                name: currentUserName,
+                phone: currentPhone,
+                online: true,
+                lastSeen: firebase.database.ServerValue.TIMESTAMP
+            });
+            
+            // При отключении ставим офлайн
+            userRef.onDisconnect().update({
+                online: false,
+                lastSeen: firebase.database.ServerValue.TIMESTAMP
+            });
+            
+            // Переключаем интерфейс
+            loginScreen.classList.add('hidden');
+            appScreen.classList.remove('hidden');
+            
+            // Загружаем чаты
+            loadChats();
+            
+            // Слушаем онлайн-пользователей
+            listenOnline();
+            
+            // Запрашиваем уведомления
+            if (Notification.permission !== 'granted') {
+                Notification.requestPermission();
             }
         }
 
-        function setupPresence() {
-            const connectedRef = db.ref(".info/connected");
-            const presenceRef = db.ref("online/" + currentUser.uid);
-            
-            connectedRef.on("value", (snap) => {
-                if (snap.val() === true) {
-                    presenceRef.set({ name: currentUser.name, timestamp: Date.now() });
-                    presenceRef.onDisconnect().remove();
-                }
-            });
-            
-            // Слушаем онлайн
-            if (onlineListener) onlineListener.off();
-            onlineListener = db.ref("online");
-            onlineListener.on("value", (snap) => {
-                const listHTML = [];
-                snap.forEach(child => {
-                    if (child.key !== currentUser.uid) {
-                        listHTML.push(`
-                            <div class="flex items-center gap-3">
-                                <span class="w-3 h-3 bg-emerald-400 rounded-full online-dot"></span>
-                                <span class="text-cyan-100">${child.val().name}</span>
-                            </div>
-                        `);
+        // -------------------- Загрузка чатов --------------------
+        function loadChats() {
+            const chatsRef = db.ref('chats');
+            // Слушаем все чаты, где участвует текущий пользователь
+            chatsRef.orderByChild('participants/' + currentUser.uid).equalTo(true).on('value', snapshot => {
+                chats = [];
+                snapshot.forEach(child => {
+                    const chat = child.val();
+                    chat.id = child.key;
+                    // Получаем последнее сообщение
+                    const lastMsg = chat.lastMessage ? chat.lastMessage.text : 'Нет сообщений';
+                    const lastTime = chat.lastMessage ? chat.lastMessage.timestamp : '';
+                    // Определяем собеседника
+                    let otherName = 'Собеседник';
+                    if (chat.participants) {
+                        const otherId = Object.keys(chat.participants).find(id => id !== currentUser.uid);
+                        if (otherId) {
+                            // Можно подгрузить имя из users
+                            db.ref('users/' + otherId + '/name').once('value', snap => {
+                                if (snap.exists()) otherName = snap.val();
+                            });
+                        }
                     }
+                    chats.push({
+                        id: chat.id,
+                        name: otherName,
+                        avatar: '👤',
+                        lastMsg: lastMsg,
+                        time: formatTime(lastTime),
+                        participants: chat.participants
+                    });
                 });
-                document.getElementById("online-list").innerHTML = listHTML.length ? listHTML.join("") : "<p class='text-cyan-400 text-sm'>Пока никого...</p>";
+                renderChatList();
             });
         }
 
         function renderChatList() {
-            const container = document.getElementById("chat-list");
-            container.innerHTML = "";
+            chatListDiv.innerHTML = '';
             chats.forEach(chat => {
-                const div = document.createElement("div");
+                const div = document.createElement('div');
                 div.className = `group flex items-center gap-4 px-5 py-4 rounded-3xl hover:bg-white/10 cursor-pointer transition-all ${currentChatId === chat.id ? 'bg-white/15' : ''}`;
                 div.onclick = () => openChat(chat.id);
                 div.innerHTML = `
                     <div class="w-12 h-12 text-4xl flex items-center justify-center bg-white/10 rounded-2xl">${chat.avatar}</div>
                     <div class="flex-1 min-w-0">
                         <div class="font-medium truncate">${chat.name}</div>
-                        <div class="text-sm text-cyan-200/70 truncate">${chat.lastMsg || "Начни разговор"}</div>
+                        <div class="text-sm text-cyan-200/70 truncate">${chat.lastMsg}</div>
                     </div>
                 `;
-                container.appendChild(div);
+                chatListDiv.appendChild(div);
             });
         }
 
-        function openChat(id) {
-            currentChatId = id;
-            renderChatList();
+        function openChat(chatId) {
+            currentChatId = chatId;
+            renderChatList(); // обновить активный класс
             
-            const chat = chats.find(c => c.id === id);
-            document.getElementById("header-avatar").innerHTML = chat.avatar;
-            document.getElementById("header-name").textContent = chat.name;
-            document.getElementById("header-status").innerHTML = `<span class="w-2 h-2 bg-emerald-400 rounded-full online-dot"></span> онлайн чат`;
+            // Отписаться от предыдущего слушателя
+            if (unsubscribeMessages) unsubscribeMessages.off();
             
-            const area = document.getElementById("messages-area");
-            area.innerHTML = "";
+            // Слушаем сообщения
+            const messagesRef = db.ref('chats/' + chatId + '/messages');
+            unsubscribeMessages = messagesRef;
             
-            // Снимаем старый слушатель
-            if (messagesListener) messagesListener.off();
-            
-            const ref = db.ref(`chats/${id}/messages`);
-            messagesListener = ref;
-            
-            // Загружаем все существующие сообщения
-            ref.once("value", (snap) => {
-                const data = snap.val() || {};
-                chat.messages = [];
-                Object.keys(data).forEach(key => {
-                    const m = data[key];
-                    chat.messages.push({
-                        id: key,
-                        fromMe: m.fromUid === currentUser.uid,
-                        fromName: m.fromName,
-                        text: m.text,
-                        url: m.url,
-                        time: m.time,
-                        type: m.type || "text"
-                    });
-                });
-                renderCurrentChat();
+            // При каждом новом сообщении обновляем область
+            messagesRef.on('child_added', snapshot => {
+                renderMessages(chatId);
             });
             
-            // Реал-тайм новые сообщения
-            ref.on("child_added", (snap) => {
-                const m = snap.val();
-                if (!chat.messages.find(msg => msg.id === snap.key)) {
-                    const newMsg = {
-                        id: snap.key,
-                        fromMe: m.fromUid === currentUser.uid,
-                        fromName: m.fromName,
-                        text: m.text,
-                        url: m.url,
-                        time: m.time,
-                        type: m.type || "text"
-                    };
-                    chat.messages.push(newMsg);
-                    if (currentChatId === id) renderCurrentChat();
-                    chat.lastMsg = m.text || "📸 Фото";
-                    chat.time = m.time;
-                    renderChatList();
-                }
-            });
+            // Первоначальная загрузка
+            renderMessages(chatId);
+            
+            // Обновляем заголовок
+            const chat = chats.find(c => c.id === chatId);
+            if (chat) {
+                headerName.textContent = chat.name;
+                headerAvatar.innerHTML = chat.avatar;
+                headerStatus.innerHTML = `<span class="w-2 h-2 bg-emerald-400 rounded-full online-dot"></span> онлайн`; // позже можно проверять реальный статус
+            }
         }
 
-        function renderCurrentChat() {
-            const chat = chats.find(c => c.id === currentChatId);
-            if (!chat) return;
-            const area = document.getElementById("messages-area");
-            area.innerHTML = "";
+        async function renderMessages(chatId) {
+            const snapshot = await db.ref('chats/' + chatId + '/messages').once('value');
+            const messages = snapshot.val() || {};
+            const sorted = Object.values(messages).sort((a, b) => a.timestamp - b.timestamp);
             
-            chat.messages.forEach(msg => {
-                const bubble = document.createElement("div");
-                bubble.className = `max-w-[75%] ${msg.fromMe ? "ml-auto" : ""}`;
+            messagesArea.innerHTML = '';
+            sorted.forEach(msg => {
+                const bubble = document.createElement('div');
+                bubble.className = `max-w-[75%] ${msg.fromUid === currentUser.uid ? 'ml-auto' : ''}`;
                 
-                if (msg.type === "image") {
+                if (msg.type === 'image') {
                     bubble.innerHTML = `
-                        <div class="${msg.fromMe ? "chat-bubble-me" : "chat-bubble-other"} p-2 rounded-3xl">
+                        <div class="${msg.fromUid === currentUser.uid ? 'chat-bubble-me' : 'chat-bubble-other'} p-2 rounded-3xl">
                             <img src="${msg.url}" class="rounded-2xl max-w-[280px]">
-                            <div class="text-[10px] text-right mt-1 opacity-70">${msg.time} • ${msg.fromName}</div>
+                            <div class="text-[10px] text-right mt-1 opacity-70">${formatTime(msg.timestamp)} • ${msg.fromName}</div>
                         </div>
                     `;
                 } else {
                     bubble.innerHTML = `
-                        <div class="${msg.fromMe ? "chat-bubble-me px-6 py-4" : "chat-bubble-other px-6 py-4"} relative">
-                            \( {msg.fromMe ? "" : `<div class="text-xs text-cyan-300 mb-1"> \){msg.fromName}</div>`}
+                        <div class="${msg.fromUid === currentUser.uid ? 'chat-bubble-me px-6 py-4' : 'chat-bubble-other px-6 py-4'} relative">
+                            ${msg.fromUid !== currentUser.uid ? `<div class="text-xs text-cyan-300 mb-1">${msg.fromName}</div>` : ''}
                             ${msg.text}
-                            ${msg.fromMe ? `<div class="tail"></div>` : ""}
-                            <div class="text-[10px] text-right mt-1 opacity-70">${msg.time}</div>
+                            <div class="text-[10px] text-right mt-1 opacity-70">${formatTime(msg.timestamp)}</div>
                         </div>
                     `;
                 }
-                area.appendChild(bubble);
+                messagesArea.appendChild(bubble);
             });
-            area.scrollTop = area.scrollHeight;
+            messagesArea.scrollTop = messagesArea.scrollHeight;
         }
 
         function sendMessage() {
-            const input = document.getElementById("message-input");
-            const text = input.value.trim();
+            const text = messageInput.value.trim();
             if (!text || !currentChatId) return;
             
-            const now = new Date().toLocaleTimeString("ru-RU", {hour:"2-digit", minute:"2-digit"});
-            const chat = chats.find(c => c.id === currentChatId);
-            
-            const msgData = {
+            const msg = {
                 fromUid: currentUser.uid,
-                fromName: currentUser.name,
+                fromName: currentUserName,
                 text: text,
-                time: now,
-                type: "text"
+                timestamp: firebase.database.ServerValue.TIMESTAMP,
+                type: 'text'
             };
             
-            // Мгновенно показываем у себя
-            chat.messages.push({
-                id: Date.now(),
-                fromMe: true,
-                fromName: currentUser.name,
-                text: text,
-                time: now,
-                type: "text"
+            db.ref('chats/' + currentChatId + '/messages').push(msg);
+            
+            // Обновляем lastMessage в чате
+            db.ref('chats/' + currentChatId).update({
+                lastMessage: msg
             });
-            renderCurrentChat();
-            chat.lastMsg = text.length > 30 ? text.substring(0,27)+"..." : text;
-            chat.time = now;
-            renderChatList();
             
-            // Отправляем в Firebase
-            db.ref(`chats/${currentChatId}/messages`).push(msgData);
-            
-            input.value = "";
+            messageInput.value = '';
         }
 
         function handlePhotoUpload(e) {
             const file = e.target.files[0];
             if (!file || !currentChatId) return;
             
-            const reader = new FileReader();
-            reader.onload = (ev) => {
-                const now = new Date().toLocaleTimeString("ru-RU", {hour:"2-digit", minute:"2-digit"});
-                const chat = chats.find(c => c.id === currentChatId);
-                
-                const msgData = {
+            const storageRef = storage.ref('chat_images/' + Date.now() + '_' + file.name);
+            storageRef.put(file).then(snapshot => {
+                return snapshot.ref.getDownloadURL();
+            }).then(url => {
+                const msg = {
                     fromUid: currentUser.uid,
-                    fromName: currentUser.name,
-                    url: ev.target.result,
-                    time: now,
-                    type: "image"
+                    fromName: currentUserName,
+                    url: url,
+                    timestamp: firebase.database.ServerValue.TIMESTAMP,
+                    type: 'image'
                 };
-                
-                // Мгновенно показываем
-                chat.messages.push({
-                    id: Date.now(),
-                    fromMe: true,
-                    fromName: currentUser.name,
-                    url: ev.target.result,
-                    time: now,
-                    type: "image"
-                });
-                renderCurrentChat();
-                chat.lastMsg = "📸 Фото";
-                chat.time = now;
-                renderChatList();
-                
-                // В Firebase
-                db.ref(`chats/${currentChatId}/messages`).push(msgData);
-            };
-            reader.readAsDataURL(file);
-        }
-
-        function filterChats() {
-            const term = document.getElementById("search-input").value.toLowerCase();
-            document.querySelectorAll("#chat-list > div").forEach(el => {
-                el.style.display = el.textContent.toLowerCase().includes(term) ? "flex" : "none";
+                db.ref('chats/' + currentChatId + '/messages').push(msg);
+                db.ref('chats/' + currentChatId).update({ lastMessage: msg });
             });
         }
 
+        // -------------------- Создание нового чата --------------------
+        function showNewChatModal() {
+            modal.classList.remove('hidden');
+        }
+
+        function closeNewChatModal() {
+            modal.classList.add('hidden');
+            newChatPhone.value = '';
+        }
+
+        function createNewChat() {
+            const phone = newChatPhone.value.trim();
+            if (!phone) return alert('Введите номер телефона');
+            
+            // Ищем пользователя по номеру в базе users
+            db.ref('users').orderByChild('phone').equalTo(phone).once('value', snapshot => {
+                let otherUserId = null;
+                snapshot.forEach(child => {
+                    otherUserId = child.key;
+                });
+                
+                if (!otherUserId) {
+                    // Пользователь не зарегистрирован, но можно создать чат с "приглашением"
+                    // Для простоты создадим чат, но сообщение не уйдёт, пока он не залогинится
+                    otherUserId = 'guest_' + Date.now(); // временно
+                }
+                
+                // Создаём чат
+                const chatRef = db.ref('chats').push();
+                const chatData = {
+                    participants: {
+                        [currentUser.uid]: true,
+                        [otherUserId]: true
+                    },
+                    created: firebase.database.ServerValue.TIMESTAMP
+                };
+                chatRef.set(chatData).then(() => {
+                    closeNewChatModal();
+                    // Открыть созданный чат
+                    openChat(chatRef.key);
+                });
+            });
+        }
+
+        // -------------------- Онлайн статус --------------------
+        function listenOnline() {
+            if (unsubscribeOnline) unsubscribeOnline.off();
+            const onlineRef = db.ref('users').orderByChild('online').equalTo(true);
+            unsubscribeOnline = onlineRef.on('value', snapshot => {
+                const onlineUsers = [];
+                snapshot.forEach(child => {
+                    if (child.key !== currentUser.uid) {
+                        onlineUsers.push(child.val().name);
+                    }
+                });
+                onlineList.innerHTML = onlineUsers.map(name => `
+                    <div class="flex items-center gap-3">
+                        <span class="w-3 h-3 bg-emerald-400 rounded-full online-dot"></span>
+                        <span class="text-cyan-100">${name}</span>
+                    </div>
+                `).join('') || '<p class="text-cyan-400 text-sm">Пока никого...</p>';
+            });
+        }
+
+        // -------------------- Утилиты --------------------
+        function formatTime(timestamp) {
+            if (!timestamp) return '';
+            const d = new Date(timestamp);
+            return d.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+        }
+
         function showToast(title, text) {
-            const t = document.getElementById("toast");
-            document.getElementById("toast-title").textContent = title;
-            document.getElementById("toast-text").textContent = text;
-            t.classList.remove("hidden");
-            setTimeout(() => t.classList.add("hidden"), 3500);
+            toastTitle.textContent = title;
+            toastText.textContent = text;
+            toast.classList.remove('hidden');
+            setTimeout(() => toast.classList.add('hidden'), 3000);
         }
 
         function logout() {
-            if (auth) auth.signOut();
-            location.reload();
+            db.ref('users/' + currentUser.uid).update({ online: false });
+            auth.signOut().then(() => location.reload());
         }
 
-        // Запуск
+        function filterChats() {
+            const term = document.getElementById('search-input').value.toLowerCase();
+            document.querySelectorAll('#chat-list > div').forEach(el => {
+                el.style.display = el.textContent.toLowerCase().includes(term) ? 'flex' : 'none';
+            });
+        }
+
+        // Инициализация при загрузке
         window.onload = () => {
-            console.log("%c🌊 AquaChat РЕАЛЬНЫЙ готов! Замени Firebase config и запускай", "color:#00ffcc; font-size:14px");
-            // Можно сразу открыть приложение для теста (убери комментарий ниже)
-            // document.getElementById("login-screen").classList.add("hidden");
-            // document.getElementById("app-screen").classList.remove("hidden");
+            // Если уже есть сессия, можно автоматически войти
+            auth.onAuthStateChanged(user => {
+                if (user) {
+                    afterLogin(user);
+                }
+            });
         };
     </script>
 </body>
