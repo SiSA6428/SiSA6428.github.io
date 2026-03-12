@@ -2,76 +2,161 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>случайный звук</title>
+    <title>Диагностика звуков</title>
     <style>
         body { 
             background: white; 
-            margin: 0;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-family: Arial;
+            padding: 20px;
+            font-family: Arial, sans-serif;
         }
-        .start-btn {
-            padding: 20px 40px;
-            font-size: 24px;
-            background: #4CAF50;
+        .sound-item {
+            padding: 10px;
+            margin: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .exists { 
+            background: #d4edda; 
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+        .not-exists { 
+            background: #f8d7da; 
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+        .button {
+            padding: 15px 30px;
+            font-size: 18px;
+            margin: 20px 0;
+            background: #007bff;
             color: white;
             border: none;
-            border-radius: 10px;
+            border-radius: 5px;
             cursor: pointer;
+        }
+        .button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+        pre {
+            background: #f4f4f4;
+            padding: 10px;
+            border-radius: 5px;
         }
     </style>
 </head>
 <body>
-    <button class="start-btn" onclick="playRandomSound()">👉 Нажми для звука 👈</button>
-
+    <h1>🔊 Диагностика звуков в репозитории</h1>
+    
+    <div>
+        <button class="button" id="checkBtn" onclick="checkAllSounds()">🔍 Проверить все звуки</button>
+        <button class="button" id="playRandomBtn" onclick="playRandomSound()" disabled>🎲 Сыграть случайный</button>
+    </div>
+    
+    <div id="results"></div>
+    
     <audio id="player"></audio>
 
     <script>
+        // Твои звуки от 1 до 6
+        const soundFiles = [
+            'sound1.mp3',
+            'sound2.mp3',
+            'sound3.mp3',
+            'sound4.mp3',
+            'sound5.mp3',
+            'sound6.mp3'
+        ];
+        
+        let availableSounds = [];
+        const resultsDiv = document.getElementById('results');
+        const playRandomBtn = document.getElementById('playRandomBtn');
+        
+        async function checkAllSounds() {
+            resultsDiv.innerHTML = '<h3>Проверка...</h3>';
+            availableSounds = [];
+            
+            for (let i = 0; i < soundFiles.length; i++) {
+                const sound = soundFiles[i];
+                const div = document.createElement('div');
+                div.className = 'sound-item';
+                div.innerHTML = `⏳ Проверка ${sound}...`;
+                resultsDiv.appendChild(div);
+                
+                try {
+                    // Пробуем загрузить только заголовки файла
+                    const response = await fetch(sound + '?v=' + Date.now(), { 
+                        method: 'HEAD',
+                        cache: 'no-cache'
+                    });
+                    
+                    if (response.ok) {
+                        div.className = 'sound-item exists';
+                        div.innerHTML = `✅ ${sound} - НАЙДЕН (размер: ${response.headers.get('content-length') || 'неизвестно'} байт)`;
+                        availableSounds.push(sound);
+                    } else {
+                        div.className = 'sound-item not-exists';
+                        div.innerHTML = `❌ ${sound} - НЕ НАЙДЕН (статус: ${response.status} ${response.statusText})`;
+                    }
+                } catch (error) {
+                    div.className = 'sound-item not-exists';
+                    div.innerHTML = `❌ ${sound} - ОШИБКА: ${error.message}`;
+                }
+            }
+            
+            // Итог
+            const summary = document.createElement('div');
+            summary.style.marginTop = '20px';
+            summary.style.padding = '10px';
+            summary.style.fontWeight = 'bold';
+            
+            if (availableSounds.length > 0) {
+                summary.innerHTML = `✅ Найдено звуков: ${availableSounds.length} из ${soundFiles.length}<br>`;
+                summary.innerHTML += `📋 Список: ${availableSounds.join(', ')}`;
+                playRandomBtn.disabled = false;
+            } else {
+                summary.innerHTML = `❌ НЕ НАЙДЕНО НИ ОДНОГО ЗВУКА!<br>`;
+                summary.innerHTML += `Проверь названия файлов в репозитории:<br>`;
+                summary.innerHTML += `- Они должны быть в корневой папке<br>`;
+                summary.innerHTML += `- Названия ТОЧНО: sound1.mp3, sound2.mp3 и т.д. (маленькими буквами)`;
+                playRandomBtn.disabled = true;
+            }
+            
+            resultsDiv.appendChild(summary);
+            
+            // Проверяем URL репозитория
+            const urlInfo = document.createElement('pre');
+            urlInfo.innerHTML = `🔗 Текущий URL: ${window.location.href}\n`;
+            urlInfo.innerHTML += `📁 Путь к файлам: ${window.location.origin}${window.location.pathname.replace('index.html', '')}`;
+            resultsDiv.appendChild(urlInfo);
+        }
+        
         function playRandomSound() {
+            if (availableSounds.length === 0) {
+                alert('Сначала проверь звуки!');
+                return;
+            }
+            
             const player = document.getElementById('player');
+            const randomIndex = Math.floor(Math.random() * availableSounds.length);
+            const randomSound = availableSounds[randomIndex];
             
-            // Только уникальные звуки (убрал повтор)
-            const sounds = ['sound1.mp3', 'sound2.mp3', 'sound3.mp3', 'sound4.mp3', 'sound5.mp3'];
+            console.log('Пытаюсь сыграть:', randomSound);
             
-            // Фильтруем только те звуки, которые реально существуют
-            // (можно добавить проверку, но для простоты оставим так)
-            
-            // Выбираем СЛУЧАЙНЫЙ звук
-            const randomIndex = Math.floor(Math.random() * sounds.length);
-            const randomSound = sounds[randomIndex];
-            
-            console.log('Выбран звук: ' + randomSound + ' (индекс: ' + randomIndex + ')');
-            
-            player.src = randomSound;
+            player.src = randomSound + '?v=' + Date.now();
             player.play()
                 .then(() => {
-                    console.log('Играет: ' + randomSound);
-                    // Прячем кнопку
-                    document.querySelector('.start-btn').style.display = 'none';
+                    alert(`🎵 Играет: ${randomSound}`);
                 })
-                .catch(e => {
-                    console.log('Ошибка с ' + randomSound + ', пробуем другой...');
-                    
-                    // Пробуем другой случайный звук (исключая тот что не сработал)
-                    const otherSounds = sounds.filter(s => s !== randomSound);
-                    if (otherSounds.length > 0) {
-                        const nextRandom = otherSounds[Math.floor(Math.random() * otherSounds.length)];
-                        player.src = nextRandom;
-                        player.play()
-                            .then(() => {
-                                console.log('Играет: ' + nextRandom);
-                                document.querySelector('.start-btn').style.display = 'none';
-                            })
-                            .catch(err => {
-                                console.log('Ничего не работает');
-                                alert('Не удалось воспроизвести звук. Проверь есть ли файлы в репозитории');
-                            });
-                    }
+                .catch(error => {
+                    alert(`❌ Ошибка: ${error.message}\nПроверь консоль (F12)`);
+                    console.error('Ошибка воспроизведения:', error);
                 });
         }
+        
+        // Автоматически запускаем проверку при загрузке
+        window.addEventListener('load', checkAllSounds);
     </script>
 </body>
 </html>
