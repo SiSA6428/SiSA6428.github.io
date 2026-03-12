@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Звуковой плеер для GitHub</title>
+    <title>Random Sound Player</title>
     <style>
         * {
             margin: 0;
@@ -12,266 +12,120 @@
         }
         
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: white;
             min-height: 100vh;
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
-            padding: 20px;
+            font-family: Arial, sans-serif;
         }
         
-        .container {
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            padding: 40px;
-            max-width: 500px;
-            width: 100%;
-            text-align: center;
-        }
-        
-        h1 {
-            color: #333;
-            margin-bottom: 30px;
-            font-size: 2em;
-            font-weight: 600;
-        }
-        
-        .github-corner {
-            background: #24292e;
-            color: white;
-            padding: 10px 20px;
-            border-radius: 30px;
-            display: inline-block;
-            margin-bottom: 30px;
-            font-size: 0.9em;
-            text-decoration: none;
-            transition: transform 0.3s;
-        }
-        
-        .github-corner:hover {
-            transform: scale(1.05);
-            background: #2f363d;
-        }
-        
-        .player-card {
-            background: #f8f9fa;
-            border-radius: 15px;
-            padding: 30px;
-            margin: 20px 0;
-        }
-        
-        .audio-btn {
-            background: linear-gradient(45deg, #667eea, #764ba2);
-            border: none;
-            color: white;
-            padding: 20px 40px;
-            border-radius: 50px;
-            font-size: 1.2em;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .audio-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
-        }
-        
-        .audio-btn:active {
-            transform: translateY(0);
-        }
-        
-        .audio-btn.playing {
-            background: linear-gradient(45deg, #f093fb, #f5576c);
-        }
-        
-        .status {
-            margin-top: 20px;
-            color: #666;
-            font-size: 0.95em;
-        }
-        
-        .icon {
-            font-size: 1.4em;
-        }
-        
-        .file-info {
-            background: #e9ecef;
-            border-radius: 10px;
-            padding: 15px;
-            margin: 20px 0;
-            font-size: 0.95em;
-            color: #495057;
-        }
-        
-        .file-info p {
-            margin: 5px 0;
-        }
-        
-        .instructions {
-            text-align: left;
-            background: #e3f2fd;
-            border-left: 4px solid #2196f3;
-            padding: 15px;
-            border-radius: 5px;
-            margin-top: 25px;
-        }
-        
-        .instructions h3 {
-            color: #1976d2;
-            margin-bottom: 10px;
-            font-size: 1.1em;
-        }
-        
-        .instructions ol {
-            margin-left: 20px;
-            color: #555;
-            font-size: 0.95em;
-        }
-        
-        .instructions li {
-            margin: 8px 0;
-        }
-        
-        code {
-            background: #f1f1f1;
-            padding: 2px 6px;
+        /* Просто маленькая метка в углу, чтобы знать что работает */
+        .debug-info {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            font-size: 12px;
+            color: #ccc;
+            background: rgba(0,0,0,0.02);
+            padding: 4px 8px;
             border-radius: 4px;
-            font-family: 'Courier New', monospace;
-            font-size: 0.9em;
-            color: #d32f2f;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>🎵 Аудиоплеер для GitHub</h1>
-        
-        <a href="https://github.com/yourusername/your-repo" class="github-corner" target="_blank">
-            📂 Перейти в репозиторий
-        </a>
-        
-        <div class="player-card">
-            <div class="audio-btn" id="playButton">
-                <span class="icon">🔊</span>
-                <span id="buttonText">Нажми, чтобы сыграть</span>
-            </div>
-            
-            <div class="status" id="status">
-                ⏸ Ожидание нажатия
-            </div>
-        </div>
-        
-        <div class="file-info">
-            <p><strong>🎵 Аудиофайл:</strong> sound.mp3</p>
-            <p><strong>📁 Путь в репозитории:</strong> /sound.mp3</p>
-            <p><strong>📊 Статус:</strong> <span id="fileStatus">Проверка...</span></p>
-        </div>
-        
-        <div class="instructions">
-            <h3>📋 Инструкция для GitHub:</h3>
-            <ol>
-                <li>Создайте репозиторий на GitHub</li>
-                <li>Загрузите этот HTML-файл как <code>index.html</code></li>
-                <li>Загрузите ваш MP3 файл как <code>sound.mp3</code> в корневую папку репозитория</li>
-                <li>Включите GitHub Pages в настройках репозитория</li>
-                <li>Ваш сайт будет доступен по адресу: <code>username.github.io/repo-name</code></li>
-            </ol>
-        </div>
-    </div>
+    <!-- Аудио элемент для воспроизведения -->
+    <audio id="audioPlayer" preload="auto"></audio>
     
-    <audio id="audioPlayer" preload="auto">
-        <source src="sound.mp3" type="audio/mpeg">
-        Ваш браузер не поддерживает аудио элемент
-    </audio>
-    
+    <!-- Маленькая метка (можно удалить если не нужна) -->
+    <div class="debug-info" id="debug">🎵 Ищу звуки...</div>
+
     <script>
-        // Получаем элементы
-        const audio = document.getElementById('audioPlayer');
-        const playButton = document.getElementById('playButton');
-        const buttonText = document.getElementById('buttonText');
-        const status = document.getElementById('status');
-        const fileStatus = document.getElementById('fileStatus');
-        
-        // Проверяем доступность аудиофайла
-        audio.addEventListener('error', function(e) {
-            console.error('Ошибка загрузки аудио:', e);
-            fileStatus.innerHTML = '❌ Файл не найден';
-            fileStatus.style.color = '#f44336';
-            playButton.style.opacity = '0.5';
-            playButton.style.pointerEvents = 'none';
-            status.innerHTML = '⚠ Ошибка: файл sound.mp3 не найден в репозитории';
-        });
-        
-        audio.addEventListener('canplaythrough', function() {
-            fileStatus.innerHTML = '✅ Файл загружен и готов';
-            fileStatus.style.color = '#4caf50';
-        });
-        
-        // Переменная для отслеживания состояния воспроизведения
-        let isPlaying = false;
-        
-        // Функция для воспроизведения/паузы
-        function togglePlay() {
-            if (audio.paused) {
-                // Пробуем воспроизвести
-                audio.play().then(() => {
-                    isPlaying = true;
-                    playButton.classList.add('playing');
-                    buttonText.innerHTML = '⏸ Пауза';
-                    status.innerHTML = '🔊 Сейчас играет ваш звук';
-                }).catch(error => {
-                    console.error('Ошибка воспроизведения:', error);
-                    status.innerHTML = '❌ Ошибка воспроизведения. Проверьте файл.';
-                });
-            } else {
-                audio.pause();
-                isPlaying = false;
-                playButton.classList.remove('playing');
-                buttonText.innerHTML = '🔊 Нажми, чтобы сыграть';
-                status.innerHTML = '⏸ Воспроизведение приостановлено';
+        // Функция для получения списка звуков
+        async function getAvailableSounds() {
+            const soundNames = [];
+            const maxSounds = 10; // Максимальное количество проверяемых звуков
+            
+            // Проверяем sound1.mp3, sound2.mp3 и т.д.
+            for (let i = 1; i <= maxSounds; i++) {
+                const soundFile = `sound${i}.mp3`;
+                try {
+                    const response = await fetch(soundFile, { method: 'HEAD' });
+                    if (response.ok) {
+                        soundNames.push(soundFile);
+                        console.log(`Найден звук: ${soundFile}`);
+                    }
+                } catch (error) {
+                    // Игнорируем ошибки сети
+                    console.log(`Ошибка при проверке ${soundFile}:`, error);
+                }
+            }
+            
+            return soundNames;
+        }
+
+        // Функция для воспроизведения случайного звука
+        async function playRandomSound() {
+            const debug = document.getElementById('debug');
+            const audio = document.getElementById('audioPlayer');
+            
+            // Получаем список доступных звуков
+            const availableSounds = await getAvailableSounds();
+            
+            if (availableSounds.length === 0) {
+                debug.textContent = '❌ Звуки не найдены';
+                console.log('Звуки не найдены в репозитории');
+                return;
+            }
+            
+            // Выбираем случайный звук
+            const randomIndex = Math.floor(Math.random() * availableSounds.length);
+            const selectedSound = availableSounds[randomIndex];
+            
+            debug.textContent = `🎵 Играет: ${selectedSound}`;
+            console.log(`Выбран звук: ${selectedSound}`);
+            
+            // Устанавливаем источник и играем
+            audio.src = selectedSound;
+            
+            // Пытаемся воспроизвести
+            try {
+                // Важно: большинство браузеров блокируют автоматическое воспроизведение
+                // Поэтому сначала пробуем обычный способ
+                const playPromise = audio.play();
+                
+                if (playPromise !== undefined) {
+                    playPromise.then(() => {
+                        console.log('Автовоспроизведение сработало');
+                    }).catch(error => {
+                        console.log('Автовоспроизведение заблокировано браузером:', error);
+                        debug.textContent = '⚠ Нажмите в любом месте для звука';
+                        
+                        // Добавляем обработчик на клик для воспроизведения
+                        document.body.addEventListener('click', function playOnClick() {
+                            audio.play().catch(e => console.log('Ошибка:', e));
+                            document.body.removeEventListener('click', playOnClick);
+                            debug.textContent = `🎵 Играет: ${selectedSound}`;
+                        }, { once: true });
+                    });
+                }
+            } catch (error) {
+                console.log('Ошибка воспроизведения:', error);
+                debug.textContent = '❌ Ошибка воспроизведения';
             }
         }
-        
-        // Обработчик для кнопки
-        playButton.addEventListener('click', togglePlay);
-        
-        // Обработчик окончания воспроизведения
-        audio.addEventListener('ended', function() {
-            isPlaying = false;
-            playButton.classList.remove('playing');
-            buttonText.innerHTML = '🔊 Нажми, чтобы сыграть';
-            status.innerHTML = '⏸ Воспроизведение завершено';
+
+        // Запускаем при загрузке страницы
+        window.addEventListener('load', () => {
+            console.log('Страница загружена, ищем звуки...');
+            playRandomSound();
         });
-        
-        // Проверка загрузки страницы
-        window.addEventListener('load', function() {
-            console.log('Страница загружена, аудио элемент готов');
-            // Проверяем, загрузился ли аудиофайл
-            if (audio.readyState >= 1) {
-                fileStatus.innerHTML = '✅ Файл найден';
-                fileStatus.style.color = '#4caf50';
-            }
+
+        // Также пробуем после полной загрузки DOM
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('DOM загружен');
         });
-        
-        // Дополнительная проверка сети
-        fetch('sound.mp4', { method: 'HEAD' })
-            .then(response => {
-                if (response.ok) {
-                    console.log('Файл доступен');
-                } else {
-                    console.log('Файл не найден, статус:', response.status);
-                }
-            })
-            .catch(error => {
-                console.log('Ошибка проверки файла:', error);
-            });
     </script>
 </body>
 </html>
