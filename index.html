@@ -3,129 +3,108 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Random Sound Player</title>
+    <title>быстрый звук</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            background: white;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            font-family: Arial, sans-serif;
-        }
-        
-        /* Просто маленькая метка в углу, чтобы знать что работает */
-        .debug-info {
-            position: fixed;
-            bottom: 10px;
-            right: 10px;
-            font-size: 12px;
-            color: #ccc;
-            background: rgba(0,0,0,0.02);
-            padding: 4px 8px;
-            border-radius: 4px;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: white; min-height: 100vh; }
     </style>
 </head>
 <body>
-    <!-- Аудио элемент для воспроизведения -->
-    <audio id="audioPlayer" preload="auto"></audio>
-    
-    <!-- Маленькая метка (можно удалить если не нужна) -->
-    <div class="debug-info" id="debug">🎵 Ищу звуки...</div>
+    <audio id="audioPlayer" preload="auto" loop></audio>
 
     <script>
-        // Функция для получения списка звуков
-        async function getAvailableSounds() {
-            const soundNames = [];
-            const maxSounds = 10; // Максимальное количество проверяемых звуков
-            
-            // Проверяем sound1.mp3, sound2.mp3 и т.д.
-            for (let i = 1; i <= maxSounds; i++) {
-                const soundFile = `sound${i}.mp3`;
-                try {
-                    const response = await fetch(soundFile, { method: 'HEAD' });
-                    if (response.ok) {
-                        soundNames.push(soundFile);
-                        console.log(`Найден звук: ${soundFile}`);
-                    }
-                } catch (error) {
-                    // Игнорируем ошибки сети
-                    console.log(`Ошибка при проверке ${soundFile}:`, error);
-                }
-            }
-            
-            return soundNames;
-        }
-
-        // Функция для воспроизведения случайного звука
-        async function playRandomSound() {
-            const debug = document.getElementById('debug');
+        // Мгновенно начинаем проверку звуков при загрузке страницы
+        (function() {
             const audio = document.getElementById('audioPlayer');
             
-            // Получаем список доступных звуков
-            const availableSounds = await getAvailableSounds();
+            // Список всех возможных звуков (до 20)
+            const possibleSounds = [
+                'sound1.mp3', 'sound2.mp3', 'sound3.mp3', 'sound4.mp3', 'sound5.mp3',
+                'sound6.mp3', 'sound7.mp3', 'sound8.mp3', 'sound9.mp3', 'sound10.mp3'
+            ];
             
-            if (availableSounds.length === 0) {
-                debug.textContent = '❌ Звуки не найдены';
-                console.log('Звуки не найдены в репозитории');
-                return;
+            // Функция для быстрой проверки звука
+            function checkSound(soundFile) {
+                return new Promise((resolve) => {
+                    const xhr = new XMLHttpRequest();
+                    xhr.open('HEAD', soundFile + '?v=' + Date.now(), true); // Кеш не используем
+                    xhr.onreadystatechange = function() {
+                        if (xhr.readyState === 4) {
+                            if (xhr.status === 200) {
+                                resolve(soundFile);
+                            } else {
+                                resolve(null);
+                            }
+                        }
+                    };
+                    xhr.onerror = () => resolve(null);
+                    xhr.send();
+                });
             }
             
-            // Выбираем случайный звук
-            const randomIndex = Math.floor(Math.random() * availableSounds.length);
-            const selectedSound = availableSounds[randomIndex];
-            
-            debug.textContent = `🎵 Играет: ${selectedSound}`;
-            console.log(`Выбран звук: ${selectedSound}`);
-            
-            // Устанавливаем источник и играем
-            audio.src = selectedSound;
-            
-            // Пытаемся воспроизвести
-            try {
-                // Важно: большинство браузеров блокируют автоматическое воспроизведение
-                // Поэтому сначала пробуем обычный способ
-                const playPromise = audio.play();
-                
-                if (playPromise !== undefined) {
-                    playPromise.then(() => {
-                        console.log('Автовоспроизведение сработало');
-                    }).catch(error => {
-                        console.log('Автовоспроизведение заблокировано браузером:', error);
-                        debug.textContent = '⚠ Нажмите в любом месте для звука';
-                        
-                        // Добавляем обработчик на клик для воспроизведения
-                        document.body.addEventListener('click', function playOnClick() {
-                            audio.play().catch(e => console.log('Ошибка:', e));
-                            document.body.removeEventListener('click', playOnClick);
-                            debug.textContent = `🎵 Играет: ${selectedSound}`;
-                        }, { once: true });
-                    });
+            // Мгновенно пробуем воспроизвести первый звук, параллельно ищем остальные
+            async function init() {
+                // Сначала пробуем sound1.mp3 сразу
+                try {
+                    // Пытаемся сразу включить sound1
+                    audio.src = 'sound1.mp3?' + Date.now();
+                    
+                    // Пытаемся воспроизвести немедленно
+                    const playPromise = audio.play();
+                    
+                    if (playPromise !== undefined) {
+                        playPromise.catch(() => {
+                            // Если не сработало - начинаем искать другие звуки
+                            findAndPlayRandomSound();
+                        });
+                    }
+                } catch {
+                    findAndPlayRandomSound();
                 }
-            } catch (error) {
-                console.log('Ошибка воспроизведения:', error);
-                debug.textContent = '❌ Ошибка воспроизведения';
+                
+                // Параллельно проверяем все звуки
+                async function findAndPlayRandomSound() {
+                    // Проверяем все звуки параллельно
+                    const checkPromises = possibleSounds.map(file => checkSound(file));
+                    const results = await Promise.all(checkPromises);
+                    
+                    // Собираем только существующие звуки
+                    const availableSounds = results.filter(file => file !== null);
+                    
+                    if (availableSounds.length > 0) {
+                        // Выбираем случайный звук
+                        const randomSound = availableSounds[Math.floor(Math.random() * availableSounds.length)];
+                        
+                        // Добавляем параметр времени чтобы избежать кеша
+                        audio.src = randomSound + '?v=' + Date.now();
+                        
+                        // Пытаемся воспроизвести
+                        try {
+                            await audio.play();
+                        } catch (e) {
+                            // Если автовоспроизведение заблокировано - включаем при первом взаимодействии
+                            const playOnInteraction = () => {
+                                audio.play().catch(() => {});
+                                document.removeEventListener('touchstart', playOnInteraction);
+                                document.removeEventListener('mousedown', playOnInteraction);
+                                document.removeEventListener('keydown', playOnInteraction);
+                            };
+                            
+                            document.addEventListener('touchstart', playOnInteraction, { once: true });
+                            document.addEventListener('mousedown', playOnInteraction, { once: true });
+                            document.addEventListener('keydown', playOnInteraction, { once: true });
+                        }
+                    }
+                }
             }
-        }
-
-        // Запускаем при загрузке страницы
-        window.addEventListener('load', () => {
-            console.log('Страница загружена, ищем звуки...');
-            playRandomSound();
-        });
-
-        // Также пробуем после полной загрузки DOM
-        document.addEventListener('DOMContentLoaded', () => {
-            console.log('DOM загружен');
-        });
+            
+            // Запускаем при загрузке
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', init);
+            } else {
+                init();
+            }
+        })();
     </script>
 </body>
 </html>
