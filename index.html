@@ -32,22 +32,32 @@
     <script>
         function playRandomSound() {
             const player = document.getElementById('player');
-            // Пробуем разные варианты звуков
-            const sounds = ['sound1.mp3', 'sound2.mp3', 'sound3.mp3', 'sound4.mp3', 'sound5.mp3' 'sound6.mp3'];
+            // ИСПРАВЛЕНО: добавил запятую между 'sound5.mp3' и 'sound6.mp3'
+            const sounds = ['sound1.mp3', 'sound2.mp3', 'sound3.mp3', 'sound4.mp3', 'sound5.mp3', 'sound6.mp3'];
             const randomSound = sounds[Math.floor(Math.random() * sounds.length)];
+            
+            console.log('Пытаюсь включить:', randomSound); // Полезно для отладки
             
             player.src = randomSound;
             player.play()
-                .then(() => console.log('Играет: ' + randomSound))
+                .then(() => {
+                    console.log('Играет: ' + randomSound);
+                    document.querySelector('.start-btn').style.display = 'none';
+                })
                 .catch(e => {
-                    console.log('Ошибка, пробуем другой...');
-                    // Если не сработал - пробуем следующий
+                    console.log('Ошибка с ' + randomSound + ', пробуем sound1.mp3');
+                    // Если не сработал - пробуем первый
                     player.src = 'sound1.mp3';
-                    player.play();
+                    player.play()
+                        .then(() => {
+                            console.log('Играет: sound1.mp3');
+                            document.querySelector('.start-btn').style.display = 'none';
+                        })
+                        .catch(err => {
+                            console.log('Ничего не работает. Ошибка:', err);
+                            alert('Звуки не найдены! Проверь есть ли файлы sound1.mp3 - sound6.mp3 в репозитории.');
+                        });
                 });
-            
-            // Прячем кнопку после нажатия
-            document.querySelector('.start-btn').style.display = 'none';
         }
     </script>
 </body>
