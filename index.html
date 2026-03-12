@@ -2,109 +2,53 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>быстрый звук</title>
+    <title>звук</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { background: white; min-height: 100vh; }
+        body { 
+            background: white; 
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: Arial;
+        }
+        .start-btn {
+            padding: 20px 40px;
+            font-size: 24px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
-    <audio id="audioPlayer" preload="auto" loop></audio>
+    <button class="start-btn" onclick="playRandomSound()">👉 Нажми для звука 👈</button>
+
+    <audio id="player"></audio>
 
     <script>
-        // Мгновенно начинаем проверку звуков при загрузке страницы
-        (function() {
-            const audio = document.getElementById('audioPlayer');
+        function playRandomSound() {
+            const player = document.getElementById('player');
+            // Пробуем разные варианты звуков
+            const sounds = ['sound1.mp3', 'sound2.mp3', 'sound3.mp3', 'sound1.mp3', 'sound.mp3'];
+            const randomSound = sounds[Math.floor(Math.random() * sounds.length)];
             
-            // Список всех возможных звуков (до 20)
-            const possibleSounds = [
-                'sound1.mp3', 'sound2.mp3', 'sound3.mp3', 'sound4.mp3', 'sound5.mp3',
-                'sound6.mp3', 'sound7.mp3', 'sound8.mp3', 'sound9.mp3', 'sound10.mp3'
-            ];
-            
-            // Функция для быстрой проверки звука
-            function checkSound(soundFile) {
-                return new Promise((resolve) => {
-                    const xhr = new XMLHttpRequest();
-                    xhr.open('HEAD', soundFile + '?v=' + Date.now(), true); // Кеш не используем
-                    xhr.onreadystatechange = function() {
-                        if (xhr.readyState === 4) {
-                            if (xhr.status === 200) {
-                                resolve(soundFile);
-                            } else {
-                                resolve(null);
-                            }
-                        }
-                    };
-                    xhr.onerror = () => resolve(null);
-                    xhr.send();
+            player.src = randomSound;
+            player.play()
+                .then(() => console.log('Играет: ' + randomSound))
+                .catch(e => {
+                    console.log('Ошибка, пробуем другой...');
+                    // Если не сработал - пробуем следующий
+                    player.src = 'sound1.mp3';
+                    player.play();
                 });
-            }
             
-            // Мгновенно пробуем воспроизвести первый звук, параллельно ищем остальные
-            async function init() {
-                // Сначала пробуем sound1.mp3 сразу
-                try {
-                    // Пытаемся сразу включить sound1
-                    audio.src = 'sound1.mp3?' + Date.now();
-                    
-                    // Пытаемся воспроизвести немедленно
-                    const playPromise = audio.play();
-                    
-                    if (playPromise !== undefined) {
-                        playPromise.catch(() => {
-                            // Если не сработало - начинаем искать другие звуки
-                            findAndPlayRandomSound();
-                        });
-                    }
-                } catch {
-                    findAndPlayRandomSound();
-                }
-                
-                // Параллельно проверяем все звуки
-                async function findAndPlayRandomSound() {
-                    // Проверяем все звуки параллельно
-                    const checkPromises = possibleSounds.map(file => checkSound(file));
-                    const results = await Promise.all(checkPromises);
-                    
-                    // Собираем только существующие звуки
-                    const availableSounds = results.filter(file => file !== null);
-                    
-                    if (availableSounds.length > 0) {
-                        // Выбираем случайный звук
-                        const randomSound = availableSounds[Math.floor(Math.random() * availableSounds.length)];
-                        
-                        // Добавляем параметр времени чтобы избежать кеша
-                        audio.src = randomSound + '?v=' + Date.now();
-                        
-                        // Пытаемся воспроизвести
-                        try {
-                            await audio.play();
-                        } catch (e) {
-                            // Если автовоспроизведение заблокировано - включаем при первом взаимодействии
-                            const playOnInteraction = () => {
-                                audio.play().catch(() => {});
-                                document.removeEventListener('touchstart', playOnInteraction);
-                                document.removeEventListener('mousedown', playOnInteraction);
-                                document.removeEventListener('keydown', playOnInteraction);
-                            };
-                            
-                            document.addEventListener('touchstart', playOnInteraction, { once: true });
-                            document.addEventListener('mousedown', playOnInteraction, { once: true });
-                            document.addEventListener('keydown', playOnInteraction, { once: true });
-                        }
-                    }
-                }
-            }
-            
-            // Запускаем при загрузке
-            if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', init);
-            } else {
-                init();
-            }
-        })();
+            // Прячем кнопку после нажатия
+            document.querySelector('.start-btn').style.display = 'none';
+        }
     </script>
 </body>
 </html>
