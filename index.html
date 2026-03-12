@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>звук</title>
+    <title>случайный звук</title>
     <style>
         body { 
             background: white; 
@@ -32,22 +32,45 @@
     <script>
         function playRandomSound() {
             const player = document.getElementById('player');
-            // Пробуем разные варианты звуков
-            const sounds = ['sound1.mp3', 'sound2.mp3', 'sound3.mp3', 'sound1.mp3', 'sound.mp3'];
-            const randomSound = sounds[Math.floor(Math.random() * sounds.length)];
+            
+            // Только уникальные звуки (убрал повтор)
+            const sounds = ['sound1.mp3', 'sound2.mp3', 'sound3.mp3', 'sound4.mp3', 'sound5.mp3'];
+            
+            // Фильтруем только те звуки, которые реально существуют
+            // (можно добавить проверку, но для простоты оставим так)
+            
+            // Выбираем СЛУЧАЙНЫЙ звук
+            const randomIndex = Math.floor(Math.random() * sounds.length);
+            const randomSound = sounds[randomIndex];
+            
+            console.log('Выбран звук: ' + randomSound + ' (индекс: ' + randomIndex + ')');
             
             player.src = randomSound;
             player.play()
-                .then(() => console.log('Играет: ' + randomSound))
+                .then(() => {
+                    console.log('Играет: ' + randomSound);
+                    // Прячем кнопку
+                    document.querySelector('.start-btn').style.display = 'none';
+                })
                 .catch(e => {
-                    console.log('Ошибка, пробуем другой...');
-                    // Если не сработал - пробуем следующий
-                    player.src = 'sound1.mp3';
-                    player.play();
+                    console.log('Ошибка с ' + randomSound + ', пробуем другой...');
+                    
+                    // Пробуем другой случайный звук (исключая тот что не сработал)
+                    const otherSounds = sounds.filter(s => s !== randomSound);
+                    if (otherSounds.length > 0) {
+                        const nextRandom = otherSounds[Math.floor(Math.random() * otherSounds.length)];
+                        player.src = nextRandom;
+                        player.play()
+                            .then(() => {
+                                console.log('Играет: ' + nextRandom);
+                                document.querySelector('.start-btn').style.display = 'none';
+                            })
+                            .catch(err => {
+                                console.log('Ничего не работает');
+                                alert('Не удалось воспроизвести звук. Проверь есть ли файлы в репозитории');
+                            });
+                    }
                 });
-            
-            // Прячем кнопку после нажатия
-            document.querySelector('.start-btn').style.display = 'none';
         }
     </script>
 </body>
