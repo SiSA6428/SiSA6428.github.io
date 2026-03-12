@@ -3,475 +3,275 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Anommess — анонимный шифрованный чат</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
-    <!-- CryptoJS -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
+    <title>Звуковой плеер для GitHub</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
-        
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
         
         body {
-            background: linear-gradient(145deg, #0a2540 0%, #003366 50%, #001f3f 100%);
-            font-family: 'Inter', sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             display: flex;
-            align-items: center;
             justify-content: center;
-            padding: 16px;
+            align-items: center;
+            padding: 20px;
         }
         
-        .glass {
-            background: rgba(255, 255, 255, 0.08);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
         }
         
-        .chat-bubble-me {
-            background: linear-gradient(135deg, #00bfff, #0099cc);
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2em;
+            font-weight: 600;
+        }
+        
+        .github-corner {
+            background: #24292e;
             color: white;
-            border-radius: 20px 20px 4px 20px;
-            box-shadow: 0 4px 15px rgba(0, 191, 255, 0.3);
-        }
-        
-        .chat-bubble-other {
-            background: rgba(255, 255, 255, 0.12);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(0, 212, 255, 0.2);
-            color: white;
-            border-radius: 20px 20px 20px 4px;
-        }
-        
-        .water-gradient {
-            background: linear-gradient(90deg, #00d4ff, #00ffaa);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        
-        .online-dot {
-            width: 8px;
-            height: 8px;
-            background: #4caf50;
-            border-radius: 50%;
-            animation: pulse 2s infinite;
+            padding: 10px 20px;
+            border-radius: 30px;
             display: inline-block;
+            margin-bottom: 30px;
+            font-size: 0.9em;
+            text-decoration: none;
+            transition: transform 0.3s;
         }
         
-        @keyframes pulse {
-            0% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.4; transform: scale(1.2); }
-            100% { opacity: 1; transform: scale(1); }
+        .github-corner:hover {
+            transform: scale(1.05);
+            background: #2f363d;
         }
         
-        .message-container { 
-            scrollbar-width: thin; 
-            scrollbar-color: #00d4ff rgba(255,255,255,0.1); 
+        .player-card {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 20px 0;
         }
         
-        .message-container::-webkit-scrollbar {
-            width: 6px;
+        .audio-btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border: none;
+            color: white;
+            padding: 20px 40px;
+            border-radius: 50px;
+            font-size: 1.2em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
         }
         
-        .message-container::-webkit-scrollbar-track {
-            background: rgba(255,255,255,0.1);
+        .audio-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
+        }
+        
+        .audio-btn:active {
+            transform: translateY(0);
+        }
+        
+        .audio-btn.playing {
+            background: linear-gradient(45deg, #f093fb, #f5576c);
+        }
+        
+        .status {
+            margin-top: 20px;
+            color: #666;
+            font-size: 0.95em;
+        }
+        
+        .icon {
+            font-size: 1.4em;
+        }
+        
+        .file-info {
+            background: #e9ecef;
             border-radius: 10px;
+            padding: 15px;
+            margin: 20px 0;
+            font-size: 0.95em;
+            color: #495057;
         }
         
-        .message-container::-webkit-scrollbar-thumb {
-            background: #00d4ff;
-            border-radius: 10px;
+        .file-info p {
+            margin: 5px 0;
+        }
+        
+        .instructions {
+            text-align: left;
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 25px;
+        }
+        
+        .instructions h3 {
+            color: #1976d2;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+        
+        .instructions ol {
+            margin-left: 20px;
+            color: #555;
+            font-size: 0.95em;
+        }
+        
+        .instructions li {
+            margin: 8px 0;
+        }
+        
+        code {
+            background: #f1f1f1;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            color: #d32f2f;
         }
     </style>
 </head>
 <body>
-
-    <!-- ИНТЕРФЕЙС -->
-    <div id="app" class="w-full max-w-6xl h-[90vh] glass rounded-3xl overflow-hidden flex flex-col lg:flex-row">
-
-        <!-- Левая панель: чаты -->
-        <div class="w-80 glass border-r border-white/10 flex flex-col h-full">
-            <div class="p-5 border-b border-white/10 flex items-center gap-3">
-                <span class="text-4xl">🌊</span>
-                <span class="text-2xl font-bold water-gradient">Anommess</span>
+    <div class="container">
+        <h1>🎵 Аудиоплеер для GitHub</h1>
+        
+        <a href="https://github.com/yourusername/your-repo" class="github-corner" target="_blank">
+            📂 Перейти в репозиторий
+        </a>
+        
+        <div class="player-card">
+            <div class="audio-btn" id="playButton">
+                <span class="icon">🔊</span>
+                <span id="buttonText">Нажми, чтобы сыграть</span>
             </div>
             
-            <div class="p-4">
-                <div class="glass flex items-center gap-3 px-5 py-3 rounded-3xl">
-                    <i class="fa-solid fa-magnifying-glass text-cyan-300"></i>
-                    <input id="searchRooms" type="text" placeholder="Поиск чатов..." 
-                           class="bg-transparent outline-none w-full text-white placeholder:text-cyan-700">
-                </div>
-            </div>
-            
-            <div class="px-4 mb-2">
-                <button onclick="showCreateRoom()" class="w-full py-3 glass rounded-3xl hover:bg-white/10 flex items-center justify-center gap-2 transition">
-                    <i class="fa-solid fa-plus text-emerald-400"></i> Создать чат
-                </button>
-            </div>
-            
-            <div id="roomList" class="flex-1 overflow-y-auto px-3 py-2 space-y-1 message-container"></div>
-            
-            <div class="p-4 border-t border-white/10 flex items-center gap-3">
-                <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center text-2xl">👤</div>
-                <div class="flex-1 min-w-0">
-                    <input id="userName" type="text" placeholder="Ваше имя" 
-                           class="bg-transparent border-b border-white/20 w-full outline-none text-sm text-white placeholder:text-cyan-700">
-                </div>
-                <button onclick="saveUserName()" class="text-xs text-cyan-300 hover:text-white transition" title="Сохранить имя">
-                    <i class="fa-regular fa-floppy-disk"></i>
-                </button>
+            <div class="status" id="status">
+                ⏸ Ожидание нажатия
             </div>
         </div>
-
-        <!-- Центр: сообщения -->
-        <div class="flex-1 flex flex-col">
-            <div id="roomHeader" class="h-16 glass border-b border-white/10 px-6 flex items-center">
-                <div class="font-semibold text-xl text-white" id="currentRoomName">Выберите чат</div>
-                <div class="ml-auto flex items-center gap-2 text-sm text-cyan-300">
-                    <span class="online-dot"></span> <span id="roomOnline">0</span>
-                </div>
-            </div>
-            
-            <div id="messagesArea" class="flex-1 overflow-y-auto p-6 space-y-4 message-container"></div>
-            
-            <div class="glass border-t border-white/10 p-4">
-                <div class="flex gap-3 bg-white/5 rounded-3xl px-5 py-2">
-                    <input id="messageInput" type="text" placeholder="Сообщение..." onkeydown="if(event.key==='Enter') sendMessage()"
-                           class="flex-1 bg-transparent outline-none text-lg text-white placeholder:text-cyan-700">
-                    <button onclick="sendMessage()" class="w-11 h-11 bg-gradient-to-br from-emerald-400 to-teal-400 rounded-2xl hover:scale-105 transition flex items-center justify-center">
-                        <i class="fa-solid fa-paper-plane text-white"></i>
-                    </button>
-                </div>
-            </div>
+        
+        <div class="file-info">
+            <p><strong>🎵 Аудиофайл:</strong> sound.mp3</p>
+            <p><strong>📁 Путь в репозитории:</strong> /sound.mp3</p>
+            <p><strong>📊 Статус:</strong> <span id="fileStatus">Проверка...</span></p>
         </div>
-
-        <!-- Правая панель: онлайн -->
-        <div class="w-64 glass border-l border-white/10 hidden lg:flex flex-col p-4">
-            <div class="uppercase text-xs tracking-widest text-cyan-300 mb-4">В чате</div>
-            <div id="onlineUsers" class="space-y-3"></div>
+        
+        <div class="instructions">
+            <h3>📋 Инструкция для GitHub:</h3>
+            <ol>
+                <li>Создайте репозиторий на GitHub</li>
+                <li>Загрузите этот HTML-файл как <code>index.html</code></li>
+                <li>Загрузите ваш MP3 файл как <code>sound.mp3</code> в корневую папку репозитория</li>
+                <li>Включите GitHub Pages в настройках репозитория</li>
+                <li>Ваш сайт будет доступен по адресу: <code>username.github.io/repo-name</code></li>
+            </ol>
         </div>
     </div>
-
-    <!-- Модалка создания чата -->
-    <div id="roomModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center hidden z-50">
-        <div class="glass w-96 p-8 rounded-3xl">
-            <h3 class="text-2xl font-bold mb-4 water-gradient">🌊 Новый чат</h3>
-            <input id="newRoomName" type="text" placeholder="Название чата" 
-                   class="w-full bg-white/10 border border-white/20 rounded-2xl px-5 py-4 mb-4 outline-none focus:border-emerald-400 text-white placeholder:text-cyan-700">
-            <input id="newRoomPassword" type="text" placeholder="Пароль чата (для шифрования)" 
-                   class="w-full bg-white/10 border border-white/20 rounded-2xl px-5 py-4 mb-4 outline-none focus:border-emerald-400 text-white placeholder:text-cyan-700">
-            <div class="flex gap-3">
-                <button onclick="createRoom()" class="flex-1 py-3 bg-gradient-to-r from-emerald-400 to-cyan-400 rounded-2xl hover:scale-105 transition font-medium">
-                    Создать
-                </button>
-                <button onclick="closeModal()" class="flex-1 py-3 glass rounded-2xl hover:bg-white/10 transition">
-                    Отмена
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Тост уведомления -->
-    <div id="toast" class="hidden fixed bottom-8 right-8 glass px-6 py-4 rounded-3xl flex items-center gap-4 shadow-2xl z-50">
-        <i class="fa-solid fa-circle-check text-emerald-400 text-xl"></i>
-        <div>
-            <div id="toastTitle" class="font-semibold text-white"></div>
-            <div id="toastText" class="text-sm text-cyan-200"></div>
-        </div>
-    </div>
-
+    
+    <audio id="audioPlayer" preload="auto">
+        <source src="sound.mp3" type="audio/mpeg">
+        Ваш браузер не поддерживает аудио элемент
+    </audio>
+    
     <script>
-        // 🔥 ВСТАВЬТЕ СВОЙ КОНФИГ FIREBASE
-        const firebaseConfig = {
-            apiKey: "AIzaSyBp8Q6V8KJ7xKJ7xKJ7xKJ7xKJ7xKJ7xKJ7x",
-            authDomain: "anommess.firebaseapp.com",
-            databaseURL: "https://anommess-default-rtdb.firebaseio.com",
-            projectId: "anommess",
-            storageBucket: "anommess.appspot.com",
-            messagingSenderId: "1234567890",
-            appId: "1:1234567890:web:xxx"
-        };
-
-        // Инициализация Firebase
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
-
-        // Глобальные переменные
-        let myId = localStorage.getItem('anommess_userId');
-        if (!myId) {
-            myId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-            localStorage.setItem('anommess_userId', myId);
+        // Получаем элементы
+        const audio = document.getElementById('audioPlayer');
+        const playButton = document.getElementById('playButton');
+        const buttonText = document.getElementById('buttonText');
+        const status = document.getElementById('status');
+        const fileStatus = document.getElementById('fileStatus');
+        
+        // Проверяем доступность аудиофайла
+        audio.addEventListener('error', function(e) {
+            console.error('Ошибка загрузки аудио:', e);
+            fileStatus.innerHTML = '❌ Файл не найден';
+            fileStatus.style.color = '#f44336';
+            playButton.style.opacity = '0.5';
+            playButton.style.pointerEvents = 'none';
+            status.innerHTML = '⚠ Ошибка: файл sound.mp3 не найден в репозитории';
+        });
+        
+        audio.addEventListener('canplaythrough', function() {
+            fileStatus.innerHTML = '✅ Файл загружен и готов';
+            fileStatus.style.color = '#4caf50';
+        });
+        
+        // Переменная для отслеживания состояния воспроизведения
+        let isPlaying = false;
+        
+        // Функция для воспроизведения/паузы
+        function togglePlay() {
+            if (audio.paused) {
+                // Пробуем воспроизвести
+                audio.play().then(() => {
+                    isPlaying = true;
+                    playButton.classList.add('playing');
+                    buttonText.innerHTML = '⏸ Пауза';
+                    status.innerHTML = '🔊 Сейчас играет ваш звук';
+                }).catch(error => {
+                    console.error('Ошибка воспроизведения:', error);
+                    status.innerHTML = '❌ Ошибка воспроизведения. Проверьте файл.';
+                });
+            } else {
+                audio.pause();
+                isPlaying = false;
+                playButton.classList.remove('playing');
+                buttonText.innerHTML = '🔊 Нажми, чтобы сыграть';
+                status.innerHTML = '⏸ Воспроизведение приостановлено';
+            }
         }
         
-        let myName = localStorage.getItem('anommess_userName') || 'Аноним';
-        document.getElementById('userName').value = myName;
-
-        let currentRoomId = null;
-        let currentRoomKey = null;
-        let rooms = {};
-        let messagesListener = null;
-        let onlineListener = null;
-
-        // Загружаем комнаты пользователя
-        function loadRooms() {
-            const userRoomsRef = db.ref('users/' + myId + '/rooms');
-            userRoomsRef.on('value', (snapshot) => {
-                rooms = snapshot.val() || {};
-                renderRoomList();
-            });
-        }
-
-        function renderRoomList() {
-            const container = document.getElementById('roomList');
-            container.innerHTML = '';
-            
-            if (Object.keys(rooms).length === 0) {
-                container.innerHTML = '<div class="text-center text-cyan-700 py-8">Нет чатов<br>Создайте первый!</div>';
-                return;
+        // Обработчик для кнопки
+        playButton.addEventListener('click', togglePlay);
+        
+        // Обработчик окончания воспроизведения
+        audio.addEventListener('ended', function() {
+            isPlaying = false;
+            playButton.classList.remove('playing');
+            buttonText.innerHTML = '🔊 Нажми, чтобы сыграть';
+            status.innerHTML = '⏸ Воспроизведение завершено';
+        });
+        
+        // Проверка загрузки страницы
+        window.addEventListener('load', function() {
+            console.log('Страница загружена, аудио элемент готов');
+            // Проверяем, загрузился ли аудиофайл
+            if (audio.readyState >= 1) {
+                fileStatus.innerHTML = '✅ Файл найден';
+                fileStatus.style.color = '#4caf50';
             }
-            
-            Object.keys(rooms).forEach(roomId => {
-                const room = rooms[roomId];
-                const div = document.createElement('div');
-                div.className = `flex items-center gap-4 px-5 py-4 rounded-3xl hover:bg-white/10 cursor-pointer transition-all ${currentRoomId === roomId ? 'bg-white/15' : ''}`;
-                div.onclick = () => enterRoom(roomId, room.password);
-                div.innerHTML = `
-                    <div class="w-10 h-10 text-3xl flex items-center justify-center">💬</div>
-                    <div class="flex-1 min-w-0">
-                        <div class="font-medium truncate text-white">${room.name}</div>
-                        <div class="text-xs text-cyan-400/70">🔒 зашифровано</div>
-                    </div>
-                `;
-                container.appendChild(div);
-            });
-        }
-
-        // Вход в комнату
-        function enterRoom(roomId, password) {
-            if (currentRoomId === roomId) return;
-            
-            currentRoomId = roomId;
-            currentRoomKey = password;
-            
-            const room = rooms[roomId];
-            document.getElementById('currentRoomName').textContent = room ? room.name : 'Чат';
-            
-            // Отписываемся от старых слушателей
-            if (messagesListener) messagesListener.off();
-            if (onlineListener) onlineListener.off();
-
-            // Очищаем сообщения
-            document.getElementById('messagesArea').innerHTML = '';
-
-            // Слушаем сообщения
-            const messagesRef = db.ref('rooms/' + roomId + '/messages');
-            messagesListener = messagesRef.on('child_added', (snapshot) => {
-                const encryptedMsg = snapshot.val();
-                if (!encryptedMsg) return;
-                
-                try {
-                    // Расшифровываем
-                    const decrypted = CryptoJS.AES.decrypt(encryptedMsg.text, currentRoomKey).toString(CryptoJS.enc.Utf8);
-                    if (!decrypted) return;
-                    
-                    const msg = {
-                        id: snapshot.key,
-                        fromId: encryptedMsg.fromId,
-                        fromName: encryptedMsg.fromName,
-                        text: decrypted,
-                        timestamp: encryptedMsg.timestamp
-                    };
-                    displayMessage(msg);
-                } catch (e) {
-                    console.log('Не удалось расшифровать сообщение');
-                }
-            });
-
-            // Слушаем онлайн
-            const presenceRef = db.ref('rooms/' + roomId + '/presence');
-            onlineListener = presenceRef.on('value', (snapshot) => {
-                const users = [];
-                snapshot.forEach(child => {
-                    if (child.key !== myId) {
-                        users.push(child.val().name);
-                    }
-                });
-                document.getElementById('roomOnline').textContent = users.length;
-                
-                const onlineDiv = document.getElementById('onlineUsers');
-                if (users.length === 0) {
-                    onlineDiv.innerHTML = '<div class="text-sm text-cyan-700">Нет никого</div>';
+        });
+        
+        // Дополнительная проверка сети
+        fetch('sound.mp4', { method: 'HEAD' })
+            .then(response => {
+                if (response.ok) {
+                    console.log('Файл доступен');
                 } else {
-                    onlineDiv.innerHTML = users.map(name => `
-                        <div class="flex items-center gap-2">
-                            <span class="online-dot"></span>
-                            <span class="text-cyan-100">${name}</span>
-                        </div>
-                    `).join('');
+                    console.log('Файл не найден, статус:', response.status);
                 }
+            })
+            .catch(error => {
+                console.log('Ошибка проверки файла:', error);
             });
-
-            // Устанавливаем своё присутствие
-            presenceRef.child(myId).set({
-                name: myName,
-                online: true
-            });
-            presenceRef.child(myId).onDisconnect().remove();
-        }
-
-        function displayMessage(msg) {
-            const area = document.getElementById('messagesArea');
-            const div = document.createElement('div');
-            const isMe = msg.fromId === myId;
-            
-            div.className = `max-w-[75%] ${isMe ? 'ml-auto' : ''}`;
-            
-            const time = msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString() : '';
-            
-            div.innerHTML = `
-                <div class="${isMe ? 'chat-bubble-me' : 'chat-bubble-other'} px-6 py-4 relative">
-                    ${!isMe ? `<div class="text-xs text-cyan-300 mb-1">${msg.fromName}</div>` : ''}
-                    <div class="text-white break-words">${msg.text}</div>
-                    <div class="text-[10px] text-right mt-1 opacity-70">${time}</div>
-                </div>
-            `;
-            
-            area.appendChild(div);
-            area.scrollTop = area.scrollHeight;
-        }
-
-        function sendMessage() {
-            const input = document.getElementById('messageInput');
-            const text = input.value.trim();
-            
-            if (!text || !currentRoomId || !currentRoomKey) {
-                showToast('Ошибка', 'Выберите чат и введите сообщение');
-                return;
-            }
-
-            // Шифруем
-            const encrypted = CryptoJS.AES.encrypt(text, currentRoomKey).toString();
-
-            const msg = {
-                fromId: myId,
-                fromName: myName,
-                text: encrypted,
-                timestamp: firebase.database.ServerValue.TIMESTAMP
-            };
-            
-            db.ref('rooms/' + currentRoomId + '/messages').push(msg);
-            input.value = '';
-        }
-
-        // Создание комнаты
-        function showCreateRoom() {
-            document.getElementById('roomModal').classList.remove('hidden');
-        }
-        
-        function closeModal() {
-            document.getElementById('roomModal').classList.add('hidden');
-            document.getElementById('newRoomName').value = '';
-            document.getElementById('newRoomPassword').value = '';
-        }
-        
-        function createRoom() {
-            const name = document.getElementById('newRoomName').value.trim();
-            const password = document.getElementById('newRoomPassword').value.trim();
-            
-            if (!name || !password) {
-                showToast('Ошибка', 'Введите название и пароль');
-                return;
-            }
-            
-            const roomId = 'room_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
-            
-            // Сохраняем для пользователя
-            const updates = {};
-            updates['users/' + myId + '/rooms/' + roomId] = {
-                name: name,
-                password: password
-            };
-            // Создаём запись о комнате
-            updates['rooms/' + roomId + '/info'] = {
-                name: name,
-                created: firebase.database.ServerValue.TIMESTAMP,
-                createdBy: myId
-            };
-            
-            db.ref().update(updates)
-                .then(() => {
-                    closeModal();
-                    enterRoom(roomId, password);
-                    showToast('Успех', 'Чат создан!');
-                })
-                .catch(error => {
-                    showToast('Ошибка', error.message);
-                });
-        }
-
-        // Сохранение имени
-        function saveUserName() {
-            myName = document.getElementById('userName').value.trim() || 'Аноним';
-            localStorage.setItem('anommess_userName', myName);
-            
-            if (currentRoomId) {
-                db.ref('rooms/' + currentRoomId + '/presence/' + myId).update({ name: myName });
-            }
-            
-            showToast('Имя сохранено', myName);
-        }
-
-        // Поиск комнат
-        document.getElementById('searchRooms').addEventListener('input', (e) => {
-            const term = e.target.value.toLowerCase();
-            document.querySelectorAll('#roomList > div').forEach(el => {
-                const title = el.querySelector('.font-medium')?.textContent.toLowerCase() || '';
-                el.style.display = title.includes(term) ? 'flex' : 'none';
-            });
-        });
-
-        // Тост
-        function showToast(title, text) {
-            const toast = document.getElementById('toast');
-            document.getElementById('toastTitle').textContent = title;
-            document.getElementById('toastText').textContent = text;
-            toast.classList.remove('hidden');
-            
-            setTimeout(() => {
-                toast.classList.add('hidden');
-            }, 3000);
-        }
-
-        // Загрузка
-        window.onload = () => {
-            loadRooms();
-            
-            // Проверяем последнюю комнату
-            const lastRoom = localStorage.getItem('anommess_lastRoom');
-            const lastKey = localStorage.getItem('anommess_lastKey');
-            
-            setTimeout(() => {
-                if (lastRoom && lastKey && rooms[lastRoom]) {
-                    enterRoom(lastRoom, lastKey);
-                }
-            }, 1000);
-        };
-        
-        window.addEventListener('beforeunload', () => {
-            if (currentRoomId) {
-                localStorage.setItem('anommess_lastRoom', currentRoomId);
-                localStorage.setItem('anommess_lastKey', currentRoomKey);
-            }
-        });
     </script>
 </body>
 </html>
