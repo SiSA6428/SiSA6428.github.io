@@ -1,168 +1,17 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>anom — анонимный чат по коду</title>
-    <style>
-        * { box-sizing: border-box; font-family: system-ui, sans-serif; }
-        body { margin: 0; background: #f0f2f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-        .container { max-width: 500px; width: 100%; background: white; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); overflow: hidden; }
-        .header { background: #075e54; color: white; padding: 16px; text-align: center; font-size: 1.5rem; font-weight: bold; }
-        .content { padding: 20px; }
-        .room-input { display: flex; gap: 8px; margin-bottom: 20px; }
-        .room-input input { flex: 1; padding: 10px; font-size: 1.2rem; text-align: center; letter-spacing: 8px; border: 2px solid #ddd; border-radius: 8px; outline: none; }
-        .room-input button { padding: 10px 20px; background: #075e54; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
-        .room-input button:disabled { background: #ccc; }
-        .chat-area { display: none; flex-direction: column; height: 400px; }
-        .messages { flex: 1; overflow-y: auto; border: 1px solid #ddd; border-radius: 8px; padding: 10px; margin-bottom: 10px; background: #e5ddd5; display: flex; flex-direction: column; }
-        .message { background: white; padding: 8px 12px; border-radius: 8px; margin-bottom: 6px; max-width: 80%; align-self: flex-start; word-break: break-word; }
-        .message .name { font-weight: bold; color: #075e54; font-size: 0.8rem; margin-bottom: 2px; }
-        .message .text { font-size: 0.95rem; }
-        .message-input { display: flex; gap: 8px; }
-        .message-input input { flex: 1; padding: 10px; border: 2px solid #ddd; border-radius: 8px; outline: none; }
-        .message-input button { padding: 10px 20px; background: #075e54; color: white; border: none; border-radius: 8px; cursor: pointer; }
-        .info { font-size: 0.9rem; color: #555; margin-bottom: 10px; text-align: center; }
-    </style>
+    <title>anom — чат</title>
 </head>
 <body>
-    <div class="container">
-        <div class="header">anom 💬</div>
-        <div class="content">
-            <!-- Экран ввода комнаты -->
-            <div id="roomScreen">
-                <div class="info">Введите 4-значный код комнаты</div>
-                <div class="room-input">
-                    <input type="text" id="roomCode" maxlength="4" pattern="\d*" placeholder="0000">
-                    <button id="joinBtn">Войти</button>
-                </div>
-            </div>
-
-            <!-- Экран чата (изначально скрыт) -->
-            <div id="chatScreen" class="chat-area">
-                <div class="info" id="roomInfo">Комната: <span id="currentRoom"></span></div>
-                <div class="messages" id="messagesList"></div>
-                <div class="message-input">
-                    <input type="text" id="messageText" placeholder="Сообщение..." autocomplete="off">
-                    <button id="sendBtn">➤</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Подключаем Firebase (Compat-версия, простая для вставки) -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
-
-    <script>
-        // 1️⃣ Конфигурация Firebase (ЗАМЕНИТЕ НА СВОЮ!)
-        const firebaseConfig = {
-            apiKey: "AIzaSy...",
-            authDomain: "your-project.firebaseapp.com",
-            databaseURL: "https://your-project-default-rtdb.firebaseio.com",
-            projectId: "your-project",
-            storageBucket: "your-project.appspot.com",
-            messagingSenderId: "123456789",
-            appId: "1:123456789:web:abc123"
-        };
-
-        // Инициализация Firebase
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
-
-        // 2️⃣ Элементы интерфейса
-        const roomScreen = document.getElementById('roomScreen');
-        const chatScreen = document.getElementById('chatScreen');
-        const roomCodeInput = document.getElementById('roomCode');
-        const joinBtn = document.getElementById('joinBtn');
-        const currentRoomSpan = document.getElementById('currentRoom');
-        const messagesList = document.getElementById('messagesList');
-        const messageInput = document.getElementById('messageText');
-        const sendBtn = document.getElementById('sendBtn');
-
-        let currentRoom = null;          // текущая комната (код)
-        let userName = 'Аноним';         // можно спросить имя, но для простоты так
-
-        // 3️⃣ Вход в комнату
-        joinBtn.addEventListener('click', () => {
-            const code = roomCodeInput.value.trim();
-            if (code.length === 4 && /^\d+$/.test(code)) {
-                currentRoom = code;
-                currentRoomSpan.textContent = code;
-                roomScreen.style.display = 'none';
-                chatScreen.style.display = 'flex';
-                messageInput.focus();
-
-                // Подписываемся на сообщения этой комнаты
-                subscribeToRoom(code);
-            } else {
-                alert('Введите ровно 4 цифры');
-            }
-        });
-
-        // 4️⃣ Подписка на сообщения комнаты
-        function subscribeToRoom(roomCode) {
-            const messagesRef = db.ref(`rooms/${roomCode}/messages`).limitToLast(50);
-            messagesRef.off(); // отписываемся от предыдущей комнаты
-            messagesRef.on('child_added', (snapshot) => {
-                const msg = snapshot.val();
-                displayMessage(msg);
-            });
-        }
-
-        // 5️⃣ Отображение сообщения
-        function displayMessage({ name, text }) {
-            const messageDiv = document.createElement('div');
-            messageDiv.className = 'message';
-            messageDiv.innerHTML = `
-                <div class="name">${escapeHtml(name)}</div>
-                <div class="text">${escapeHtml(text)}</div>
-            `;
-            messagesList.appendChild(messageDiv);
-            // Прокрутка вниз
-            messagesList.scrollTop = messagesList.scrollHeight;
-        }
-
-        // Простая защита от XSS
-        function escapeHtml(unsafe) {
-            return unsafe.replace(/[&<>"]/g, function(m) {
-                if (m === '&') return '&amp;';
-                if (m === '<') return '&lt;';
-                if (m === '>') return '&gt;';
-                if (m === '"') return '&quot;';
-                return m;
-            });
-        }
-
-        // 6️⃣ Отправка сообщения
-        function sendMessage() {
-            const text = messageInput.value.trim();
-            if (!text || !currentRoom) return;
-
-            const message = {
-                name: userName,
-                text: text,
-                timestamp: firebase.database.ServerValue.TIMESTAMP
-            };
-
-            db.ref(`rooms/${currentRoom}/messages`).push(message)
-                .then(() => {
-                    messageInput.value = '';
-                })
-                .catch(err => console.error('Ошибка отправки', err));
-        }
-
-        sendBtn.addEventListener('click', sendMessage);
-        messageInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') sendMessage();
-        });
-
-        // 7️⃣ Очистка сообщений при смене комнаты (опционально)
-        // Можно добавить кнопку выхода, но для простоты при повторном входе страница перезагрузится
-        // или можно просто очищать список вручную
-        window.addEventListener('load', () => {
-            // Если хотим разрешить менять комнату без перезагрузки, можно добавить кнопку "Выйти"
-        });
-    </script>
+    <h1>Добро пожаловать в anom</h1>
+    <!-- Встраиваем чат -->
+    <script src="https://chitchatter.im/sdk.js"></script>
+    <chat-room
+        room="1234"
+        user-name="Аноним"
+        color-mode="dark"
+        style="height: 500px; width: 100%;">
+    </chat-room>
 </body>
 </html>
